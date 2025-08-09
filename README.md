@@ -19,6 +19,10 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [Cassandra Stress](workloads/cassandra-stress/README.md)
   - [TPC-DS](workloads/tpc-ds/README.md)
   - [TPC-H](workloads/tpc-h/README.md)
+- Performance Analysis and Monitoring Tools
+  - [PerfSpect](tools/perfspect/README.md)
+  - [PCM](tools/pcm/README.md)
+  - [VTune Profiler](tools/vtune/README.md)
 
 ## Contributing
 
