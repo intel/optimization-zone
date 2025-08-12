@@ -3,7 +3,7 @@
 Intel® VTune™ Profiler optimizes application performance, system performance, and system configuration for AI, HPC, cloud, IoT, media, storage, and more.
 
 ## Key Features
-- Algorithm Optimization
+- Optimize Algorithms
 - Identify Microarchitecture and Memory Bottlenecks
 - Optimize Accelerators and XPUs
 - Examine Parallelism
