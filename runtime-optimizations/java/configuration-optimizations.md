@@ -14,3 +14,8 @@ To alleviate this issue, we suggest tuning the compilation thresholds using the 
 ```bash
 java -XX:-DontCompileHugeMethods -XX:MaxNodeLimit=150000 -XX:NodeLimitFudgeFactor=3000 -jar app.jar
 ```
+
+## Tuning initial heap size
+We recommend modifying the initial heap size of all Java processes to match the maximum heap size. This is beneficial for performance as described in the following article: [Benefits of setting initial and max memory size](https://blog.ycrash.io/benefits-of-setting-initial-and-maximum-memory-size-to-the-same-value/).
+
+In short, this prevents frequent memory reallocations which hurt application performance. We suggest doing so by adding the '-Xms' argument with the same value as the '-Xmx'. For example, a Java process with '-Xmx24g' in its command line should be changed to '-Xmx24g -Xms24g'.
