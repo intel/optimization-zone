@@ -5,7 +5,7 @@ Actual improvements will vary depending on a given workload's characteristics. I
 
 ## What's Inside
 - [Suggested Configuration Optimizations](configuration-optimizations.md): Changes that can be made to Java's configuration and/or parameters to improve application performance. These optimizations are largely unaffected by specific code patterns and as such can be applied in a more generalist manner.  
-- [Suggested Code Optimizations](): Changes that can be made to Java application code to improve application performance. The benefits will vary widely depending on how common specific libraries are used and how much compute time they consume. Use of profiling solution such as VTune highly recommended to assess potential improvements. 
+- [Suggested Code Optimizations](code-optimizations.md): Changes that can be made to Java application code to improve application performance. The benefits will vary widely depending on how common specific libraries are used and how much compute time they consume. Use of profiling solution such as VTune highly recommended to assess potential improvements. 
 
 
 ## FAQ
