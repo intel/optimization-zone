@@ -10,11 +10,11 @@ Actual improvements will vary depending on a given workload's characteristics. I
 
 ## FAQ
 
-# Do I have to adopt everything?
+#### Do I have to adopt everything?
 No. Each recipe is independent. We recommend starting with more generalist optimizations (Configuration Optimizations), and then applying Code Optimizations, prioritized based off of profiler hotpaths. 
 
-# Is there any functional risk?
+#### Is there any functional risk?
 The code changes are semantics-preserving; still, run your test suite and a brief canary. Ops flags are reversible.
 
-# Are the optimizations x86 specific?
+#### Are the optimizations x86 specific?
 No. Optimizations will operate similarly across all major CPU architecture types.
