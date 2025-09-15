@@ -13,6 +13,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
 - Software
   - [Cassandra](software/cassandra/README.md)
   - [Gluten](software/gluten/README.md)
+  - [Java](software/java/README.md)
   - [Spark](software/spark/README.md)
   - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
 - Workloads
