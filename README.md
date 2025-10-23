@@ -2,9 +2,25 @@
   <img src="images/logo-classicblue-800px.png?raw=true" alt="Intel Logo" width="250"/>
 </p>
 
-# Optimization Zone
+# Intel Optimization Zone - Intel Tuning Guides
 
-This repository contains a collection of optimization recipes for Data Center workloads and software on Intel Hardware. It includes detailed tuning guides and optimization techniques designed to help users achieve optimal performance.
+This repository contains a collection of Intel tuning guides and Intel optimization recipes specifically designed for software running on Intel. Our comprehensive resources include detailed configuration recommendations, performance tuning techniques, and best practices to help you unlock the full potential of your Intel infrastructure.
+
+## What You'll Find Here
+
+### 🗄️ Databases & Data Stores Tuning Guides
+
+Tuning Guides and optimization guides for popular database systems including Cassandra, MySQL, and PostgreSQL, covering configuration tuning, memory management, and query optimization strategies.
+
+### ⚡ Big Data & Analytics Tuning Guides
+
+Performance tuning for Apache Spark and Gluten, with focus on vectorization, memory optimization, and efficient data processing on Intel architectures.
+
+### 📊 Industry-Standard Benchmarks
+
+Configuration and execution guides for TPC-DS, TPC-H, and Cassandra Stress workloads, enabling you to measure and validate your optimization results.
+
+### 🚀 Goal
 
 We aim to provide a dynamic resource where users can find the latest optimization strategies, contribute feedback, and report issues.
 
@@ -13,17 +29,12 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
 - Software
   - [Cassandra](software/cassandra/README.md)
   - [Gluten](software/gluten/README.md)
-  - [Java](software/java/README.md)
   - [Spark](software/spark/README.md)
   - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
 - Workloads
   - [Cassandra Stress](workloads/cassandra-stress/README.md)
   - [TPC-DS](workloads/tpc-ds/README.md)
   - [TPC-H](workloads/tpc-h/README.md)
-- Performance Analysis and Monitoring Tools
-  - [PerfSpect](tools/perfspect/README.md)
-  - [PCM](tools/pcm/README.md)
-  - [VTune Profiler](tools/vtune/README.md)
 
 ## Contributing
 
@@ -57,4 +68,4 @@ Please check individual files for any exceptions or additional terms.
 
 Performance varies by use, configuration and other factors. Learn more on the [Performance Index site](https://edc.intel.com/content/www/us/en/products/performance/benchmarks/overview/). Performance results are based on testing as of dates shown in configurations and may not reflect all publicly available updates. No product or component can be absolutely secure. Your costs and results may vary. Intel technologies may require enabled hardware, software or service activation. See our complete [Legal Notices and Disclaimers](https://www.intel.com/LegalNoticesAndDisclaimers).
 
-© Intel Corporation.  Intel, the Intel logo, and other Intel marks are trademarks of Intel Corporation or its subsidiaries.  Other names and brands may be claimed as the property of others. 
+© Intel Corporation.  Intel, the Intel logo, and other Intel marks are trademarks of Intel Corporation or its subsidiaries.  Other names and brands may be claimed as the property of others.
