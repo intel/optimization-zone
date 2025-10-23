@@ -10,15 +10,15 @@ This repository contains a collection of Intel tuning guides and Intel optimizat
 
 ### 🗄️ Databases & Data Stores Tuning Guides
 
-Tuning Guides and optimization guides for popular database systems including Cassandra, MySQL, and PostgreSQL, covering configuration tuning, memory management, and query optimization strategies.
+Tuning Guides and optimization guides for popular database systems covering configuration tuning, memory management, and query optimization strategies.
 
 ### ⚡ Big Data & Analytics Tuning Guides
 
-Performance tuning for Apache Spark and Gluten, with focus on vectorization, memory optimization, and efficient data processing on Intel architectures.
+Performance tuning for Big Data, with focus on vectorization, memory optimization, and efficient data processing on Intel architectures.
 
 ### 📊 Industry-Standard Benchmarks
 
-Configuration and execution guides for TPC-DS, TPC-H, and Cassandra Stress workloads, enabling you to measure and validate your optimization results.
+Configuration and execution guides and other stress tests, enabling you to measure and validate your optimization results.
 
 ### 🚀 Goal
 
