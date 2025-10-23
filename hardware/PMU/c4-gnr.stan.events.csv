@@ -1,0 +1,401 @@
+Event Name,Status
+branch-instructions,Successful
+branch-misses,Successful
+bus-cycles,Successful
+cpu-cycles,Successful
+instructions,Successful
+ref-cycles,Successful
+msr/aperf/,Successful
+msr/mperf/,Successful
+msr/tsc/,Successful
+l1d.hwpf_miss,Successful
+l1d.replacement,Successful
+l1d_pend_miss.fb_full,Successful
+l1d_pend_miss.fb_full_periods,Successful
+l1d_pend_miss.l2_stalls,Successful
+l1d_pend_miss.pending,Successful
+l1d_pend_miss.pending_cycles,Successful
+l2_lines_in.all,Successful
+l2_lines_out.non_silent,Successful
+l2_lines_out.silent,Successful
+l2_lines_out.useless_hwpf,Successful
+l2_request.all,Successful
+l2_request.hit,Successful
+l2_request.miss,Successful
+l2_rqsts.all_code_rd,Successful
+l2_rqsts.all_demand_data_rd,Successful
+l2_rqsts.all_demand_miss,Successful
+l2_rqsts.all_demand_references,Successful
+l2_rqsts.all_hwpf,Successful
+l2_rqsts.all_rfo,Successful
+l2_rqsts.code_rd_hit,Successful
+l2_rqsts.code_rd_miss,Successful
+l2_rqsts.demand_data_rd_hit,Successful
+l2_rqsts.demand_data_rd_miss,Successful
+l2_rqsts.hit,Successful
+l2_rqsts.hwpf_miss,Successful
+l2_rqsts.miss,Successful
+l2_rqsts.references,Successful
+l2_rqsts.rfo_hit,Successful
+l2_rqsts.rfo_miss,Successful
+l2_rqsts.swpf_hit,Successful
+l2_rqsts.swpf_miss,Successful
+l2_trans.l2_wb,Successful
+mem_inst_retired.all_loads,Successful
+mem_inst_retired.all_stores,Successful
+mem_inst_retired.any,Successful
+mem_inst_retired.lock_loads,Successful
+mem_inst_retired.split_loads,Successful
+mem_inst_retired.split_stores,Successful
+mem_inst_retired.stlb_hit_loads,Successful
+mem_inst_retired.stlb_hit_stores,Successful
+mem_inst_retired.stlb_miss_loads,Successful
+mem_inst_retired.stlb_miss_stores,Successful
+mem_load_completed.l1_miss_any,Successful
+mem_load_retired.fb_hit,Successful
+mem_load_retired.l1_hit,Successful
+mem_load_retired.l1_miss,Successful
+mem_load_retired.l2_hit,Successful
+mem_load_retired.l2_miss,Successful
+mem_store_retired.l2_hit,Successful
+sw_prefetch_access.any,Successful
+sw_prefetch_access.prefetchw,Successful
+sw_prefetch_access.t0,Successful
+arith.fpdiv_active,Successful
+fp_arith_dispatched.port_0,Successful
+fp_arith_dispatched.port_1,Successful
+fp_arith_dispatched.port_5,Successful
+fp_arith_dispatched.v0,Successful
+fp_arith_dispatched.v1,Successful
+fp_arith_dispatched.v2,Successful
+fp_arith_inst_retired.128b_packed_double,Successful
+fp_arith_inst_retired.scalar,Successful
+fp_arith_inst_retired.scalar_double,Successful
+fp_arith_inst_retired.vector,Successful
+baclears.any,Successful
+decode.lcp,Successful
+decode.ms_busy,Successful
+icache_data.stall_periods,Successful
+icache_data.stalls,Successful
+icache_tag.stalls,Successful
+idq.dsb_cycles_any,Successful
+idq.dsb_cycles_ok,Successful
+idq.dsb_uops,Successful
+idq.mite_cycles_any,Successful
+idq.mite_cycles_ok,Successful
+idq.mite_uops,Successful
+idq.ms_cycles_any,Successful
+idq.ms_switches,Successful
+idq.ms_uops,Successful
+idq_bubbles.core,Successful
+idq_bubbles.cycles_0_uops_deliv.core,Successful
+idq_bubbles.cycles_fe_was_ok,Successful
+idq_uops_not_delivered.core,Successful
+idq_uops_not_delivered.cycles_0_uops_deliv.core,Successful
+idq_uops_not_delivered.cycles_fe_was_ok,Successful
+memory_activity.cycles_l1d_miss,Successful
+memory_activity.stalls_l1d_miss,Successful
+memory_activity.stalls_l2_miss,Successful
+assists.hardware,Successful
+assists.page_fault,Successful
+rs.empty,Successful
+rs.empty_count,Successful
+rs.empty_resource,Successful
+arith.div_active,Successful
+arith.idiv_active,Successful
+assists.any,Successful
+br_inst_retired.all_branches,Successful
+br_inst_retired.cond,Successful
+br_inst_retired.cond_ntaken,Successful
+br_inst_retired.cond_taken,Successful
+br_inst_retired.far_branch,Successful
+br_inst_retired.indirect,Successful
+br_inst_retired.near_call,Successful
+br_inst_retired.near_return,Successful
+br_inst_retired.near_taken,Successful
+br_misp_retired.all_branches,Successful
+br_misp_retired.all_branches_cost,Successful
+br_misp_retired.cond,Successful
+br_misp_retired.cond_cost,Successful
+br_misp_retired.cond_ntaken,Successful
+br_misp_retired.cond_ntaken_cost,Successful
+br_misp_retired.cond_taken,Successful
+br_misp_retired.cond_taken_cost,Successful
+br_misp_retired.indirect,Successful
+br_misp_retired.indirect_call,Successful
+br_misp_retired.indirect_call_cost,Successful
+br_misp_retired.indirect_cost,Successful
+br_misp_retired.near_taken,Successful
+br_misp_retired.near_taken_cost,Successful
+br_misp_retired.ret,Successful
+br_misp_retired.ret_cost,Successful
+cpu_clk_unhalted.c0_wait,Successful
+cpu_clk_unhalted.pause,Successful
+cpu_clk_unhalted.pause_inst,Successful
+cpu_clk_unhalted.ref_tsc,Successful
+cpu_clk_unhalted.ref_tsc_p,Successful
+cpu_clk_unhalted.thread,Successful
+cpu_clk_unhalted.thread_p,Successful
+cycle_activity.cycles_l1d_miss,Successful
+cycle_activity.cycles_l2_miss,Successful
+cycle_activity.cycles_mem_any,Successful
+cycle_activity.stalls_l1d_miss,Successful
+cycle_activity.stalls_l2_miss,Successful
+cycle_activity.stalls_total,Successful
+exe_activity.1_ports_util,Successful
+exe_activity.2_3_ports_util,Successful
+exe_activity.2_ports_util,Successful
+exe_activity.3_ports_util,Successful
+exe_activity.4_ports_util,Successful
+exe_activity.bound_on_loads,Successful
+exe_activity.bound_on_stores,Successful
+exe_activity.exe_bound_0_ports,Successful
+inst_decoded.decoders,Successful
+inst_retired.any,Successful
+inst_retired.any_p,Successful
+inst_retired.macro_fused,Successful
+inst_retired.nop,Successful
+inst_retired.rep_iteration,Successful
+int_misc.clear_resteer_cycles,Successful
+int_misc.clears_count,Successful
+int_misc.uop_dropping,Successful
+int_vec_retired.128bit,Successful
+int_vec_retired.256bit,Successful
+int_vec_retired.add_128,Successful
+int_vec_retired.add_256,Successful
+int_vec_retired.shuffles,Successful
+ld_blocks.address_alias,Successful
+ld_blocks.no_sr,Successful
+ld_blocks.store_forward,Successful
+load_hit_prefetch.swpf,Successful
+lsd.cycles_active,Successful
+lsd.cycles_ok,Successful
+lsd.uops,Successful
+machine_clears.count,Successful
+misc2_retired.lfence,Successful
+resource_stalls.sb,Successful
+resource_stalls.scoreboard,Successful
+topdown.backend_bound_slots,Successful
+topdown.bad_spec_slots,Successful
+topdown.br_mispredict_slots,Successful
+topdown.memory_bound_slots,Successful
+topdown.slots_p,Successful
+uops_decoded.dec0_uops,Successful
+uops_dispatched.port_0,Successful
+uops_dispatched.port_1,Successful
+uops_dispatched.port_2_3_10,Successful
+uops_dispatched.port_4_9,Successful
+uops_dispatched.port_5_11,Successful
+uops_dispatched.port_6,Successful
+uops_dispatched.port_7_8,Successful
+uops_executed.core,Successful
+uops_executed.core_cycles_ge_1,Successful
+uops_executed.core_cycles_ge_2,Successful
+uops_executed.core_cycles_ge_3,Successful
+uops_executed.core_cycles_ge_4,Successful
+uops_executed.cycles_ge_1,Successful
+uops_executed.cycles_ge_2,Successful
+uops_executed.cycles_ge_3,Successful
+uops_executed.cycles_ge_4,Successful
+uops_executed.stalls,Successful
+uops_executed.thread,Successful
+uops_issued.any,Successful
+uops_issued.cycles,Successful
+uops_retired.cycles,Successful
+uops_retired.slots,Successful
+uops_retired.stalls,Successful
+duration_time,Successful
+num_cores,Successful
+num_cpus,Successful
+num_cpus_online,Successful
+num_dies,Successful
+num_packages,Successful
+smt_on,Successful
+system_time,Successful
+system_tsc_freq,Successful
+user_time,Successful
+dtlb_load_misses.stlb_hit,Successful
+dtlb_load_misses.walk_active,Successful
+dtlb_load_misses.walk_completed,Successful
+dtlb_load_misses.walk_completed_1g,Successful
+dtlb_load_misses.walk_completed_2m_4m,Successful
+dtlb_load_misses.walk_completed_4k,Successful
+dtlb_load_misses.walk_pending,Successful
+dtlb_store_misses.stlb_hit,Successful
+dtlb_store_misses.walk_active,Successful
+dtlb_store_misses.walk_completed,Successful
+dtlb_store_misses.walk_completed_1g,Successful
+dtlb_store_misses.walk_completed_2m_4m,Successful
+dtlb_store_misses.walk_completed_4k,Successful
+dtlb_store_misses.walk_pending,Successful
+itlb_misses.stlb_hit,Successful
+itlb_misses.walk_active,Successful
+itlb_misses.walk_completed,Successful
+itlb_misses.walk_completed_2m_4m,Successful
+itlb_misses.walk_completed_4k,Successful
+longest_lat_cache.miss,Zero value
+longest_lat_cache.reference,Zero value
+mem_load_l3_hit_retired.xsnp_fwd,Zero value
+mem_load_l3_hit_retired.xsnp_miss,Zero value
+mem_load_l3_hit_retired.xsnp_no_fwd,Zero value
+mem_load_l3_hit_retired.xsnp_none,Zero value
+mem_load_l3_miss_retired.local_dram,Zero value
+mem_load_l3_miss_retired.remote_dram,Zero value
+mem_load_l3_miss_retired.remote_fwd,Zero value
+mem_load_l3_miss_retired.remote_hitm,Zero value
+mem_load_misc_retired.uc,Zero value
+mem_load_retired.l3_hit,Zero value
+mem_load_retired.l3_miss,Zero value
+offcore_requests.all_requests,Zero value
+offcore_requests.data_rd,Zero value
+offcore_requests.demand_code_rd,Zero value
+offcore_requests.demand_data_rd,Zero value
+offcore_requests.demand_rfo,Zero value
+offcore_requests_outstanding.cycles_with_data_rd,Zero value
+offcore_requests_outstanding.cycles_with_demand_code_rd,Zero value
+offcore_requests_outstanding.cycles_with_demand_data_rd,Zero value
+offcore_requests_outstanding.cycles_with_demand_rfo,Zero value
+offcore_requests_outstanding.data_rd,Zero value
+offcore_requests_outstanding.demand_code_rd,Zero value
+offcore_requests_outstanding.demand_data_rd,Zero value
+offcore_requests_outstanding.demand_rfo,Zero value
+sq_misc.bus_lock,Zero value
+sw_prefetch_access.nta,Zero value
+sw_prefetch_access.t1_t2,Zero value
+assists.fp,Zero value
+assists.sse_avx_mix,Zero value
+fp_arith_inst_retired.128b_packed_single,Zero value
+fp_arith_inst_retired.256b_packed_double,Zero value
+fp_arith_inst_retired.256b_packed_single,Zero value
+fp_arith_inst_retired.4_flops,Zero value
+fp_arith_inst_retired.512b_packed_double,Zero value
+fp_arith_inst_retired.512b_packed_single,Zero value
+fp_arith_inst_retired.8_flops,Zero value
+fp_arith_inst_retired.scalar_single,Zero value
+fp_arith_inst_retired2.128b_packed_half,Zero value
+fp_arith_inst_retired2.256b_packed_half,Zero value
+fp_arith_inst_retired2.512b_packed_half,Zero value
+fp_arith_inst_retired2.complex_scalar_half,Zero value
+fp_arith_inst_retired2.scalar,Zero value
+fp_arith_inst_retired2.scalar_half,Zero value
+fp_arith_inst_retired2.vector,Zero value
+cycle_activity.cycles_l3_miss,Zero value
+cycle_activity.stalls_l3_miss,Zero value
+mem_trans_retired.store_sample,Zero value
+offcore_requests.l3_miss_demand_data_rd,Zero value
+offcore_requests_outstanding.cycles_with_l3_miss_demand_data_rd,Zero value
+offcore_requests_outstanding.l3_miss_demand_data_rd,Zero value
+rtm_retired.aborted,Zero value
+rtm_retired.aborted_events,Zero value
+rtm_retired.aborted_mem,Zero value
+rtm_retired.aborted_memtype,Zero value
+rtm_retired.aborted_unfriendly,Zero value
+rtm_retired.commit,Zero value
+rtm_retired.start,Zero value
+tx_mem.abort_capacity_read,Zero value
+tx_mem.abort_capacity_write,Zero value
+tx_mem.abort_conflict,Zero value
+xq.full_cycles,Zero value
+cpu_clk_unhalted.c01,Zero value
+cpu_clk_unhalted.c02,Zero value
+cpu_clk_unhalted.distributed,Zero value
+cpu_clk_unhalted.one_thread_active,Zero value
+cpu_clk_unhalted.ref_distributed,Zero value
+inst_retired.prec_dist,Zero value
+int_misc.mba_stalls,Zero value
+int_vec_retired.mul_256,Zero value
+int_vec_retired.vnni_128,Zero value
+int_vec_retired.vnni_256,Zero value
+machine_clears.smc,Zero value
+misc_retired.lbr_inserts,Zero value
+topdown.slots,Zero value
+uops_executed.x87,Zero value
+has_pmem,Zero value
+mem_uop_retired.any,Failed
+ocr.demand_code_rd.l3_hit,Failed
+ocr.demand_code_rd.l3_hit.snoop_hitm,Failed
+ocr.demand_data_rd.l3_hit,Failed
+ocr.demand_data_rd.l3_hit.snoop_hit_no_fwd,Failed
+ocr.demand_data_rd.l3_hit.snoop_hit_with_fwd,Failed
+ocr.demand_data_rd.l3_hit.snoop_hitm,Failed
+ocr.demand_data_rd.remote_cache.snoop_hit_with_fwd,Failed
+ocr.demand_data_rd.remote_cache.snoop_hitm,Failed
+ocr.demand_rfo.l3_hit,Failed
+ocr.demand_rfo.l3_hit.snoop_hitm,Failed
+ocr.reads_to_core.l3_hit,Failed
+ocr.reads_to_core.l3_hit.snoop_hitm,Failed
+ocr.reads_to_core.remote_cache.snoop_fwd,Failed
+ocr.reads_to_core.remote_cache.snoop_hit_with_fwd,Failed
+ocr.reads_to_core.remote_cache.snoop_hitm,Failed
+ocr.reads_to_core.snc_cache.hit_with_fwd,Failed
+ocr.reads_to_core.snc_cache.hitm,Failed
+ocr.rfo_to_core.l3_hit_m,Failed
+dsb2mite_switches.penalty_cycles,Failed
+frontend_retired.any_ant,Failed
+frontend_retired.any_dsb_miss,Failed
+frontend_retired.dsb_miss,Failed
+frontend_retired.itlb_miss,Failed
+frontend_retired.l1i_miss,Failed
+frontend_retired.l2_miss,Failed
+frontend_retired.late_swpf,Failed
+frontend_retired.latency_ge_1,Failed
+frontend_retired.latency_ge_128,Failed
+frontend_retired.latency_ge_16,Failed
+frontend_retired.latency_ge_2,Failed
+frontend_retired.latency_ge_256,Failed
+frontend_retired.latency_ge_2_bubbles_ge_1,Failed
+frontend_retired.latency_ge_32,Failed
+frontend_retired.latency_ge_4,Failed
+frontend_retired.latency_ge_512,Failed
+frontend_retired.latency_ge_64,Failed
+frontend_retired.latency_ge_8,Failed
+frontend_retired.misp_ant,Failed
+frontend_retired.ms_flows,Failed
+frontend_retired.stlb_miss,Failed
+frontend_retired.unknown_branch,Failed
+machine_clears.memory_ordering,Failed
+mem_trans_retired.load_latency_gt_1024,Failed
+mem_trans_retired.load_latency_gt_128,Failed
+mem_trans_retired.load_latency_gt_16,Failed
+mem_trans_retired.load_latency_gt_2048,Failed
+mem_trans_retired.load_latency_gt_256,Failed
+mem_trans_retired.load_latency_gt_32,Failed
+mem_trans_retired.load_latency_gt_4,Failed
+mem_trans_retired.load_latency_gt_512,Failed
+mem_trans_retired.load_latency_gt_64,Failed
+mem_trans_retired.load_latency_gt_8,Failed
+memory_activity.stalls_l3_miss,Failed
+ocr.demand_code_rd.l3_miss,Failed
+ocr.demand_data_rd.l3_miss,Failed
+ocr.demand_rfo.l3_miss,Failed
+ocr.reads_to_core.l3_miss,Failed
+ocr.reads_to_core.l3_miss_local,Failed
+ocr.reads_to_core.l3_miss_local_socket,Failed
+exe.amx_busy,Failed
+ocr.demand_code_rd.any_response,Failed
+ocr.demand_code_rd.dram,Failed
+ocr.demand_code_rd.local_dram,Failed
+ocr.demand_data_rd.any_response,Failed
+ocr.demand_data_rd.dram,Failed
+ocr.demand_data_rd.local_dram,Failed
+ocr.demand_data_rd.remote_dram,Failed
+ocr.demand_rfo.any_response,Failed
+ocr.demand_rfo.dram,Failed
+ocr.demand_rfo.local_dram,Failed
+ocr.modified_write.any_response,Failed
+ocr.reads_to_core.any_response,Failed
+ocr.reads_to_core.dram,Failed
+ocr.reads_to_core.local_dram,Failed
+ocr.reads_to_core.local_socket_dram,Failed
+ocr.reads_to_core.remote,Failed
+ocr.reads_to_core.remote_dram,Failed
+ocr.reads_to_core.remote_memory,Failed
+ocr.reads_to_core.snc_dram,Failed
+ocr.streaming_wr.any_response,Failed
+ocr.write_estimate.memory,Failed
+int_misc.recovery_cycles,Failed
+int_misc.unknown_branch_cycles,Failed
+uops_retired.heavy,Failed
+uops_retired.ms,Failed
+itlb_misses.walk_pending,Failed
+mem:<addr>[/len][:access],Failed
