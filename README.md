@@ -29,12 +29,17 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
 - Software
   - [Cassandra](software/cassandra/README.md)
   - [Gluten](software/gluten/README.md)
+  - [Java](software/java/README.md)
   - [Spark](software/spark/README.md)
   - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
 - Workloads
   - [Cassandra Stress](workloads/cassandra-stress/README.md)
   - [TPC-DS](workloads/tpc-ds/README.md)
   - [TPC-H](workloads/tpc-h/README.md)
+- Performance Analysis and Monitoring Tools
+  - [PerfSpect](tools/perfspect/README.md)
+  - [PCM](tools/pcm/README.md)
+  - [VTune Profiler](tools/vtune/README.md)
 
 ## Contributing
 
