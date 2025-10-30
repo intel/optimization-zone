@@ -24,6 +24,8 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [PerfSpect](tools/perfspect/README.md)
   - [PCM](tools/pcm/README.md)
   - [VTune Profiler](tools/vtune/README.md)
+- Hardware
+  - [PMU](hardware/PMU/README.md)
 
 ## Contributing
 

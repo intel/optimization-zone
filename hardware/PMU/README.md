@@ -1,7 +1,7 @@
 # AWS and GCP PMU Availability Matrices
 
 Full explanation and context for this data can be read in our blog post [Get The Most Out of Your Intel Cloud Infrastructure with Virtual Performance Monitoring Units](https://community.intel.com/t5/Blogs/Tech-Innovation/Cloud/Get-The-Most-Out-of-Your-Intel-Cloud-Infrastructure-with-Virtual/post/1723698).
-This directory contains detailed availability matrices for AWS and GCP PMUs (for baremetal instance types) and vPMUs (for virtualized instance types). The .csv files provide specific event and metric availability for the listed instance types. 
+This directory contains detailed availability matrices for [AWS](AWS) and [GCP](GCP) PMUs (for baremetal instance types) and vPMUs (for virtualized instance types). The .csv files provide specific event and metric availability for the listed instance types. 
 
 Cloud service providers such as Amazon Web Services (AWS) and Google Cloud Platform (GCP) expose Virtual Performance Monitoring Units (vPMUs) on select Intel® Xeon® Processor instances that allow one to measure critical performance parameters like instruction cycles, cache misses, and branch mispredictions. While Intel publishes the complete list of supported performance monitoring (perfmon) events and metrics (refer to https://perfmon-events.intel.com/ and https://github.com/intel/perfmon), virtualized cloud instances typically support only a subset of these capabilities. The files in this directory provide a comprehensive list of available metrics for the instance-types provided. 
 
