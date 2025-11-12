@@ -18,6 +18,7 @@ tma_info_inst_mix_ipbranch,Successful
 tma_info_inst_mix_ipcall,Successful
 tma_info_inst_mix_iptb,Successful
 tma_info_system_ipfarbranch,Successful
+tma_fb_full,Successful
 tma_info_system_c0_wait,Successful
 tma_info_memory_fb_hpki,Successful
 tma_info_memory_l1mpki,Successful
@@ -104,7 +105,6 @@ percent_uops_delivered_from_decoded_icache,Successful
 percent_uops_delivered_from_legacy_decode_pipeline,Successful
 percent_uops_delivered_from_microcode_sequencer,Successful
 stores_per_instr,Successful
-tma_fb_full,Zero value
 tma_split_loads,Zero value
 tma_mixing_vectors,Zero value
 cpu_operating_frequency,Zero value

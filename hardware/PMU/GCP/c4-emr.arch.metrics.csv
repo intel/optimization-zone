@@ -9,7 +9,6 @@ tma_info_branches_cond_tk,Successful
 tma_info_branches_jump,Successful
 tma_info_branches_other_branches,Successful
 tma_branch_mispredicts,Successful
-tma_machine_clears,Successful
 tma_info_bad_spec_spec_clears_ratio,Successful
 tma_info_frontend_tbpc,Successful
 tma_info_inst_mix_ipbranch,Successful
@@ -71,6 +70,7 @@ tma_info_system_mux,Successful
 tma_info_system_time,Successful
 tma_info_thread_slots,Successful
 cpu_operating_frequency,Successful
+tma_machine_clears,Zero value
 tma_icache_misses,Zero value
 tma_itlb_misses,Zero value
 tma_other_mispredicts,Zero value

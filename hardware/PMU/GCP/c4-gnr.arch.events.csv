@@ -90,6 +90,7 @@ mem_load_retired.l2_miss,Zero value
 mem_load_retired.l3_hit,Zero value
 mem_load_retired.l3_miss,Zero value
 mem_store_retired.l2_hit,Zero value
+mem_uop_retired.any,Zero value
 offcore_requests.all_requests,Zero value
 offcore_requests.data_rd,Zero value
 offcore_requests.demand_code_rd,Zero value
@@ -140,6 +141,7 @@ fp_arith_inst_retired2.vector,Zero value
 baclears.any,Zero value
 decode.lcp,Zero value
 decode.ms_busy,Zero value
+dsb2mite_switches.penalty_cycles,Zero value
 icache_data.stall_periods,Zero value
 icache_data.stalls,Zero value
 icache_tag.stalls,Zero value
@@ -160,10 +162,12 @@ idq_uops_not_delivered.cycles_0_uops_deliv.core,Zero value
 idq_uops_not_delivered.cycles_fe_was_ok,Zero value
 cycle_activity.cycles_l3_miss,Zero value
 cycle_activity.stalls_l3_miss,Zero value
+machine_clears.memory_ordering,Zero value
 mem_trans_retired.store_sample,Zero value
 memory_activity.cycles_l1d_miss,Zero value
 memory_activity.stalls_l1d_miss,Zero value
 memory_activity.stalls_l2_miss,Zero value
+memory_activity.stalls_l3_miss,Zero value
 offcore_requests.l3_miss_demand_data_rd,Zero value
 offcore_requests_outstanding.cycles_with_l3_miss_demand_data_rd,Zero value
 offcore_requests_outstanding.l3_miss_demand_data_rd,Zero value
@@ -179,6 +183,7 @@ tx_mem.abort_capacity_write,Zero value
 tx_mem.abort_conflict,Zero value
 assists.hardware,Zero value
 assists.page_fault,Zero value
+exe.amx_busy,Zero value
 rs.empty,Zero value
 rs.empty_count,Zero value
 rs.empty_resource,Zero value
@@ -239,6 +244,7 @@ inst_retired.rep_iteration,Zero value
 int_misc.clear_resteer_cycles,Zero value
 int_misc.clears_count,Zero value
 int_misc.mba_stalls,Zero value
+int_misc.recovery_cycles,Zero value
 int_misc.uop_dropping,Zero value
 int_vec_retired.128bit,Zero value
 int_vec_retired.256bit,Zero value
@@ -289,6 +295,7 @@ uops_executed.x87,Zero value
 uops_issued.any,Zero value
 uops_issued.cycles,Zero value
 uops_retired.cycles,Zero value
+uops_retired.heavy,Zero value
 uops_retired.slots,Zero value
 uops_retired.stalls,Zero value
 has_pmem,Zero value
@@ -311,7 +318,7 @@ itlb_misses.walk_active,Zero value
 itlb_misses.walk_completed,Zero value
 itlb_misses.walk_completed_2m_4m,Zero value
 itlb_misses.walk_completed_4k,Zero value
-mem_uop_retired.any,Failed
+itlb_misses.walk_pending,Zero value
 ocr.demand_code_rd.l3_hit,Failed
 ocr.demand_code_rd.l3_hit.snoop_hitm,Failed
 ocr.demand_data_rd.l3_hit,Failed
@@ -330,7 +337,6 @@ ocr.reads_to_core.remote_cache.snoop_hitm,Failed
 ocr.reads_to_core.snc_cache.hit_with_fwd,Failed
 ocr.reads_to_core.snc_cache.hitm,Failed
 ocr.rfo_to_core.l3_hit_m,Failed
-dsb2mite_switches.penalty_cycles,Failed
 frontend_retired.any_ant,Failed
 frontend_retired.any_dsb_miss,Failed
 frontend_retired.dsb_miss,Failed
@@ -353,7 +359,6 @@ frontend_retired.misp_ant,Failed
 frontend_retired.ms_flows,Failed
 frontend_retired.stlb_miss,Failed
 frontend_retired.unknown_branch,Failed
-machine_clears.memory_ordering,Failed
 mem_trans_retired.load_latency_gt_1024,Failed
 mem_trans_retired.load_latency_gt_128,Failed
 mem_trans_retired.load_latency_gt_16,Failed
@@ -364,14 +369,12 @@ mem_trans_retired.load_latency_gt_4,Failed
 mem_trans_retired.load_latency_gt_512,Failed
 mem_trans_retired.load_latency_gt_64,Failed
 mem_trans_retired.load_latency_gt_8,Failed
-memory_activity.stalls_l3_miss,Failed
 ocr.demand_code_rd.l3_miss,Failed
 ocr.demand_data_rd.l3_miss,Failed
 ocr.demand_rfo.l3_miss,Failed
 ocr.reads_to_core.l3_miss,Failed
 ocr.reads_to_core.l3_miss_local,Failed
 ocr.reads_to_core.l3_miss_local_socket,Failed
-exe.amx_busy,Failed
 ocr.demand_code_rd.any_response,Failed
 ocr.demand_code_rd.dram,Failed
 ocr.demand_code_rd.local_dram,Failed
@@ -393,9 +396,6 @@ ocr.reads_to_core.remote_memory,Failed
 ocr.reads_to_core.snc_dram,Failed
 ocr.streaming_wr.any_response,Failed
 ocr.write_estimate.memory,Failed
-int_misc.recovery_cycles,Failed
 int_misc.unknown_branch_cycles,Failed
-uops_retired.heavy,Failed
 uops_retired.ms,Failed
-itlb_misses.walk_pending,Failed
 mem:<addr>[/len][:access],Failed
