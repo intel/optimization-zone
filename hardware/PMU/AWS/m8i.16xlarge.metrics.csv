@@ -43,8 +43,10 @@ tma_info_pipeline_fetch_dsb,Successful
 tma_info_pipeline_fetch_mite,Successful
 tma_info_core_flopc,Successful
 tma_info_inst_mix_iparith,Successful
+tma_info_inst_mix_iparith_avx128,Successful
 tma_info_inst_mix_iparith_scalar_dp,Successful
 tma_info_inst_mix_ipflop,Successful
+tma_info_inst_mix_ippause,Successful
 tma_info_system_cpu_utilization,Successful
 cpu_utilization,Successful
 tma_info_frontend_l2mpki_code_all,Successful
@@ -115,12 +117,10 @@ l2_demand_data_read_mpi,Zero value
 l2_mpi,Zero value
 smi_cycles,Zero value
 smi_num,Zero value
-tma_info_inst_mix_iparith_avx128,NaN value
 tma_info_inst_mix_iparith_avx256,NaN value
 tma_info_inst_mix_iparith_avx512,NaN value
 tma_info_inst_mix_iparith_scalar_hp,NaN value
 tma_info_inst_mix_iparith_scalar_sp,NaN value
-tma_info_inst_mix_ippause,NaN value
 tma_info_memory_latency_load_l2_miss_latency,NaN value
 tma_info_memory_latency_data_l2_mlp,NaN value
 tma_info_memory_latency_load_l2_mlp,NaN value

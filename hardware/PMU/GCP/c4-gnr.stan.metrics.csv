@@ -18,6 +18,7 @@ tma_info_inst_mix_ipbranch,Successful
 tma_info_inst_mix_ipcall,Successful
 tma_info_inst_mix_iptb,Successful
 tma_info_system_ipfarbranch,Successful
+tma_fb_full,Successful
 tma_info_system_c0_wait,Successful
 tma_info_memory_fb_hpki,Successful
 tma_info_memory_l1mpki,Successful
@@ -41,6 +42,7 @@ tma_info_pipeline_fetch_mite,Successful
 tma_info_inst_mix_iparith,Successful
 tma_info_inst_mix_iparith_avx128,Successful
 tma_info_inst_mix_iparith_scalar_dp,Successful
+tma_info_inst_mix_iparith_scalar_sp,Successful
 tma_info_inst_mix_ipflop,Successful
 tma_info_inst_mix_ippause,Successful
 tma_info_system_cpu_utilization,Successful
@@ -93,7 +95,6 @@ percent_uops_delivered_from_decoded_icache,Successful
 percent_uops_delivered_from_legacy_decode_pipeline,Successful
 percent_uops_delivered_from_microcode_sequencer,Successful
 stores_per_instr,Successful
-tma_fb_full,Zero value
 tma_mixing_vectors,Zero value
 dtlb_2nd_level_load_mpi,Zero value
 dtlb_2nd_level_store_mpi,Zero value
@@ -110,7 +111,6 @@ tma_info_core_flopc,NaN value
 tma_info_inst_mix_iparith_avx256,NaN value
 tma_info_inst_mix_iparith_avx512,NaN value
 tma_info_inst_mix_iparith_scalar_hp,NaN value
-tma_info_inst_mix_iparith_scalar_sp,NaN value
 tma_info_memory_latency_load_l2_miss_latency,NaN value
 tma_info_memory_tlb_page_walks_utilization,NaN value
 tma_info_memory_latency_data_l2_mlp,NaN value
