@@ -89,6 +89,7 @@ l2_rqsts.references,Successful
 l2_rqsts.rfo_hit,Successful
 l2_rqsts.rfo_miss,Successful
 l2_rqsts.swpf_hit,Successful
+l2_rqsts.swpf_miss,Successful
 longest_lat_cache.miss,Successful
 longest_lat_cache.reference,Successful
 mem_inst_retired.all_loads,Successful
@@ -105,7 +106,6 @@ mem_load_l3_hit_retired.xsnp_miss,Successful
 mem_load_l3_hit_retired.xsnp_no_fwd,Successful
 mem_load_l3_hit_retired.xsnp_none,Successful
 mem_load_l3_miss_retired.local_dram,Successful
-mem_load_misc_retired.uc,Successful
 mem_load_retired.fb_hit,Successful
 mem_load_retired.l1_hit,Successful
 mem_load_retired.l1_miss,Successful
@@ -127,13 +127,19 @@ ocr.reads_to_core.l3_hit.snoop_hit_no_fwd,Successful
 ocr.reads_to_core.l3_hit.snoop_hit_with_fwd,Successful
 ocr.reads_to_core.l3_hit.snoop_hitm,Successful
 ocr.rfo_to_core.l3_hit_m,Successful
+ocr.streaming_wr.l3_hit,Successful
 offcore_requests.all_requests,Successful
+offcore_requests.data_rd,Successful
+offcore_requests.demand_data_rd,Successful
 offcore_requests_outstanding.all_data_rd,Successful
+offcore_requests_outstanding.cycles_with_data_rd,Successful
 offcore_requests_outstanding.cycles_with_demand_data_rd,Successful
 offcore_requests_outstanding.cycles_with_demand_rfo,Successful
+offcore_requests_outstanding.data_rd,Successful
 offcore_requests_outstanding.demand_data_rd,Successful
 sw_prefetch_access.prefetchw,Successful
 sw_prefetch_access.t0,Successful
+sw_prefetch_access.t1_t2,Successful
 arith.fpdiv_active,Successful
 fp_arith_dispatched.port_0,Successful
 fp_arith_dispatched.port_1,Successful
@@ -167,6 +173,7 @@ frontend_retired.latency_ge_64,Successful
 frontend_retired.latency_ge_8,Successful
 frontend_retired.ms_flows,Successful
 frontend_retired.stlb_miss,Successful
+frontend_retired.unknown_branch,Successful
 icache_data.stalls,Successful
 icache_tag.stalls,Successful
 idq.dsb_cycles_any,Successful
@@ -185,6 +192,7 @@ idq_uops_not_delivered.core,Successful
 idq_uops_not_delivered.cycles_0_uops_deliv.core,Successful
 idq_uops_not_delivered.cycles_fe_was_ok,Successful
 cycle_activity.stalls_l3_miss,Successful
+machine_clears.memory_ordering,Successful
 mem_trans_retired.store_sample,Successful
 memory_activity.cycles_l1d_miss,Successful
 memory_activity.stalls_l1d_miss,Successful
@@ -196,6 +204,8 @@ ocr.demand_rfo.l3_miss,Successful
 ocr.reads_to_core.l3_miss,Successful
 ocr.reads_to_core.l3_miss_local,Successful
 ocr.reads_to_core.l3_miss_local_socket,Successful
+ocr.streaming_wr.l3_miss,Successful
+ocr.streaming_wr.l3_miss_local,Successful
 offcore_requests.l3_miss_demand_data_rd,Successful
 offcore_requests_outstanding.l3_miss_demand_data_rd,Successful
 assists.page_fault,Successful
@@ -215,8 +225,10 @@ ocr.reads_to_core.any_response,Successful
 ocr.reads_to_core.dram,Successful
 ocr.reads_to_core.local_dram,Successful
 ocr.reads_to_core.local_socket_dram,Successful
+ocr.streaming_wr.any_response,Successful
 ocr.write_estimate.memory,Successful
 rs.empty,Successful
+rs.empty_count,Successful
 rs_empty.count,Successful
 rs_empty.cycles,Successful
 xq.full_cycles,Successful
@@ -259,6 +271,7 @@ cycle_activity.cycles_mem_any,Successful
 cycle_activity.stalls_l1d_miss,Successful
 cycle_activity.stalls_l2_miss,Successful
 cycle_activity.stalls_total,Successful
+exe_activity.1_ports_util,Successful
 exe_activity.2_ports_util,Successful
 exe_activity.3_ports_util,Successful
 exe_activity.4_ports_util,Successful
@@ -287,6 +300,7 @@ ld_blocks.no_sr,Successful
 ld_blocks.store_forward,Successful
 load_hit_prefetch.swpf,Successful
 machine_clears.count,Successful
+machine_clears.smc,Successful
 misc2_retired.lfence,Successful
 resource_stalls.sb,Successful
 resource_stalls.scoreboard,Successful
@@ -316,6 +330,8 @@ uops_executed.cycles_ge_4,Successful
 uops_executed.stall_cycles,Successful
 uops_executed.stalls,Successful
 uops_executed.thread,Successful
+uops_executed.x87,Successful
+uops_issued.any,Successful
 uops_retired.cycles,Successful
 uops_retired.heavy,Successful
 uops_retired.ms,Successful
@@ -334,6 +350,8 @@ unc_cha_core_snp.core_one,Successful
 unc_cha_core_snp.evict_gtone,Successful
 unc_cha_core_snp.evict_one,Successful
 unc_cha_direct_go.ha_tor_dealloc,Successful
+unc_cha_direct_go_opc.extcmp,Successful
+unc_cha_direct_go_opc.fast_go_pull,Successful
 unc_cha_direct_go_opc.go,Successful
 unc_cha_direct_go_opc.idle_due_suppress,Successful
 unc_cha_direct_go_opc.nop,Successful
@@ -342,17 +360,20 @@ unc_cha_hitme_lookup.read,Successful
 unc_cha_hitme_lookup.write,Successful
 unc_cha_imc_reads_count.normal,Successful
 unc_cha_imc_writes_count.full,Successful
+unc_cha_imc_writes_count.partial,Successful
 unc_cha_llc_lookup.all,Successful
 unc_cha_llc_lookup.code,Successful
 unc_cha_llc_lookup.data_rd,Successful
 unc_cha_llc_lookup.data_read_all,Successful
 unc_cha_llc_lookup.data_read_local,Successful
 unc_cha_llc_lookup.data_read_miss,Successful
+unc_cha_llc_lookup.flush_inv,Successful
 unc_cha_llc_lookup.local_code,Successful
 unc_cha_llc_lookup.local_data_rd,Successful
 unc_cha_llc_lookup.local_dmnd_code,Successful
 unc_cha_llc_lookup.local_dmnd_data_rd,Successful
 unc_cha_llc_lookup.local_dmnd_rfo,Successful
+unc_cha_llc_lookup.local_flush_inv,Successful
 unc_cha_llc_lookup.local_pf,Successful
 unc_cha_llc_lookup.local_pf_data_rd,Successful
 unc_cha_llc_lookup.local_pf_rfo,Successful
@@ -363,6 +384,9 @@ unc_cha_llc_lookup.rfo,Successful
 unc_cha_llc_lookup.rfo_local,Successful
 unc_cha_llc_lookup.write_local,Successful
 unc_cha_llc_victims.e_state,Successful
+unc_cha_llc_victims.io_e,Successful
+unc_cha_llc_victims.io_m,Successful
+unc_cha_llc_victims.io_mesf,Successful
 unc_cha_llc_victims.local_all,Successful
 unc_cha_llc_victims.local_e,Successful
 unc_cha_llc_victims.local_m,Successful
@@ -373,6 +397,8 @@ unc_cha_llc_victims.total_e,Successful
 unc_cha_llc_victims.total_m,Successful
 unc_cha_llc_victims.total_s,Successful
 unc_cha_misc.cv0_pref_miss,Successful
+unc_cha_misc.rfo_hit_s,Successful
+unc_cha_misc.wc_aliasing,Successful
 unc_cha_pmm_memmode_nm_setconflicts2.memwr,Successful
 unc_cha_pmm_qos.ddr4_fast_insert,Successful
 unc_cha_pmm_qos_occupancy.ddr_fast_fifo,Successful
@@ -385,11 +411,20 @@ unc_cha_requests.writes_local,Successful
 unc_cha_rxc_inserts.irq,Successful
 unc_cha_rxc_inserts.irq_rej,Successful
 unc_cha_rxc_inserts.prq,Successful
+unc_cha_rxc_irq0_reject.ak_non_upi,Successful
+unc_cha_rxc_irq0_reject.bl_rsp_vn0,Successful
+unc_cha_rxc_irq0_reject.iv_non_upi,Successful
+unc_cha_rxc_irq1_reject.any0,Successful
+unc_cha_rxc_irq1_reject.llc_victim,Successful
 unc_cha_rxc_irq1_reject.pa_match,Successful
+unc_cha_rxc_ismq0_reject.ak_non_upi,Successful
+unc_cha_rxc_ismq0_reject.bl_rsp_vn0,Successful
+unc_cha_rxc_ismq1_reject.any0,Successful
 unc_cha_snoop_rsp_misc.mtoi_rspifwdm,Successful
-unc_cha_snoop_rsp_misc.rspifwdmptl_hitllc,Successful
+unc_cha_snoop_rsp_misc.pulldataptl_hitllc,Successful
 unc_cha_tor_inserts.all,Successful
 unc_cha_tor_inserts.ia,Successful
+unc_cha_tor_inserts.ia_clflush,Successful
 unc_cha_tor_inserts.ia_crd,Successful
 unc_cha_tor_inserts.ia_drd,Successful
 unc_cha_tor_inserts.ia_drd_pref,Successful
@@ -413,10 +448,16 @@ unc_cha_tor_inserts.ia_miss_drd_pref_ddr,Successful
 unc_cha_tor_inserts.ia_miss_drd_pref_local,Successful
 unc_cha_tor_inserts.ia_miss_drd_pref_local_ddr,Successful
 unc_cha_tor_inserts.ia_miss_drdpte,Successful
+unc_cha_tor_inserts.ia_miss_local_wcil_ddr,Successful
+unc_cha_tor_inserts.ia_miss_local_wcilf_ddr,Successful
 unc_cha_tor_inserts.ia_miss_rfo,Successful
 unc_cha_tor_inserts.ia_miss_rfo_local,Successful
 unc_cha_tor_inserts.ia_miss_rfo_pref,Successful
 unc_cha_tor_inserts.ia_miss_rfo_pref_local,Successful
+unc_cha_tor_inserts.ia_miss_wcil,Successful
+unc_cha_tor_inserts.ia_miss_wcil_ddr,Successful
+unc_cha_tor_inserts.ia_miss_wcilf,Successful
+unc_cha_tor_inserts.ia_miss_wcilf_ddr,Successful
 unc_cha_tor_inserts.ia_miss_wil,Successful
 unc_cha_tor_inserts.ia_rfo,Successful
 unc_cha_tor_inserts.ia_rfo_pref,Successful
@@ -425,10 +466,23 @@ unc_cha_tor_inserts.ia_wbeftoe,Successful
 unc_cha_tor_inserts.ia_wbeftoi,Successful
 unc_cha_tor_inserts.ia_wbmtoe,Successful
 unc_cha_tor_inserts.ia_wbmtoi,Successful
+unc_cha_tor_inserts.ia_wcil,Successful
+unc_cha_tor_inserts.ia_wcilf,Successful
+unc_cha_tor_inserts.io,Successful
 unc_cha_tor_inserts.io_hit,Successful
+unc_cha_tor_inserts.io_hit_itom,Successful
+unc_cha_tor_inserts.io_hit_itomcachenear,Successful
+unc_cha_tor_inserts.io_hit_pcirdcur,Successful
+unc_cha_tor_inserts.io_itom,Successful
+unc_cha_tor_inserts.io_itomcachenear,Successful
+unc_cha_tor_inserts.io_miss,Successful
+unc_cha_tor_inserts.io_miss_itom,Successful
 unc_cha_tor_inserts.io_miss_itomcachenear,Successful
+unc_cha_tor_inserts.io_pcirdcur,Successful
+unc_cha_tor_inserts.io_wbmtoi,Successful
 unc_cha_tor_inserts.loc_all,Successful
 unc_cha_tor_inserts.loc_ia,Successful
+unc_cha_tor_inserts.loc_io,Successful
 unc_cha_tor_occupancy.all,Successful
 unc_cha_tor_occupancy.ddr,Successful
 unc_cha_tor_occupancy.evict,Successful
@@ -440,41 +494,47 @@ unc_cha_tor_occupancy.ia_crd,Successful
 unc_cha_tor_occupancy.ia_crd_pref,Successful
 unc_cha_tor_occupancy.ia_drd,Successful
 unc_cha_tor_occupancy.ia_drd_opt,Successful
-unc_cha_tor_occupancy.ia_drd_opt_pref,Successful
+unc_cha_tor_occupancy.ia_drd_pref,Successful
 unc_cha_tor_occupancy.ia_hit,Successful
 unc_cha_tor_occupancy.ia_hit_crd,Successful
 unc_cha_tor_occupancy.ia_hit_crd_pref,Successful
 unc_cha_tor_occupancy.ia_hit_drd,Successful
 unc_cha_tor_occupancy.ia_hit_drd_opt,Successful
-unc_cha_tor_occupancy.ia_hit_drd_opt_pref,Successful
+unc_cha_tor_occupancy.ia_hit_drd_pref,Successful
 unc_cha_tor_occupancy.ia_hit_itom,Successful
 unc_cha_tor_occupancy.ia_hit_llcprefcode,Successful
 unc_cha_tor_occupancy.ia_hit_rfo,Successful
 unc_cha_tor_occupancy.ia_hit_rfo_pref,Successful
 unc_cha_tor_occupancy.ia_itom,Successful
-unc_cha_tor_occupancy.ia_itomcachenear,Successful
 unc_cha_tor_occupancy.ia_miss,Successful
 unc_cha_tor_occupancy.ia_miss_crd,Successful
 unc_cha_tor_occupancy.ia_miss_crd_local,Successful
 unc_cha_tor_occupancy.ia_miss_crd_pref,Successful
 unc_cha_tor_occupancy.ia_miss_drd,Successful
+unc_cha_tor_occupancy.ia_miss_drd_cxl_acc,Successful
 unc_cha_tor_occupancy.ia_miss_drd_ddr,Successful
 unc_cha_tor_occupancy.ia_miss_drd_local,Successful
 unc_cha_tor_occupancy.ia_miss_drd_local_ddr,Successful
 unc_cha_tor_occupancy.ia_miss_drd_local_pmm,Successful
 unc_cha_tor_occupancy.ia_miss_drd_pref,Successful
+unc_cha_tor_occupancy.ia_miss_drd_pref_cxl_acc,Successful
 unc_cha_tor_occupancy.ia_miss_drd_pref_ddr,Successful
 unc_cha_tor_occupancy.ia_miss_drd_pref_local,Successful
 unc_cha_tor_occupancy.ia_miss_drd_pref_local_ddr,Successful
 unc_cha_tor_occupancy.ia_miss_drd_pref_local_pmm,Successful
-unc_cha_tor_occupancy.ia_miss_drd_pref_remote,Successful
+unc_cha_tor_occupancy.ia_miss_local_wcil_ddr,Successful
+unc_cha_tor_occupancy.ia_miss_local_wcilf_ddr,Successful
 unc_cha_tor_occupancy.ia_miss_rfo,Successful
+unc_cha_tor_occupancy.ia_miss_rfo_cxl_acc,Successful
 unc_cha_tor_occupancy.ia_miss_rfo_local,Successful
 unc_cha_tor_occupancy.ia_miss_rfo_pref,Successful
+unc_cha_tor_occupancy.ia_miss_rfo_pref_cxl_acc,Successful
 unc_cha_tor_occupancy.ia_miss_rfo_pref_local,Successful
 unc_cha_tor_occupancy.ia_miss_rfo_pref_remote,Successful
-unc_cha_tor_occupancy.ia_miss_rfo_remote,Successful
-unc_cha_tor_occupancy.ia_miss_ucrdf,Successful
+unc_cha_tor_occupancy.ia_miss_wcil,Successful
+unc_cha_tor_occupancy.ia_miss_wcil_ddr,Successful
+unc_cha_tor_occupancy.ia_miss_wcilf,Successful
+unc_cha_tor_occupancy.ia_miss_wcilf_ddr,Successful
 unc_cha_tor_occupancy.ia_miss_wil,Successful
 unc_cha_tor_occupancy.ia_rfo,Successful
 unc_cha_tor_occupancy.ia_rfo_pref,Successful
@@ -484,33 +544,30 @@ unc_cha_tor_occupancy.ia_wcil,Successful
 unc_cha_tor_occupancy.ia_wcilf,Successful
 unc_cha_tor_occupancy.io,Successful
 unc_cha_tor_occupancy.io_hit,Successful
-unc_cha_tor_occupancy.io_hit_itom,Successful
+unc_cha_tor_occupancy.io_hit_itomcachenear,Successful
 unc_cha_tor_occupancy.io_hit_pcirdcur,Successful
-unc_cha_tor_occupancy.io_hit_rfo,Successful
+unc_cha_tor_occupancy.io_itom,Successful
 unc_cha_tor_occupancy.io_miss,Successful
+unc_cha_tor_occupancy.io_miss_itom,Successful
+unc_cha_tor_occupancy.io_miss_itomcachenear,Successful
 unc_cha_tor_occupancy.io_pcirdcur,Successful
 unc_cha_tor_occupancy.io_wbmtoi,Successful
-unc_cha_tor_occupancy.irq_non_ia,Successful
 unc_cha_tor_occupancy.loc_all,Successful
 unc_cha_tor_occupancy.loc_ia,Successful
 unc_cha_tor_occupancy.loc_io,Successful
 unc_cha_tor_occupancy.local_tgt,Successful
-unc_cha_tor_occupancy.match_opc,Successful
-unc_cha_tor_occupancy.miss,Successful
-unc_cha_tor_occupancy.mmio,Successful
-unc_cha_tor_occupancy.pmm,Successful
-unc_cha_tor_occupancy.prq,Successful
-unc_cha_tor_occupancy.prq_non_iosf,Successful
 unc_cha_write_no_credits.mc0,Successful
 unc_cha_write_no_credits.mc1,Successful
 unc_cha_write_no_credits.mc2,Successful
 unc_cha_write_no_credits.mc3,Successful
 unc_i_cache_total_occupancy.mem,Successful
 unc_i_clockticks,Successful
+unc_i_faf_occupancy,Successful
 unc_i_irp_all.evicts,Successful
 unc_i_irp_all.inbound_inserts,Successful
 unc_i_irp_all.outbound_inserts,Successful
 unc_i_misc0.fast_req,Successful
+unc_i_misc0.slowpath_fwpf_no_prf,Successful
 unc_i_transactions.wr_pref,Successful
 unc_i_txc_ak_inserts,Successful
 unc_i_txc_bl_ncb_inserts,Successful
@@ -527,12 +584,17 @@ unc_m2m_directory_lookup.state_i,Successful
 unc_m2m_egress_ordering.iv_snoopgo_up,Successful
 unc_m2m_imc_reads.all,Successful
 unc_m2m_imc_reads.ch0.to_nm1lm,Successful
+unc_m2m_imc_reads.ch0_to_ddr_as_mem,Successful
 unc_m2m_imc_reads.ch1.to_nm1lm,Successful
+unc_m2m_imc_reads.ch1_to_ddr_as_mem,Successful
 unc_m2m_imc_reads.normal,Successful
 unc_m2m_imc_reads.to_ddr_as_mem,Successful
 unc_m2m_imc_reads.to_nm1lm,Successful
 unc_m2m_imc_writes.all,Successful
+unc_m2m_imc_writes.ch0_to_ddr_as_mem,Successful
+unc_m2m_imc_writes.ch1_to_ddr_as_mem,Successful
 unc_m2m_imc_writes.full,Successful
+unc_m2m_imc_writes.partial,Successful
 unc_m2m_imc_writes.to_ddr_as_mem,Successful
 unc_m2m_rxc_ad_inserts,Successful
 unc_m2m_rxc_ad_occupancy,Successful
@@ -549,6 +611,10 @@ unc_m2m_wr_tracker_inserts.ch0,Successful
 unc_m2m_wr_tracker_inserts.ch1,Successful
 unc_m2m_wr_tracker_ne.ch0,Successful
 unc_m2m_wr_tracker_ne.ch1,Successful
+unc_m2m_wr_tracker_nonposted_inserts.ch0,Successful
+unc_m2m_wr_tracker_nonposted_inserts.ch1,Successful
+unc_m2m_wr_tracker_nonposted_occupancy.ch0,Successful
+unc_m2m_wr_tracker_nonposted_occupancy.ch1,Successful
 unc_m2m_wr_tracker_posted_inserts.ch0,Successful
 unc_m2m_wr_tracker_posted_inserts.ch1,Successful
 unc_m2m_wr_tracker_posted_occupancy.ch0,Successful
@@ -582,6 +648,10 @@ unc_mdf_crs_txr_inserts.akc,Successful
 unc_mdf_crs_txr_inserts.bl_bnc,Successful
 unc_mdf_crs_txr_inserts.bl_crd,Successful
 unc_mdf_crs_txr_inserts.iv,Successful
+unc_mdf_crs_txr_v_bounces.ad,Successful
+unc_mdf_crs_txr_v_bounces.ak,Successful
+unc_mdf_crs_txr_v_bounces.bl,Successful
+unc_mdf_crs_txr_v_bounces.iv,Successful
 unc_mdf_fast_asserted.ad_bnc,Successful
 unc_mdf_fast_asserted.bl_crd,Successful
 unc_upi_clockticks,Successful
@@ -593,27 +663,45 @@ unc_upi_txl0p_clk_active.retry,Successful
 unc_upi_txl0p_clk_active.txq,Successful
 unc_upi_vna_credit_return_occupancy,Successful
 unc_iio_clockticks,Successful
+unc_iio_comp_buf_inserts.cmpd.all_parts,Successful
+unc_iio_comp_buf_occupancy.cmpd.all_parts,Successful
 unc_iio_data_req_by_cpu.mem_write.all_parts,Successful
 unc_iio_data_req_by_cpu.mem_write.iommu0,Successful
 unc_iio_data_req_by_cpu.mem_write.part0,Successful
+unc_iio_data_req_of_cpu.cmpd.all_parts,Successful
+unc_iio_data_req_of_cpu.cmpd.part7,Successful
+unc_iio_data_req_of_cpu.mem_read.all_parts,Successful
 unc_iio_data_req_of_cpu.mem_write.all_parts,Successful
+unc_iio_data_req_of_cpu.mem_write.part0,Successful
 unc_iio_inbound_arb_req.final_rd_wr,Successful
+unc_iio_inbound_arb_req.iommu_hit,Successful
+unc_iio_inbound_arb_req.iommu_req,Successful
+unc_iio_iommu0.4k_hits,Successful
 unc_iio_iommu0.ctxt_cache_hits,Successful
+unc_iio_iommu0.ctxt_cache_lookups,Successful
 unc_iio_iommu0.first_lookups,Successful
+unc_iio_iommu0.misses,Successful
 unc_iio_iommu1.num_mem_accesses,Successful
 unc_iio_mask_match_and.bus0,Successful
 unc_iio_mask_match_and.bus0_bus1,Successful
 unc_iio_mask_match_and.bus1,Successful
 unc_iio_mask_match_or.not_bus0_not_bus1,Successful
+unc_iio_num_req_of_cpu.commit.all,Successful
 unc_iio_num_req_of_cpu_by_tgt.mem,Successful
+unc_iio_num_req_of_cpu_by_tgt.ubox,Successful
 unc_iio_outbound_cl_reqs_issued.to_io,Successful
+unc_iio_outbound_tlp_reqs_issued.to_io,Successful
+unc_iio_pwt_occupancy,Successful
+unc_iio_req_from_pcie_pass_cmpl.final_rd_wr,Successful
+unc_iio_txn_req_by_cpu.mem_write.part0,Successful
+unc_iio_txn_req_of_cpu.cmpd.part7,Successful
 unc_iio_txn_req_of_cpu.mem_write.part0,Successful
 unc_iio_bandwidth_in.part0_freerun,Successful
+unc_iio_bandwidth_in.part7_freerun,Successful
 unc_iio_bandwidth_out.part0_freerun,Successful
 unc_iio_clockticks_freerun,Successful
 unc_m2p_clockticks,Successful
 unc_m2p_cms_clockticks,Successful
-unc_m2p_egress_ordering.iv_snoopgo_up,Successful
 unc_m2p_iio_credits_acquired.ncb_0,Successful
 unc_m2p_iio_credits_acquired.ncs_0,Successful
 unc_m2p_iio_credits_used.ncb_0,Successful
@@ -624,11 +712,13 @@ unc_m2p_rxc_cycles_ne.cha_ncs,Successful
 unc_m2p_rxc_inserts.all,Successful
 unc_m2p_rxc_inserts.cha_ncb,Successful
 unc_m2p_rxc_inserts.cha_ncs,Successful
+unc_m2p_txc_credits.prq,Successful
 unc_m_act_count.all,Successful
 unc_m_cas_count.all,Successful
 unc_m_cas_count.rd,Successful
 unc_m_cas_count.rd_pre_reg,Successful
 unc_m_cas_count.rd_pre_underfill,Successful
+unc_m_cas_count.rd_underfill,Successful
 unc_m_cas_count.wr,Successful
 unc_m_cas_count.wr_pre,Successful
 unc_m_cas_issued_req_len.rd_64b,Successful
@@ -637,11 +727,15 @@ unc_m_cas_issued_req_len.wr_64b,Successful
 unc_m_clockticks,Successful
 unc_m_dram_pre_all,Successful
 unc_m_hclockticks,Successful
+unc_m_power_cke_cycles.low_1,Successful
 unc_m_power_cke_cycles.low_3,Successful
 unc_m_pre_count.all,Successful
 unc_m_pre_count.rd,Successful
 unc_m_pre_count.rd_pch0,Successful
 unc_m_pre_count.rd_pch1,Successful
+unc_m_pre_count.ufill,Successful
+unc_m_pre_count.ufill_pch0,Successful
+unc_m_pre_count.ufill_pch1,Successful
 unc_m_pre_count.wr,Successful
 unc_m_pre_count.wr_pch0,Successful
 unc_m_pre_count.wr_pch1,Successful
@@ -667,8 +761,10 @@ unc_m_sb_occupancy.rds,Successful
 unc_m_wpq_inserts.pch0,Successful
 unc_m_wpq_inserts.pch1,Successful
 unc_m_wpq_occupancy_pch0,Successful
+unc_m_wpq_occupancy_pch1,Successful
 unc_p_clockticks,Successful
 unc_p_core_transition_cycles,Successful
+unc_p_freq_trans_cycles,Successful
 unc_p_pkg_residency_c0_cycles,Successful
 unc_p_power_state_occupancy_cores_c0,Successful
 unc_p_power_state_occupancy_cores_c6,Successful
@@ -692,6 +788,7 @@ itlb_misses.walk_active,Successful
 itlb_misses.walk_completed,Successful
 itlb_misses.walk_completed_2m_4m,Successful
 itlb_misses.walk_completed_4k,Successful
+itlb_misses.walk_pending,Successful
 node-load-misses,Zero value
 mem-loads,Zero value
 msr/smi/,Zero value
@@ -701,6 +798,7 @@ mem_load_l3_miss_retired.remote_dram,Zero value
 mem_load_l3_miss_retired.remote_fwd,Zero value
 mem_load_l3_miss_retired.remote_hitm,Zero value
 mem_load_l3_miss_retired.remote_pmm,Zero value
+mem_load_misc_retired.uc,Zero value
 mem_load_retired.local_pmm,Zero value
 ocr.demand_code_rd.l3_hit.snoop_hitm,Zero value
 ocr.demand_code_rd.snc_cache.hit_with_fwd,Zero value
@@ -717,9 +815,8 @@ ocr.reads_to_core.remote_cache.snoop_hit_with_fwd,Zero value
 ocr.reads_to_core.remote_cache.snoop_hitm,Zero value
 ocr.reads_to_core.snc_cache.hit_with_fwd,Zero value
 ocr.reads_to_core.snc_cache.hitm,Zero value
-ocr.streaming_wr.l3_hit,Zero value
+sq_misc.bus_lock,Zero value
 sw_prefetch_access.nta,Zero value
-sw_prefetch_access.t1_t2,Zero value
 assists.fp,Zero value
 assists.sse_avx_mix,Zero value
 fp_arith_inst_retired.128b_packed_single,Zero value
@@ -747,8 +844,6 @@ mem_trans_retired.load_latency_gt_64,Zero value
 mem_trans_retired.load_latency_gt_8,Zero value
 ocr.hwpf_l3.l3_miss,Zero value
 ocr.hwpf_l3.l3_miss_local,Zero value
-ocr.streaming_wr.l3_miss,Zero value
-ocr.streaming_wr.l3_miss_local,Zero value
 rtm_retired.aborted,Zero value
 rtm_retired.aborted_events,Zero value
 rtm_retired.aborted_mem,Zero value
@@ -775,7 +870,6 @@ ocr.reads_to_core.remote_dram,Zero value
 ocr.reads_to_core.remote_memory,Zero value
 ocr.reads_to_core.remote_pmm,Zero value
 ocr.reads_to_core.snc_dram,Zero value
-ocr.streaming_wr.any_response,Zero value
 cpu_clk_unhalted.c01,Zero value
 cpu_clk_unhalted.c02,Zero value
 int_misc.mba_stalls,Zero value
@@ -785,9 +879,7 @@ int_vec_retired.vnni_256,Zero value
 lsd.cycles_active,Zero value
 lsd.cycles_ok,Zero value
 lsd.uops,Zero value
-machine_clears.smc,Zero value
 misc_retired.lbr_inserts,Zero value
-uops_executed.x87,Zero value
 unc_cha_core_snp.ext_gtone,Zero value
 unc_cha_core_snp.ext_one,Zero value
 unc_cha_core_snp.remote_gtone,Zero value
@@ -798,9 +890,7 @@ unc_cha_dir_update.ha,Zero value
 unc_cha_dir_update.tor,Zero value
 unc_cha_direct_go.ha_suppress_drd,Zero value
 unc_cha_direct_go.ha_suppress_no_d2c,Zero value
-unc_cha_direct_go_opc.extcmp,Zero value
 unc_cha_direct_go_opc.fast_go,Zero value
-unc_cha_direct_go_opc.fast_go_pull,Zero value
 unc_cha_direct_go_opc.go_pull,Zero value
 unc_cha_direct_go_opc.pull,Zero value
 unc_cha_egress_ordering.iv_snoopgo_dn,Zero value
@@ -818,7 +908,6 @@ unc_cha_hitme_update.rspfwdi_rem,Zero value
 unc_cha_hitme_update.shared,Zero value
 unc_cha_imc_reads_count.priority,Zero value
 unc_cha_imc_writes_count.full_priority,Zero value
-unc_cha_imc_writes_count.partial,Zero value
 unc_cha_imc_writes_count.partial_priority,Zero value
 unc_cha_llc_lookup.all_remote,Zero value
 unc_cha_llc_lookup.any_f,Zero value
@@ -827,12 +916,10 @@ unc_cha_llc_lookup.corepref_or_dmnd_local_f,Zero value
 unc_cha_llc_lookup.data_read_f,Zero value
 unc_cha_llc_lookup.e,Zero value
 unc_cha_llc_lookup.f,Zero value
-unc_cha_llc_lookup.flush_inv,Zero value
 unc_cha_llc_lookup.flush_or_inv_f,Zero value
 unc_cha_llc_lookup.i,Zero value
 unc_cha_llc_lookup.llcpref_local_f,Zero value
 unc_cha_llc_lookup.local_f,Zero value
-unc_cha_llc_lookup.local_flush_inv,Zero value
 unc_cha_llc_lookup.local_llc_pf,Zero value
 unc_cha_llc_lookup.local_pf_code,Zero value
 unc_cha_llc_lookup.m,Zero value
@@ -855,10 +942,7 @@ unc_cha_llc_lookup.sf_s,Zero value
 unc_cha_llc_lookup.write_remote,Zero value
 unc_cha_llc_victims.ia,Zero value
 unc_cha_llc_victims.io,Zero value
-unc_cha_llc_victims.io_e,Zero value
 unc_cha_llc_victims.io_fs,Zero value
-unc_cha_llc_victims.io_m,Zero value
-unc_cha_llc_victims.io_mesf,Zero value
 unc_cha_llc_victims.local_only,Zero value
 unc_cha_llc_victims.remote_all,Zero value
 unc_cha_llc_victims.remote_e,Zero value
@@ -866,9 +950,7 @@ unc_cha_llc_victims.remote_m,Zero value
 unc_cha_llc_victims.remote_only,Zero value
 unc_cha_llc_victims.remote_s,Zero value
 unc_cha_misc.cv0_pref_vic,Zero value
-unc_cha_misc.rfo_hit_s,Zero value
 unc_cha_misc.rspi_was_fse,Zero value
-unc_cha_misc.wc_aliasing,Zero value
 unc_cha_osb.local_invitoe,Zero value
 unc_cha_osb.local_read,Zero value
 unc_cha_osb.off_pwrheuristic,Zero value
@@ -921,25 +1003,18 @@ unc_cha_rxc_ipq1_reject.sf_victim,Zero value
 unc_cha_rxc_ipq1_reject.victim,Zero value
 unc_cha_rxc_irq0_reject.ad_req_vn0,Zero value
 unc_cha_rxc_irq0_reject.ad_rsp_vn0,Zero value
-unc_cha_rxc_irq0_reject.ak_non_upi,Zero value
 unc_cha_rxc_irq0_reject.bl_ncb_vn0,Zero value
 unc_cha_rxc_irq0_reject.bl_ncs_vn0,Zero value
-unc_cha_rxc_irq0_reject.bl_rsp_vn0,Zero value
 unc_cha_rxc_irq0_reject.bl_wb_vn0,Zero value
-unc_cha_rxc_irq0_reject.iv_non_upi,Zero value
 unc_cha_rxc_irq1_reject.allow_snp,Zero value
-unc_cha_rxc_irq1_reject.any0,Zero value
 unc_cha_rxc_irq1_reject.ha,Zero value
 unc_cha_rxc_irq1_reject.llc_or_sf_way,Zero value
-unc_cha_rxc_irq1_reject.llc_victim,Zero value
 unc_cha_rxc_irq1_reject.sf_victim,Zero value
 unc_cha_rxc_irq1_reject.victim,Zero value
 unc_cha_rxc_ismq0_reject.ad_req_vn0,Zero value
 unc_cha_rxc_ismq0_reject.ad_rsp_vn0,Zero value
-unc_cha_rxc_ismq0_reject.ak_non_upi,Zero value
 unc_cha_rxc_ismq0_reject.bl_ncb_vn0,Zero value
 unc_cha_rxc_ismq0_reject.bl_ncs_vn0,Zero value
-unc_cha_rxc_ismq0_reject.bl_rsp_vn0,Zero value
 unc_cha_rxc_ismq0_reject.bl_wb_vn0,Zero value
 unc_cha_rxc_ismq0_reject.iv_non_upi,Zero value
 unc_cha_rxc_ismq0_retry.ad_req_vn0,Zero value
@@ -950,7 +1025,6 @@ unc_cha_rxc_ismq0_retry.bl_ncs_vn0,Zero value
 unc_cha_rxc_ismq0_retry.bl_rsp_vn0,Zero value
 unc_cha_rxc_ismq0_retry.bl_wb_vn0,Zero value
 unc_cha_rxc_ismq0_retry.iv_non_upi,Zero value
-unc_cha_rxc_ismq1_reject.any0,Zero value
 unc_cha_rxc_ismq1_reject.ha,Zero value
 unc_cha_rxc_ismq1_retry.any0,Zero value
 unc_cha_rxc_ismq1_retry.ha,Zero value
@@ -1054,8 +1128,8 @@ unc_cha_snoop_resp_local.rsps,Zero value
 unc_cha_snoop_resp_local.rspsfwd,Zero value
 unc_cha_snoop_resp_local.rspwb,Zero value
 unc_cha_snoop_rsp_misc.mtoi_rspdatam,Zero value
-unc_cha_snoop_rsp_misc.pulldataptl_hitllc,Zero value
 unc_cha_snoop_rsp_misc.pulldataptl_hitsf,Zero value
+unc_cha_snoop_rsp_misc.rspifwdmptl_hitllc,Zero value
 unc_cha_snoop_rsp_misc.rspifwdmptl_hitsf,Zero value
 unc_cha_snoops_sent.all,Zero value
 unc_cha_snoops_sent.bcst_local,Zero value
@@ -1067,12 +1141,12 @@ unc_cha_snoops_sent.remote,Zero value
 unc_cha_tor_inserts.ddr,Zero value
 unc_cha_tor_inserts.evict,Zero value
 unc_cha_tor_inserts.hit,Zero value
-unc_cha_tor_inserts.ia_clflush,Zero value
 unc_cha_tor_inserts.ia_clflushopt,Zero value
 unc_cha_tor_inserts.ia_crd_pref,Zero value
 unc_cha_tor_inserts.ia_drd_opt,Zero value
 unc_cha_tor_inserts.ia_drd_opt_pref,Zero value
 unc_cha_tor_inserts.ia_hit_crd_pref,Zero value
+unc_cha_tor_inserts.ia_hit_cxl_acc,Zero value
 unc_cha_tor_inserts.ia_hit_drd_opt,Zero value
 unc_cha_tor_inserts.ia_hit_drd_opt_pref,Zero value
 unc_cha_tor_inserts.ia_hit_itom,Zero value
@@ -1089,8 +1163,13 @@ unc_cha_tor_inserts.ia_miss_crd_pref_local,Zero value
 unc_cha_tor_inserts.ia_miss_crd_pref_remote,Zero value
 unc_cha_tor_inserts.ia_miss_crd_remote,Zero value
 unc_cha_tor_inserts.ia_miss_crdmorph_cxl_acc,Zero value
+unc_cha_tor_inserts.ia_miss_cxl_acc,Zero value
+unc_cha_tor_inserts.ia_miss_drd_cxl_acc,Zero value
 unc_cha_tor_inserts.ia_miss_drd_local_pmm,Zero value
+unc_cha_tor_inserts.ia_miss_drd_opt,Zero value
+unc_cha_tor_inserts.ia_miss_drd_opt_pref,Zero value
 unc_cha_tor_inserts.ia_miss_drd_pmm,Zero value
+unc_cha_tor_inserts.ia_miss_drd_pref_cxl_acc,Zero value
 unc_cha_tor_inserts.ia_miss_drd_pref_local_pmm,Zero value
 unc_cha_tor_inserts.ia_miss_drd_pref_pmm,Zero value
 unc_cha_tor_inserts.ia_miss_drd_pref_remote,Zero value
@@ -1104,45 +1183,33 @@ unc_cha_tor_inserts.ia_miss_itom,Zero value
 unc_cha_tor_inserts.ia_miss_llcprefcode,Zero value
 unc_cha_tor_inserts.ia_miss_llcprefcode_cxl_acc,Zero value
 unc_cha_tor_inserts.ia_miss_llcprefdata,Zero value
+unc_cha_tor_inserts.ia_miss_llcprefdata_cxl_acc,Zero value
 unc_cha_tor_inserts.ia_miss_llcprefrfo,Zero value
-unc_cha_tor_inserts.ia_miss_local_wcil_ddr,Zero value
+unc_cha_tor_inserts.ia_miss_llcprefrfo_cxl_acc,Zero value
 unc_cha_tor_inserts.ia_miss_local_wcil_pmm,Zero value
-unc_cha_tor_inserts.ia_miss_local_wcilf_ddr,Zero value
 unc_cha_tor_inserts.ia_miss_local_wcilf_pmm,Zero value
 unc_cha_tor_inserts.ia_miss_remote_wcil_ddr,Zero value
 unc_cha_tor_inserts.ia_miss_remote_wcil_pmm,Zero value
 unc_cha_tor_inserts.ia_miss_remote_wcilf_ddr,Zero value
 unc_cha_tor_inserts.ia_miss_remote_wcilf_pmm,Zero value
+unc_cha_tor_inserts.ia_miss_rfo_cxl_acc,Zero value
+unc_cha_tor_inserts.ia_miss_rfo_pref_cxl_acc,Zero value
 unc_cha_tor_inserts.ia_miss_rfo_pref_remote,Zero value
 unc_cha_tor_inserts.ia_miss_rfo_remote,Zero value
 unc_cha_tor_inserts.ia_miss_rfomorph_cxl_acc,Zero value
 unc_cha_tor_inserts.ia_miss_ucrdf,Zero value
-unc_cha_tor_inserts.ia_miss_wcil,Zero value
-unc_cha_tor_inserts.ia_miss_wcil_ddr,Zero value
 unc_cha_tor_inserts.ia_miss_wcil_pmm,Zero value
-unc_cha_tor_inserts.ia_miss_wcilf,Zero value
-unc_cha_tor_inserts.ia_miss_wcilf_ddr,Zero value
 unc_cha_tor_inserts.ia_miss_wcilf_pmm,Zero value
 unc_cha_tor_inserts.ia_wbstoi,Zero value
-unc_cha_tor_inserts.ia_wcil,Zero value
-unc_cha_tor_inserts.ia_wcilf,Zero value
-unc_cha_tor_inserts.io,Zero value
 unc_cha_tor_inserts.io_clflush,Zero value
-unc_cha_tor_inserts.io_hit_itom,Zero value
-unc_cha_tor_inserts.io_hit_itomcachenear,Zero value
-unc_cha_tor_inserts.io_hit_pcirdcur,Zero value
 unc_cha_tor_inserts.io_hit_rfo,Zero value
-unc_cha_tor_inserts.io_miss,Zero value
-unc_cha_tor_inserts.io_miss_itom,Zero value
 unc_cha_tor_inserts.io_miss_pcirdcur,Zero value
 unc_cha_tor_inserts.io_miss_rfo,Zero value
 unc_cha_tor_inserts.io_rfo,Zero value
-unc_cha_tor_inserts.io_wbmtoi,Zero value
 unc_cha_tor_inserts.ipq,Zero value
 unc_cha_tor_inserts.irq_ia,Zero value
 unc_cha_tor_inserts.irq_non_ia,Zero value
 unc_cha_tor_inserts.isoc,Zero value
-unc_cha_tor_inserts.loc_io,Zero value
 unc_cha_tor_inserts.local_tgt,Zero value
 unc_cha_tor_inserts.match_opc,Zero value
 unc_cha_tor_inserts.miss,Zero value
@@ -1161,8 +1228,12 @@ unc_cha_tor_inserts.remote_tgt,Zero value
 unc_cha_tor_inserts.rrq,Zero value
 unc_cha_tor_inserts.snps_from_rem,Zero value
 unc_cha_tor_inserts.wbq,Zero value
+unc_cha_tor_occupancy.ia_drd_opt_pref,Zero value
+unc_cha_tor_occupancy.ia_hit_cxl_acc,Zero value
+unc_cha_tor_occupancy.ia_hit_drd_opt_pref,Zero value
 unc_cha_tor_occupancy.ia_hit_llcprefdata,Zero value
 unc_cha_tor_occupancy.ia_hit_llcprefrfo,Zero value
+unc_cha_tor_occupancy.ia_itomcachenear,Zero value
 unc_cha_tor_occupancy.ia_llcprefcode,Zero value
 unc_cha_tor_occupancy.ia_llcprefdata,Zero value
 unc_cha_tor_occupancy.ia_llcprefrfo,Zero value
@@ -1170,45 +1241,57 @@ unc_cha_tor_occupancy.ia_miss_crd_pref_local,Zero value
 unc_cha_tor_occupancy.ia_miss_crd_pref_remote,Zero value
 unc_cha_tor_occupancy.ia_miss_crd_remote,Zero value
 unc_cha_tor_occupancy.ia_miss_crdmorph_cxl_acc,Zero value
+unc_cha_tor_occupancy.ia_miss_cxl_acc,Zero value
+unc_cha_tor_occupancy.ia_miss_drd_opt,Zero value
+unc_cha_tor_occupancy.ia_miss_drd_opt_pref,Zero value
 unc_cha_tor_occupancy.ia_miss_drd_pmm,Zero value
 unc_cha_tor_occupancy.ia_miss_drd_pref_pmm,Zero value
+unc_cha_tor_occupancy.ia_miss_drd_pref_remote,Zero value
 unc_cha_tor_occupancy.ia_miss_drd_pref_remote_ddr,Zero value
 unc_cha_tor_occupancy.ia_miss_drd_pref_remote_pmm,Zero value
 unc_cha_tor_occupancy.ia_miss_drd_remote,Zero value
 unc_cha_tor_occupancy.ia_miss_drd_remote_ddr,Zero value
 unc_cha_tor_occupancy.ia_miss_drd_remote_pmm,Zero value
+unc_cha_tor_occupancy.ia_miss_drdmorph_cxl_acc,Zero value
 unc_cha_tor_occupancy.ia_miss_itom,Zero value
 unc_cha_tor_occupancy.ia_miss_llcprefcode,Zero value
 unc_cha_tor_occupancy.ia_miss_llcprefcode_cxl_acc,Zero value
 unc_cha_tor_occupancy.ia_miss_llcprefdata,Zero value
+unc_cha_tor_occupancy.ia_miss_llcprefdata_cxl_acc,Zero value
 unc_cha_tor_occupancy.ia_miss_llcprefrfo,Zero value
-unc_cha_tor_occupancy.ia_miss_local_wcil_ddr,Zero value
+unc_cha_tor_occupancy.ia_miss_llcprefrfo_cxl_acc,Zero value
 unc_cha_tor_occupancy.ia_miss_local_wcil_pmm,Zero value
-unc_cha_tor_occupancy.ia_miss_local_wcilf_ddr,Zero value
 unc_cha_tor_occupancy.ia_miss_local_wcilf_pmm,Zero value
 unc_cha_tor_occupancy.ia_miss_remote_wcil_ddr,Zero value
 unc_cha_tor_occupancy.ia_miss_remote_wcil_pmm,Zero value
 unc_cha_tor_occupancy.ia_miss_remote_wcilf_ddr,Zero value
 unc_cha_tor_occupancy.ia_miss_remote_wcilf_pmm,Zero value
+unc_cha_tor_occupancy.ia_miss_rfo_remote,Zero value
 unc_cha_tor_occupancy.ia_miss_rfomorph_cxl_acc,Zero value
-unc_cha_tor_occupancy.ia_miss_wcil,Zero value
-unc_cha_tor_occupancy.ia_miss_wcil_ddr,Zero value
+unc_cha_tor_occupancy.ia_miss_ucrdf,Zero value
 unc_cha_tor_occupancy.ia_miss_wcil_pmm,Zero value
-unc_cha_tor_occupancy.ia_miss_wcilf,Zero value
-unc_cha_tor_occupancy.ia_miss_wcilf_ddr,Zero value
 unc_cha_tor_occupancy.ia_miss_wcilf_pmm,Zero value
 unc_cha_tor_occupancy.io_clflush,Zero value
-unc_cha_tor_occupancy.io_hit_itomcachenear,Zero value
+unc_cha_tor_occupancy.io_hit_itom,Zero value
+unc_cha_tor_occupancy.io_hit_rfo,Zero value
+unc_cha_tor_occupancy.io_miss_pcirdcur,Zero value
 unc_cha_tor_occupancy.io_miss_rfo,Zero value
 unc_cha_tor_occupancy.io_rfo,Zero value
 unc_cha_tor_occupancy.ipq,Zero value
 unc_cha_tor_occupancy.irq_ia,Zero value
+unc_cha_tor_occupancy.irq_non_ia,Zero value
 unc_cha_tor_occupancy.isoc,Zero value
+unc_cha_tor_occupancy.match_opc,Zero value
+unc_cha_tor_occupancy.miss,Zero value
 unc_cha_tor_occupancy.mmcfg,Zero value
+unc_cha_tor_occupancy.mmio,Zero value
 unc_cha_tor_occupancy.nearmem,Zero value
 unc_cha_tor_occupancy.noncoh,Zero value
 unc_cha_tor_occupancy.not_nearmem,Zero value
+unc_cha_tor_occupancy.pmm,Zero value
 unc_cha_tor_occupancy.premorph_opc,Zero value
+unc_cha_tor_occupancy.prq,Zero value
+unc_cha_tor_occupancy.prq_non_iosf,Zero value
 unc_cha_tor_occupancy.rem_all,Zero value
 unc_cha_tor_occupancy.rem_snps,Zero value
 unc_cha_tor_occupancy.remote_tgt,Zero value
@@ -1227,7 +1310,6 @@ unc_cha_xpt_pref.sent0,Zero value
 unc_cha_xpt_pref.sent1,Zero value
 unc_i_faf_full,Zero value
 unc_i_faf_inserts,Zero value
-unc_i_faf_occupancy,Zero value
 unc_i_faf_transactions,Zero value
 unc_i_misc0.2nd_atomic_insert,Zero value
 unc_i_misc0.2nd_rd_insert,Zero value
@@ -1235,7 +1317,6 @@ unc_i_misc0.2nd_wr_insert,Zero value
 unc_i_misc0.fast_rej,Zero value
 unc_i_misc0.fast_xfer,Zero value
 unc_i_misc0.pf_ack_hint,Zero value
-unc_i_misc0.slowpath_fwpf_no_prf,Zero value
 unc_i_misc1.lost_fwd,Zero value
 unc_i_misc1.sec_rcvd_invld,Zero value
 unc_i_misc1.sec_rcvd_vld,Zero value
@@ -1320,28 +1401,37 @@ unc_m2m_directory_update.s_to_i_hit_non_pmm,Zero value
 unc_m2m_directory_update.s_to_i_miss_non_pmm,Zero value
 unc_m2m_egress_ordering.iv_snoopgo_dn,Zero value
 unc_m2m_igr_starve_winner.mask7,Zero value
+unc_m2m_imc_reads.ch0.to_nmcache,Zero value
 unc_m2m_imc_reads.ch0_from_tgr,Zero value
+unc_m2m_imc_reads.ch0_isoch,Zero value
 unc_m2m_imc_reads.ch0_to_ddr_as_cache,Zero value
+unc_m2m_imc_reads.ch1.to_nmcache,Zero value
 unc_m2m_imc_reads.ch1_from_tgr,Zero value
+unc_m2m_imc_reads.ch1_isoch,Zero value
 unc_m2m_imc_reads.ch1_to_ddr_as_cache,Zero value
 unc_m2m_imc_reads.from_tgr,Zero value
 unc_m2m_imc_reads.isoch,Zero value
 unc_m2m_imc_reads.to_ddr_as_cache,Zero value
 unc_m2m_imc_reads.to_nmcache,Zero value
 unc_m2m_imc_reads.to_pmm,Zero value
+unc_m2m_imc_writes.ch0.ni,Zero value
+unc_m2m_imc_writes.ch0_from_tgr,Zero value
 unc_m2m_imc_writes.ch0_full_isoch,Zero value
 unc_m2m_imc_writes.ch0_ni,Zero value
+unc_m2m_imc_writes.ch0_ni_miss,Zero value
 unc_m2m_imc_writes.ch0_partial_isoch,Zero value
 unc_m2m_imc_writes.ch0_to_ddr_as_cache,Zero value
+unc_m2m_imc_writes.ch1.ni,Zero value
+unc_m2m_imc_writes.ch1_from_tgr,Zero value
 unc_m2m_imc_writes.ch1_full_isoch,Zero value
 unc_m2m_imc_writes.ch1_ni,Zero value
+unc_m2m_imc_writes.ch1_ni_miss,Zero value
 unc_m2m_imc_writes.ch1_partial_isoch,Zero value
 unc_m2m_imc_writes.ch1_to_ddr_as_cache,Zero value
 unc_m2m_imc_writes.from_tgr,Zero value
 unc_m2m_imc_writes.full_isoch,Zero value
 unc_m2m_imc_writes.ni,Zero value
 unc_m2m_imc_writes.ni_miss,Zero value
-unc_m2m_imc_writes.partial,Zero value
 unc_m2m_imc_writes.partial_isoch,Zero value
 unc_m2m_imc_writes.to_ddr_as_cache,Zero value
 unc_m2m_imc_writes.to_pmm,Zero value
@@ -1385,10 +1475,6 @@ unc_m2m_wpq_flush.ch1,Zero value
 unc_m2m_wr_tracker_ne.mirr,Zero value
 unc_m2m_wr_tracker_ne.mirr_nontgr,Zero value
 unc_m2m_wr_tracker_ne.mirr_pwr,Zero value
-unc_m2m_wr_tracker_nonposted_inserts.ch0,Zero value
-unc_m2m_wr_tracker_nonposted_inserts.ch1,Zero value
-unc_m2m_wr_tracker_nonposted_occupancy.ch0,Zero value
-unc_m2m_wr_tracker_nonposted_occupancy.ch1,Zero value
 unc_m3upi_cha_ad_credits_empty.req,Zero value
 unc_m3upi_cha_ad_credits_empty.snp,Zero value
 unc_m3upi_cha_ad_credits_empty.wb,Zero value
@@ -1570,6 +1656,7 @@ unc_m3upi_txc_ad_arb_fail.vn0_wb,Zero value
 unc_m3upi_txc_ad_arb_fail.vn1_req,Zero value
 unc_m3upi_txc_ad_arb_fail.vn1_rsp,Zero value
 unc_m3upi_txc_ad_arb_fail.vn1_snp,Zero value
+unc_m3upi_txc_ad_arb_fail.vn1_wb,Zero value
 unc_m3upi_txc_ad_flq_bypass.ad_slot0,Zero value
 unc_m3upi_txc_ad_flq_bypass.ad_slot1,Zero value
 unc_m3upi_txc_ad_flq_bypass.ad_slot2,Zero value
@@ -1689,11 +1776,7 @@ unc_m3upi_xpt_pftch.lost_arb,Zero value
 unc_m3upi_xpt_pftch.lost_old,Zero value
 unc_m3upi_xpt_pftch.lost_qfull,Zero value
 unc_mdf_crs_txr_inserts.ak,Zero value
-unc_mdf_crs_txr_v_bounces.ad,Zero value
-unc_mdf_crs_txr_v_bounces.ak,Zero value
 unc_mdf_crs_txr_v_bounces.akc,Zero value
-unc_mdf_crs_txr_v_bounces.bl,Zero value
-unc_mdf_crs_txr_v_bounces.iv,Zero value
 unc_upi_direct_attempts.d2c,Zero value
 unc_upi_direct_attempts.d2k,Zero value
 unc_upi_flowq_no_vna_crd.ad_vna_eq0,Zero value
@@ -1743,6 +1826,7 @@ unc_upi_rxl_bypassed.slot2,Zero value
 unc_upi_rxl_crc_errors,Zero value
 unc_upi_rxl_crc_llr_req_transmit,Zero value
 unc_upi_rxl_credits_consumed_vn0,Zero value
+unc_upi_rxl_credits_consumed_vn1,Zero value
 unc_upi_rxl_flits.all_data,Zero value
 unc_upi_rxl_flits.all_null,Zero value
 unc_upi_rxl_flits.data,Zero value
@@ -1806,6 +1890,7 @@ unc_upi_txl_flits.slot2,Zero value
 unc_upi_txl_inserts,Zero value
 unc_upi_txl_occupancy,Zero value
 unc_upi_vna_credit_return_blocked_vn01,Zero value
+unc_iio_data_req_by_cpu.mem_read.all_parts,Zero value
 unc_iio_data_req_by_cpu.mem_write.iommu1,Zero value
 unc_iio_data_req_by_cpu.mem_write.part1,Zero value
 unc_iio_data_req_by_cpu.mem_write.part2,Zero value
@@ -1813,7 +1898,7 @@ unc_iio_data_req_by_cpu.mem_write.part3,Zero value
 unc_iio_data_req_by_cpu.mem_write.part4,Zero value
 unc_iio_data_req_by_cpu.mem_write.part5,Zero value
 unc_iio_data_req_by_cpu.mem_write.part6,Zero value
-unc_iio_data_req_of_cpu.cmpd.all_parts,Zero value
+unc_iio_data_req_by_cpu.mem_write.part7,Zero value
 unc_iio_data_req_of_cpu.cmpd.part0,Zero value
 unc_iio_data_req_of_cpu.cmpd.part1,Zero value
 unc_iio_data_req_of_cpu.cmpd.part2,Zero value
@@ -1821,8 +1906,6 @@ unc_iio_data_req_of_cpu.cmpd.part3,Zero value
 unc_iio_data_req_of_cpu.cmpd.part4,Zero value
 unc_iio_data_req_of_cpu.cmpd.part5,Zero value
 unc_iio_data_req_of_cpu.cmpd.part6,Zero value
-unc_iio_data_req_of_cpu.cmpd.part7,Zero value
-unc_iio_data_req_of_cpu.mem_read.all_parts,Zero value
 unc_iio_data_req_of_cpu.mem_read.part0,Zero value
 unc_iio_data_req_of_cpu.mem_read.part1,Zero value
 unc_iio_data_req_of_cpu.mem_read.part2,Zero value
@@ -1831,7 +1914,6 @@ unc_iio_data_req_of_cpu.mem_read.part4,Zero value
 unc_iio_data_req_of_cpu.mem_read.part5,Zero value
 unc_iio_data_req_of_cpu.mem_read.part6,Zero value
 unc_iio_data_req_of_cpu.mem_read.part7,Zero value
-unc_iio_data_req_of_cpu.mem_write.part0,Zero value
 unc_iio_data_req_of_cpu.mem_write.part1,Zero value
 unc_iio_data_req_of_cpu.mem_write.part2,Zero value
 unc_iio_data_req_of_cpu.mem_write.part3,Zero value
@@ -1846,12 +1928,9 @@ unc_iio_data_req_of_cpu.peer_write.part3,Zero value
 unc_iio_data_req_of_cpu.peer_write.part4,Zero value
 unc_iio_data_req_of_cpu.peer_write.part5,Zero value
 unc_iio_data_req_of_cpu.peer_write.part6,Zero value
-unc_iio_inbound_arb_req.iommu_hit,Zero value
+unc_iio_data_req_of_cpu.peer_write.part7,Zero value
 unc_iio_iommu0.1g_hits,Zero value
 unc_iio_iommu0.2m_hits,Zero value
-unc_iio_iommu0.4k_hits,Zero value
-unc_iio_iommu0.ctxt_cache_lookups,Zero value
-unc_iio_iommu0.misses,Zero value
 unc_iio_iommu1.pwc_1g_hits,Zero value
 unc_iio_iommu1.pwc_256t_hits,Zero value
 unc_iio_iommu1.pwc_2m_hits,Zero value
@@ -1870,16 +1949,13 @@ unc_iio_mask_match_or.bus0_bus1,Zero value
 unc_iio_mask_match_or.bus0_not_bus1,Zero value
 unc_iio_mask_match_or.bus1,Zero value
 unc_iio_mask_match_or.not_bus0_bus1,Zero value
-unc_iio_num_req_of_cpu.commit.all,Zero value
 unc_iio_num_req_of_cpu_by_tgt.abort,Zero value
 unc_iio_num_req_of_cpu_by_tgt.confined_p2p,Zero value
 unc_iio_num_req_of_cpu_by_tgt.loc_p2p,Zero value
 unc_iio_num_req_of_cpu_by_tgt.mcast,Zero value
 unc_iio_num_req_of_cpu_by_tgt.msgb,Zero value
 unc_iio_num_req_of_cpu_by_tgt.rem_p2p,Zero value
-unc_iio_num_req_of_cpu_by_tgt.ubox,Zero value
 unc_iio_num_tgt_matched_req_of_cpu,Zero value
-unc_iio_outbound_tlp_reqs_issued.to_io,Zero value
 unc_iio_txn_req_by_cpu.mem_read.part0,Zero value
 unc_iio_txn_req_by_cpu.mem_read.part1,Zero value
 unc_iio_txn_req_by_cpu.mem_read.part2,Zero value
@@ -1888,13 +1964,13 @@ unc_iio_txn_req_by_cpu.mem_read.part4,Zero value
 unc_iio_txn_req_by_cpu.mem_read.part5,Zero value
 unc_iio_txn_req_by_cpu.mem_read.part6,Zero value
 unc_iio_txn_req_by_cpu.mem_read.part7,Zero value
-unc_iio_txn_req_by_cpu.mem_write.part0,Zero value
 unc_iio_txn_req_by_cpu.mem_write.part1,Zero value
 unc_iio_txn_req_by_cpu.mem_write.part2,Zero value
 unc_iio_txn_req_by_cpu.mem_write.part3,Zero value
 unc_iio_txn_req_by_cpu.mem_write.part4,Zero value
 unc_iio_txn_req_by_cpu.mem_write.part5,Zero value
 unc_iio_txn_req_by_cpu.mem_write.part6,Zero value
+unc_iio_txn_req_by_cpu.mem_write.part7,Zero value
 unc_iio_txn_req_of_cpu.cmpd.part0,Zero value
 unc_iio_txn_req_of_cpu.cmpd.part1,Zero value
 unc_iio_txn_req_of_cpu.cmpd.part2,Zero value
@@ -1902,7 +1978,6 @@ unc_iio_txn_req_of_cpu.cmpd.part3,Zero value
 unc_iio_txn_req_of_cpu.cmpd.part4,Zero value
 unc_iio_txn_req_of_cpu.cmpd.part5,Zero value
 unc_iio_txn_req_of_cpu.cmpd.part6,Zero value
-unc_iio_txn_req_of_cpu.cmpd.part7,Zero value
 unc_iio_txn_req_of_cpu.mem_read.part0,Zero value
 unc_iio_txn_req_of_cpu.mem_read.part1,Zero value
 unc_iio_txn_req_of_cpu.mem_read.part2,Zero value
@@ -1932,7 +2007,6 @@ unc_iio_bandwidth_in.part3_freerun,Zero value
 unc_iio_bandwidth_in.part4_freerun,Zero value
 unc_iio_bandwidth_in.part5_freerun,Zero value
 unc_iio_bandwidth_in.part6_freerun,Zero value
-unc_iio_bandwidth_in.part7_freerun,Zero value
 unc_iio_bandwidth_out.part1_freerun,Zero value
 unc_iio_bandwidth_out.part2_freerun,Zero value
 unc_iio_bandwidth_out.part3_freerun,Zero value
@@ -1941,6 +2015,7 @@ unc_iio_bandwidth_out.part5_freerun,Zero value
 unc_iio_bandwidth_out.part6_freerun,Zero value
 unc_iio_bandwidth_out.part7_freerun,Zero value
 unc_m2p_egress_ordering.iv_snoopgo_dn,Zero value
+unc_m2p_egress_ordering.iv_snoopgo_up,Zero value
 unc_m2p_iio_credits_acquired.drs_0,Zero value
 unc_m2p_iio_credits_acquired.drs_1,Zero value
 unc_m2p_iio_credits_acquired.ncb_1,Zero value
@@ -2077,7 +2152,6 @@ unc_m2p_txc_credits.pmm,Zero value
 unc_m_cas_count.pch0,Zero value
 unc_m_cas_count.pch1,Zero value
 unc_m_cas_count.rd_reg,Zero value
-unc_m_cas_count.rd_underfill,Zero value
 unc_m_cas_count.wr_nonpre,Zero value
 unc_m_cas_issued_req_len.pch0,Zero value
 unc_m_cas_issued_req_len.pch1,Zero value
@@ -2103,7 +2177,6 @@ unc_m_pmm_wpq_occupancy.cas,Zero value
 unc_m_pmm_wpq_occupancy.pwr,Zero value
 unc_m_power_channel_ppd,Zero value
 unc_m_power_cke_cycles.low_0,Zero value
-unc_m_power_cke_cycles.low_1,Zero value
 unc_m_power_cke_cycles.low_2,Zero value
 unc_m_power_crit_throttle_cycles.slot0,Zero value
 unc_m_power_crit_throttle_cycles.slot1,Zero value
@@ -2111,9 +2184,6 @@ unc_m_power_self_refresh,Zero value
 unc_m_pre_count.pgt,Zero value
 unc_m_pre_count.pgt_pch0,Zero value
 unc_m_pre_count.pgt_pch1,Zero value
-unc_m_pre_count.ufill,Zero value
-unc_m_pre_count.ufill_pch0,Zero value
-unc_m_pre_count.ufill_pch1,Zero value
 unc_m_sb_accesses.fm_rd_cmps,Zero value
 unc_m_sb_accesses.fm_wr_cmps,Zero value
 unc_m_sb_accesses.nm_wr_cmps,Zero value
@@ -2143,6 +2213,7 @@ unc_m_sb_pref_inserts.all,Zero value
 unc_m_sb_pref_inserts.ddr,Zero value
 unc_m_sb_pref_inserts.pmm,Zero value
 unc_m_sb_pref_occupancy.all,Zero value
+unc_m_sb_pref_occupancy.ddr,Zero value
 unc_m_sb_reject.canary,Zero value
 unc_m_sb_reject.ddr_early_cmp,Zero value
 unc_m_sb_reject.fm_addr_cnflt,Zero value
@@ -2186,7 +2257,6 @@ unc_p_freq_clip_avx512,Zero value
 unc_p_freq_max_limit_thermal_cycles,Zero value
 unc_p_freq_max_power_cycles,Zero value
 unc_p_freq_min_io_p_cycles,Zero value
-unc_p_freq_trans_cycles,Zero value
 unc_p_memory_phase_shedding_cycles,Zero value
 unc_p_pkg_residency_c2e_cycles,Zero value
 unc_p_pkg_residency_c6_cycles,Zero value
@@ -2195,14 +2265,14 @@ unc_p_power_state_occupancy_cores_c3,Zero value
 unc_p_prochot_external_cycles,Zero value
 unc_p_prochot_internal_cycles,Zero value
 unc_p_vr_hot_cycles,Zero value
-topdown-bad-spec,Zero value
-topdown-be-bound,Zero value
-topdown-br-mispredict,Zero value
-topdown-fe-bound,Zero value
-topdown-fetch-lat,Zero value
-topdown-heavy-ops,Zero value
-topdown-mem-bound,Zero value
-topdown-retiring,Zero value
+topdown-bad-spec,Not supported
+topdown-be-bound,Not supported
+topdown-br-mispredict,Not supported
+topdown-fe-bound,Not supported
+topdown-fetch-lat,Not supported
+topdown-heavy-ops,Not supported
+topdown-mem-bound,Not supported
+topdown-retiring,Not supported
 intel_bts//,Failed
 intel_pt//,Failed
 msr/cpu_thermal_margin/,Failed
@@ -2318,27 +2388,16 @@ uncore_imc_6/cas_count_read/,Failed
 uncore_imc_6/cas_count_write/,Failed
 uncore_imc_7/cas_count_read/,Failed
 uncore_imc_7/cas_count_write/,Failed
-l2_rqsts.swpf_miss,Failed
 l2_trans.l2_wb,Failed
-offcore_requests.data_rd,Failed
 offcore_requests.demand_code_rd,Failed
-offcore_requests.demand_data_rd,Failed
 offcore_requests.demand_rfo,Failed
-offcore_requests_outstanding.cycles_with_data_rd,Failed
 offcore_requests_outstanding.cycles_with_demand_code_rd,Failed
-offcore_requests_outstanding.data_rd,Failed
 offcore_requests_outstanding.demand_code_rd,Failed
-sq_misc.bus_lock,Failed
 sw_prefetch_access.any,Failed
-frontend_retired.unknown_branch,Failed
 icache_data.stall_periods,Failed
-machine_clears.memory_ordering,Failed
 mem_trans_retired.load_latency_gt_1024,Failed
-rs.empty_count,Failed
 rs.empty_resource,Failed
-exe_activity.1_ports_util,Failed
 exe_activity.2_3_ports_util,Failed
-uops_issued.any,Failed
 uops_issued.cycles,Failed
 duration_time,Failed
 has_pmem,Failed
@@ -2351,105 +2410,58 @@ smt_on,Failed
 system_time,Failed
 system_tsc_freq,Failed
 user_time,Failed
-unc_cha_tor_inserts.ia_hit_cxl_acc,Failed
 unc_cha_tor_inserts.ia_hit_cxl_acc_local,Failed
-unc_cha_tor_inserts.ia_miss_cxl_acc,Failed
 unc_cha_tor_inserts.ia_miss_cxl_acc_local,Failed
-unc_cha_tor_inserts.ia_miss_drd_cxl_acc,Failed
 unc_cha_tor_inserts.ia_miss_drd_cxl_acc_local,Failed
-unc_cha_tor_inserts.ia_miss_drd_opt,Failed
 unc_cha_tor_inserts.ia_miss_drd_opt_cxl_acc_local,Failed
-unc_cha_tor_inserts.ia_miss_drd_opt_pref,Failed
 unc_cha_tor_inserts.ia_miss_drd_opt_pref_cxl_acc_local,Failed
-unc_cha_tor_inserts.ia_miss_drd_pref_cxl_acc,Failed
 unc_cha_tor_inserts.ia_miss_drd_pref_cxl_acc_local,Failed
-unc_cha_tor_inserts.ia_miss_llcprefdata_cxl_acc,Failed
 unc_cha_tor_inserts.ia_miss_llcprefdata_cxl_acc_local,Failed
-unc_cha_tor_inserts.ia_miss_llcprefrfo_cxl_acc,Failed
 unc_cha_tor_inserts.ia_miss_llcprefrfo_cxl_acc_local,Failed
-unc_cha_tor_inserts.ia_miss_rfo_cxl_acc,Failed
 unc_cha_tor_inserts.ia_miss_rfo_cxl_acc_local,Failed
-unc_cha_tor_inserts.ia_miss_rfo_pref_cxl_acc,Failed
 unc_cha_tor_inserts.ia_miss_rfo_pref_cxl_acc_local,Failed
-unc_cha_tor_inserts.io_itom,Failed
 unc_cha_tor_inserts.io_itom_local,Failed
 unc_cha_tor_inserts.io_itom_remote,Failed
-unc_cha_tor_inserts.io_itomcachenear,Failed
 unc_cha_tor_inserts.io_itomcachenear_local,Failed
 unc_cha_tor_inserts.io_itomcachenear_remote,Failed
-unc_cha_tor_inserts.io_pcirdcur,Failed
 unc_cha_tor_inserts.io_pcirdcur_local,Failed
 unc_cha_tor_inserts.io_pcirdcur_remote,Failed
-unc_cha_tor_occupancy.ia_drd_pref,Failed
 unc_cha_tor_occupancy.ia_drdpte,Failed
-unc_cha_tor_occupancy.ia_hit_cxl_acc,Failed
 unc_cha_tor_occupancy.ia_hit_cxl_acc_local,Failed
-unc_cha_tor_occupancy.ia_hit_drd_pref,Failed
 unc_cha_tor_occupancy.ia_hit_drdpte,Failed
-unc_cha_tor_occupancy.ia_miss_cxl_acc,Failed
 unc_cha_tor_occupancy.ia_miss_cxl_acc_local,Failed
-unc_cha_tor_occupancy.ia_miss_drd_cxl_acc,Failed
 unc_cha_tor_occupancy.ia_miss_drd_cxl_acc_local,Failed
-unc_cha_tor_occupancy.ia_miss_drd_opt,Failed
 unc_cha_tor_occupancy.ia_miss_drd_opt_cxl_acc_local,Failed
-unc_cha_tor_occupancy.ia_miss_drd_opt_pref,Failed
 unc_cha_tor_occupancy.ia_miss_drd_opt_pref_cxl_acc_local,Failed
-unc_cha_tor_occupancy.ia_miss_drd_pref_cxl_acc,Failed
 unc_cha_tor_occupancy.ia_miss_drd_pref_cxl_acc_local,Failed
-unc_cha_tor_occupancy.ia_miss_drdmorph_cxl_acc,Failed
 unc_cha_tor_occupancy.ia_miss_drdpte,Failed
-unc_cha_tor_occupancy.ia_miss_llcprefdata_cxl_acc,Failed
 unc_cha_tor_occupancy.ia_miss_llcprefdata_cxl_acc_local,Failed
-unc_cha_tor_occupancy.ia_miss_llcprefrfo_cxl_acc,Failed
 unc_cha_tor_occupancy.ia_miss_llcprefrfo_cxl_acc_local,Failed
-unc_cha_tor_occupancy.ia_miss_rfo_cxl_acc,Failed
 unc_cha_tor_occupancy.ia_miss_rfo_cxl_acc_local,Failed
-unc_cha_tor_occupancy.ia_miss_rfo_pref_cxl_acc,Failed
 unc_cha_tor_occupancy.ia_miss_rfo_pref_cxl_acc_local,Failed
-unc_cha_tor_occupancy.io_itom,Failed
 unc_cha_tor_occupancy.io_itomcachenear,Failed
-unc_cha_tor_occupancy.io_miss_itom,Failed
 unc_cha_tor_occupancy.io_miss_itom_local,Failed
 unc_cha_tor_occupancy.io_miss_itom_remote,Failed
-unc_cha_tor_occupancy.io_miss_itomcachenear,Failed
 unc_cha_tor_occupancy.io_miss_itomcachenear_local,Failed
 unc_cha_tor_occupancy.io_miss_itomcachenear_remote,Failed
-unc_cha_tor_occupancy.io_miss_pcirdcur,Failed
 unc_cha_tor_occupancy.io_miss_pcirdcur_local,Failed
 unc_cha_tor_occupancy.io_miss_pcirdcur_remote,Failed
-unc_m2m_imc_reads.ch0.to_nmcache,Failed
 unc_m2m_imc_reads.ch0_all,Failed
-unc_m2m_imc_reads.ch0_isoch,Failed
 unc_m2m_imc_reads.ch0_normal,Failed
-unc_m2m_imc_reads.ch0_to_ddr_as_mem,Failed
 unc_m2m_imc_reads.ch0_to_pmm,Failed
-unc_m2m_imc_reads.ch1.to_nmcache,Failed
 unc_m2m_imc_reads.ch1_all,Failed
-unc_m2m_imc_reads.ch1_isoch,Failed
 unc_m2m_imc_reads.ch1_normal,Failed
-unc_m2m_imc_reads.ch1_to_ddr_as_mem,Failed
 unc_m2m_imc_reads.ch1_to_pmm,Failed
-unc_m2m_imc_writes.ch0.ni,Failed
 unc_m2m_imc_writes.ch0_all,Failed
-unc_m2m_imc_writes.ch0_from_tgr,Failed
 unc_m2m_imc_writes.ch0_full,Failed
-unc_m2m_imc_writes.ch0_ni_miss,Failed
 unc_m2m_imc_writes.ch0_partial,Failed
-unc_m2m_imc_writes.ch0_to_ddr_as_mem,Failed
 unc_m2m_imc_writes.ch0_to_pmm,Failed
-unc_m2m_imc_writes.ch1.ni,Failed
 unc_m2m_imc_writes.ch1_all,Failed
-unc_m2m_imc_writes.ch1_from_tgr,Failed
 unc_m2m_imc_writes.ch1_full,Failed
-unc_m2m_imc_writes.ch1_ni_miss,Failed
 unc_m2m_imc_writes.ch1_partial,Failed
-unc_m2m_imc_writes.ch1_to_ddr_as_mem,Failed
 unc_m2m_imc_writes.ch1_to_pmm,Failed
-unc_m3upi_txc_ad_arb_fail.vn1_wb,Failed
 unc_m3upi_txc_ad_flq_bypass,Failed
-unc_upi_rxl_credits_consumed_vn1,Failed
 unc_upi_rxl_credits_consumed_vna,Failed
-unc_iio_comp_buf_inserts.cmpd.all_parts,Failed
 unc_iio_comp_buf_inserts.cmpd.part0,Failed
 unc_iio_comp_buf_inserts.cmpd.part1,Failed
 unc_iio_comp_buf_inserts.cmpd.part2,Failed
@@ -2458,7 +2470,6 @@ unc_iio_comp_buf_inserts.cmpd.part4,Failed
 unc_iio_comp_buf_inserts.cmpd.part5,Failed
 unc_iio_comp_buf_inserts.cmpd.part6,Failed
 unc_iio_comp_buf_inserts.cmpd.part7,Failed
-unc_iio_comp_buf_occupancy.cmpd.all_parts,Failed
 unc_iio_comp_buf_occupancy.cmpd.part0,Failed
 unc_iio_comp_buf_occupancy.cmpd.part1,Failed
 unc_iio_comp_buf_occupancy.cmpd.part2,Failed
@@ -2467,7 +2478,6 @@ unc_iio_comp_buf_occupancy.cmpd.part4,Failed
 unc_iio_comp_buf_occupancy.cmpd.part5,Failed
 unc_iio_comp_buf_occupancy.cmpd.part6,Failed
 unc_iio_comp_buf_occupancy.cmpd.part7,Failed
-unc_iio_data_req_by_cpu.mem_read.all_parts,Failed
 unc_iio_data_req_by_cpu.mem_read.part0,Failed
 unc_iio_data_req_by_cpu.mem_read.part1,Failed
 unc_iio_data_req_by_cpu.mem_read.part2,Failed
@@ -2476,7 +2486,6 @@ unc_iio_data_req_by_cpu.mem_read.part4,Failed
 unc_iio_data_req_by_cpu.mem_read.part5,Failed
 unc_iio_data_req_by_cpu.mem_read.part6,Failed
 unc_iio_data_req_by_cpu.mem_read.part7,Failed
-unc_iio_data_req_by_cpu.mem_write.part7,Failed
 unc_iio_data_req_by_cpu.peer_read.part0,Failed
 unc_iio_data_req_by_cpu.peer_read.part1,Failed
 unc_iio_data_req_by_cpu.peer_read.part2,Failed
@@ -2493,9 +2502,7 @@ unc_iio_data_req_by_cpu.peer_write.part4,Failed
 unc_iio_data_req_by_cpu.peer_write.part5,Failed
 unc_iio_data_req_by_cpu.peer_write.part6,Failed
 unc_iio_data_req_by_cpu.peer_write.part7,Failed
-unc_iio_data_req_of_cpu.peer_write.part7,Failed
 unc_iio_inbound_arb_req.data,Failed
-unc_iio_inbound_arb_req.iommu_req,Failed
 unc_iio_inbound_arb_req.req_own,Failed
 unc_iio_inbound_arb_req.wr,Failed
 unc_iio_inbound_arb_won.data,Failed
@@ -2504,7 +2511,6 @@ unc_iio_inbound_arb_won.iommu_hit,Failed
 unc_iio_inbound_arb_won.iommu_req,Failed
 unc_iio_inbound_arb_won.req_own,Failed
 unc_iio_inbound_arb_won.wr,Failed
-unc_iio_pwt_occupancy,Failed
 unc_iio_req_from_pcie_cl_cmpl.data,Failed
 unc_iio_req_from_pcie_cl_cmpl.final_rd_wr,Failed
 unc_iio_req_from_pcie_cl_cmpl.req_own,Failed
@@ -2514,10 +2520,8 @@ unc_iio_req_from_pcie_cmpl.iommu_hit,Failed
 unc_iio_req_from_pcie_cmpl.iommu_req,Failed
 unc_iio_req_from_pcie_cmpl.req_own,Failed
 unc_iio_req_from_pcie_pass_cmpl.data,Failed
-unc_iio_req_from_pcie_pass_cmpl.final_rd_wr,Failed
 unc_iio_req_from_pcie_pass_cmpl.req_own,Failed
 unc_iio_req_from_pcie_pass_cmpl.wr,Failed
-unc_iio_txn_req_by_cpu.mem_write.part7,Failed
 unc_iio_txn_req_by_cpu.peer_write.part0,Failed
 unc_iio_txn_req_by_cpu.peer_write.part1,Failed
 unc_iio_txn_req_by_cpu.peer_write.part2,Failed
@@ -2526,15 +2530,11 @@ unc_iio_txn_req_by_cpu.peer_write.part4,Failed
 unc_iio_txn_req_by_cpu.peer_write.part5,Failed
 unc_iio_txn_req_by_cpu.peer_write.part6,Failed
 unc_iio_txn_req_by_cpu.peer_write.part7,Failed
-unc_m2p_txc_credits.prq,Failed
 unc_m2p_txc_cycles_full.pmm_block_0,Failed
 unc_m2p_txc_cycles_full.pmm_block_1,Failed
 unc_m2p_txc_cycles_ne.pmm_distress_0,Failed
 unc_m2p_txc_cycles_ne.pmm_distress_1,Failed
-unc_m_sb_pref_occupancy.ddr,Failed
 unc_m_sb_pref_occupancy.pmm,Failed
-unc_m_wpq_occupancy_pch1,Failed
 unc_m_wpq_read_hit,Failed
 unc_m_wpq_write_hit,Failed
-itlb_misses.walk_pending,Failed
 mem:<addr>[/len][:access],Failed

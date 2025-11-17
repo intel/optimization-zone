@@ -29,6 +29,7 @@ tma_info_system_ipfarbranch,Successful
 tma_info_thread_uptb,Successful
 tma_non_fused_branches,Successful
 tma_bottleneck_branching_overhead,Successful
+tma_nop_instructions,Successful
 tma_ports_utilized_3m,Successful
 tma_frontend_bound,Successful
 tma_other_nukes,Successful
@@ -48,7 +49,6 @@ tma_info_memory_l2hpki_all,Successful
 tma_info_memory_l2hpki_load,Successful
 tma_info_memory_l2mpki_all,Successful
 tma_info_memory_l2mpki_load,Successful
-tma_l1_bound,Successful
 tma_l3_bound,Successful
 tma_info_memory_l2mpki_rfo,Successful
 tma_info_botlnk_l0_core_bound_likely,Successful
@@ -70,8 +70,11 @@ tma_info_pipeline_fetch_dsb,Successful
 tma_info_pipeline_fetch_mite,Successful
 tma_code_l2_hit,Successful
 tma_code_stlb_hit,Successful
+tma_code_stlb_miss,Successful
+tma_code_stlb_miss_4k,Successful
 tma_info_inst_mix_iparith_avx128,Successful
 tma_info_inst_mix_iparith_scalar_dp,Successful
+tma_info_inst_mix_iparith_scalar_sp,Successful
 tma_info_inst_mix_ipflop,Successful
 tma_info_inst_mix_ippause,Successful
 tma_info_system_cpu_utilization,Successful
@@ -101,6 +104,8 @@ cpi,Successful
 tma_store_bound,Successful
 tma_l2_hit_latency,Successful
 tma_load_stlb_hit,Successful
+tma_load_stlb_miss,Successful
+tma_load_stlb_miss_4k,Successful
 tma_info_pipeline_ipassist,Successful
 tma_info_pipeline_strings_cycles,Successful
 tma_info_system_kernel_cpi,Successful
@@ -135,7 +140,6 @@ percent_uops_delivered_from_decoded_icache,Successful
 percent_uops_delivered_from_legacy_decode_pipeline,Successful
 percent_uops_delivered_from_microcode_sequencer,Successful
 stores_per_instr,Successful
-tma_nop_instructions,Zero value
 tma_divider,Zero value
 tma_mem_bandwidth,Zero value
 tma_sq_full,Zero value
@@ -143,6 +147,7 @@ tma_l3_hit_latency,Zero value
 tma_mem_latency,Zero value
 tma_c01_wait,Zero value
 tma_c02_wait,Zero value
+tma_l1_bound,Zero value
 tma_fp_scalar,Zero value
 tma_fp_vector,Zero value
 tma_fp_vector_128b,Zero value
@@ -152,9 +157,7 @@ tma_int_vector_128b,Zero value
 tma_int_vector_256b,Zero value
 tma_x87_use,Zero value
 tma_code_l2_miss,Zero value
-tma_code_stlb_miss,Zero value
 tma_code_stlb_miss_2m,Zero value
-tma_code_stlb_miss_4k,Zero value
 tma_lcp,Zero value
 tma_avx_assists,Zero value
 tma_fp_arith,Zero value
@@ -163,10 +166,8 @@ tma_shuffles_256b,Zero value
 tma_lock_latency,Zero value
 tma_mba_stalls,Zero value
 tma_dram_bound,Zero value
-tma_load_stlb_miss,Zero value
 tma_load_stlb_miss_1g,Zero value
 tma_load_stlb_miss_2m,Zero value
-tma_load_stlb_miss_4k,Zero value
 tma_remote_cache,Zero value
 tma_int_operations,Zero value
 tma_local_mem,Zero value
@@ -203,7 +204,6 @@ tma_info_inst_mix_iparith,NaN value
 tma_info_inst_mix_iparith_avx256,NaN value
 tma_info_inst_mix_iparith_avx512,NaN value
 tma_info_inst_mix_iparith_scalar_hp,NaN value
-tma_info_inst_mix_iparith_scalar_sp,NaN value
 tma_info_memory_latency_load_l2_miss_latency,NaN value
 tma_info_memory_tlb_page_walks_utilization,NaN value
 tma_store_stlb_hit,NaN value
