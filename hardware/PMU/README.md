@@ -7,7 +7,7 @@ Cloud service providers such as Amazon Web Services (AWS) and Google Cloud Platf
 
 ## Methodology
 `perf stat` was used to collect vPMU data for various instance types on AWS and GCP and separated each event and metric into succeeded and failed per instance type. These two categories are further split into additional categories based on the value `perf stat` returned when collecting each metric.
-The commands used to measure each event and metric is shown below: 
+The commands used to measure each event and metric are shown below:
 
 ```bash 
 perf stat --timeout 3000 -a -e EVENT stress-ng -m num_cores
@@ -17,7 +17,7 @@ perf stat --timeout 3000 -a -e EVENT stress-ng -m num_cores
 perf stat --timeout 3000 -a -M METRIC stress-ng -m num_cores
 ```
 
-Each event and metric was run for 3000 milliseconds, targeting `stress-ng` matrix multiplication as a load generator to stimulate the system into return more interesting values from the vPMUs.
+Each event and metric collection was run for 3000 milliseconds, targeting `stress-ng` matrix multiplication as a load generator to stimulate the system into returning more interesting values from the vPMUs.
 
 ## Document Layout
 
