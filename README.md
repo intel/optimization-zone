@@ -1,24 +1,28 @@
 <p align="center">
-  <img src="images/logo-classicblue-800px.png?raw=true" alt="Intel Logo" width="250"/>
+  <img src="https://github.com/intel/optimization-zone/blob/main/images/logo-classicblue-800px.png?raw=true" alt="Intel Logo" width="250"/>
 </p>
 
 # Intel Optimization Zone - Intel Tuning Guides
 
-This repository contains a collection of Intel tuning guides and Intel optimization recipes specifically designed for software running on Intel. Our comprehensive resources include detailed configuration recommendations, performance tuning techniques, and best practices to help you unlock the full potential of your Intel infrastructure.
+This repository contains a collection of Intel tuning guides and Intel optimization recipes specifically designed for Software, Workloads, Performance Analysis, Monitoring Tools, and Hardware optimal configurations. Our comprehensive resources include detailed configuration recommendations, performance tuning techniques, and best practices to help you unlock the full potential of your Intel Architecture.
 
 ## What You'll Find Here
 
-### 🗄️ Databases & Data Stores Tuning Guides
+### 💻 Software Tuning Guides
 
-Tuning Guides and optimization guides for popular database systems covering configuration tuning, memory management, and query optimization strategies.
+Comprehensive optimization tuning guides for various software including databases (i.e. Cassandra, MySQL, PostgreSQL), data processing frameworks (i.e. Spark, Gluten), and programming languages (i.e. Java), covering configuration tuning, memory management, and best practices for Intel architectures.
 
-### ⚡ Big Data & Analytics Tuning Guides
+### 🔧 Workloads & Benchmarks
 
-Performance tuning for Big Data, with focus on vectorization, memory optimization, and efficient data processing on Intel architectures.
+Industry-standard benchmark configurations and execution guides including enabling you to measure, validate, and compare your optimization results against established performance baselines.
 
-### 📊 Industry-Standard Benchmarks
+### 📊 Performance Analysis & Monitoring Tools
 
-Configuration and execution guides and other stress tests, enabling you to measure and validate your optimization results.
+Detailed guides for leveraging performance analysis and monitoring tools to identify bottlenecks, analyze system behavior, and optimize your workloads on Intel hardware.
+
+### ⚙️ Intel Hardware Optimal Configurations
+
+Best practices and configuration recommendations for getting the most out of your Intel architecture, including BIOS settings, CPU tuning, memory optimization, and system-level configurations to efficiency and performance.
 
 ### 🚀 Goal
 
