@@ -1,10 +1,30 @@
 <p align="center">
-  <img src="images/logo-classicblue-800px.png?raw=true" alt="Intel Logo" width="250"/>
+  <img src="https://github.com/intel/optimization-zone/blob/main/images/logo-classicblue-800px.png?raw=true" alt="Intel Logo" width="250"/>
 </p>
 
-# Optimization Zone
+# Intel Optimization Zone - Intel Tuning Guides
 
-This repository contains a collection of optimization recipes for Data Center workloads and software on Intel Hardware. It includes detailed tuning guides and optimization techniques designed to help users achieve optimal performance.
+This repository contains a collection of Intel tuning guides and Intel optimization recipes specifically designed for Software, Workloads, Performance Analysis, Monitoring Tools, and Hardware optimal configurations. Our comprehensive resources include detailed configuration recommendations, performance tuning techniques, and best practices to help you unlock the full potential of your Intel Architecture.
+
+## What You'll Find Here
+
+### 💻 Software Tuning Guides
+
+Comprehensive optimization tuning guides for various software including databases (i.e. Cassandra, MySQL, PostgreSQL), data processing frameworks (i.e. Spark, Gluten), and programming languages (i.e. Java), covering configuration tuning, memory management, and best practices for Intel architectures.
+
+### 🔧 Workloads & Benchmarks
+
+Industry-standard benchmark configurations and execution guides including enabling you to measure, validate, and compare your optimization results against established performance baselines.
+
+### 📊 Performance Analysis & Monitoring Tools
+
+Detailed guides for leveraging performance analysis and monitoring tools to identify bottlenecks, analyze system behavior, and optimize your workloads on Intel hardware.
+
+### ⚙️ Intel Hardware Optimal Configurations
+
+Best practices and configuration recommendations for getting the most out of your Intel architecture, including BIOS settings, CPU tuning, memory optimization, and system-level configurations to efficiency and performance.
+
+### 🚀 Goal
 
 We aim to provide a dynamic resource where users can find the latest optimization strategies, contribute feedback, and report issues.
 
@@ -59,4 +79,4 @@ Please check individual files for any exceptions or additional terms.
 
 Performance varies by use, configuration and other factors. Learn more on the [Performance Index site](https://edc.intel.com/content/www/us/en/products/performance/benchmarks/overview/). Performance results are based on testing as of dates shown in configurations and may not reflect all publicly available updates. No product or component can be absolutely secure. Your costs and results may vary. Intel technologies may require enabled hardware, software or service activation. See our complete [Legal Notices and Disclaimers](https://www.intel.com/LegalNoticesAndDisclaimers).
 
-© Intel Corporation.  Intel, the Intel logo, and other Intel marks are trademarks of Intel Corporation or its subsidiaries.  Other names and brands may be claimed as the property of others. 
+© Intel Corporation.  Intel, the Intel logo, and other Intel marks are trademarks of Intel Corporation or its subsidiaries.  Other names and brands may be claimed as the property of others.
