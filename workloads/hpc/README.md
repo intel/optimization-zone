@@ -1,4 +1,4 @@
-# Intel® Xeon® 6 with P-Cores Configuration and Tuning Guide for HPC Applications
+# Intel® Xeon® 6 with P-Cores: Configuration and Tuning Guide for HPC Applications
 
 
 
