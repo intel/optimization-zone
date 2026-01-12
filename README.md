@@ -38,7 +38,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
 - Workloads
   - [Cassandra Stress](workloads/cassandra-stress/README.md)
-  - [SpecHPC](workloads/spec-hpc/README.md)
+  - [HPC](workloads/hpc/README.md)
   - [TPC-DS](workloads/tpc-ds/README.md)
   - [TPC-H](workloads/tpc-h/README.md)
 - Performance Analysis and Monitoring Tools
