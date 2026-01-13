@@ -1,8 +1,9 @@
 # Intel® PerfSpect
 
-A Swiss Army knife for Linux Performance Engineers 
+A Swiss Army knife for Linux Performance Engineers
 
-# Key Features
+## Key Features
+
 - Monitor and report CPU metrics
 - Report system configuration and health
 - Monitor and report system telemetry
