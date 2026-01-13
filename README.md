@@ -41,9 +41,10 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [HPC](workloads/hpc/README.md)
   - [TPC-DS](workloads/tpc-ds/README.md)
   - [TPC-H](workloads/tpc-h/README.md)
-- Performance Analysis and Monitoring Tools
-  - [PerfSpect](tools/perfspect/README.md)
+- [Performance Analysis and Monitoring Tools](tools/README.md "A summary of the tools included in this directory")
+  - [gProfiler](tools/gprofiler/README.md)
   - [PCM](tools/pcm/README.md)
+  - [PerfSpect](tools/perfspect/README.md)
   - [VTune Profiler](tools/vtune/README.md)
 - Hardware
   - [PMU](hardware/PMU/README.md)
