@@ -1,0 +1,28 @@
+name: Blank Issue
+description: Create a new issue from scratch for optimization-zone.
+title: "[ISSUE]: "
+labels: ["generic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Thanks for opening an issue! 
+        Please provide details below to help the maintainers understand your request.
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Provide a clear and concise description of what the issue is.
+      placeholder: Type your description here...
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or logs. You can also drag and drop screenshots/files directly into this box.
+      placeholder: |
+        - Screenshots: [Drag & Drop here]
+        - Logs: [Paste here]
+    validations:
+      required: false
