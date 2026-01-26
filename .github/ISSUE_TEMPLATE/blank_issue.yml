@@ -1,5 +1,5 @@
 name: Blank Issue
-description: Create a new issue from scratch.
+description: Create a new issue from scratch for optimization-zone.
 title: "[ISSUE]: "
 labels: ["generic"]
 body:
