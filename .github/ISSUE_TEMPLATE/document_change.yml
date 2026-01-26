@@ -1,0 +1,51 @@
+name: Request a documentation change
+description: Use this template to report a documentation issue or request documentation changes
+title: "[DOC CHANGE]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Thanks for opening a documentation change request!
+        Please provide details below to help the maintainers understand your request.
+  - type: dropdown
+    id: change-type
+    attributes:
+      label: Type of Change
+      description: What kind of documentation issue are you reporting?
+      options:
+        - "Typo or Grammar Fix"
+        - "Outdated Information"
+        - "Missing Documentation"
+        - "Clarification/Formatting"
+        - "Broken Link or Image"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Add a Description
+      description: Provide a clear description of what the documentation change is.
+      value: |
+         # Summary of the change
+         What information is missing or needs to be updated?
+
+         # Current behavior
+         Describe how the current documentation is incorrect or insufficient.
+
+         # Suggested changes / Correction
+         Provide the exact changes or additions you suggest.
+
+         # Relevant URLS
+         Paste links to the specific pages or sections that need updating.   
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Provide any other context or screenshots related to the documentation change.
+      placeholder: |
+        - Screenshots: [Drag & Drop here]
+    validations:
+      required: false
