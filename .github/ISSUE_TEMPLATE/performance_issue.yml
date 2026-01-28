@@ -1,0 +1,121 @@
+name: Report a Performance Issue
+description: Use this template to report a performance issue encountered while using an optimization zone recipe.
+title: "[PERF ISSUE]: "
+labels: ["performance_issue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+       To help us understand, please provide as much detail as possible about your workload, environment and recipe used
+  - type: textarea
+    id: recipe
+    attributes:
+      label: Which recipe or workload were you running?
+      description: Provide URLs to optimization zone recipe you were testing.
+      value: |
+        # Recipe/Workload name with respective URLs
+    validations:
+      required: true
+  - type: textarea
+    id: performance-description
+    attributes:
+      label: Performance Problem Description
+      description: What is the specific performance issue? (e.g., "higher latency than expected," "throughput degradation", "tail latency spikes")
+      value: |
+        Please describe:
+        1. The expected performance (e.g., target latency/throughput).
+        2. The observed performance and issue.
+        3. Where the bottleneck appears to be (CPU, Memory, IO).
+    validations:
+      required: true
+  - type: textarea
+    id: workload-details
+    attributes:
+      label: Workload Details
+      description: Provide more information regarding workload setup.
+      value: |
+        # Please include details such as:
+        - Concurrency - Number of threads, processes or connections
+        - Read/Write ratio and access patterns (sequential, random)
+        - System load during the test (CPU, Memory, IO utilization)
+        - Bursty or steady-state workload
+        - Batch size
+        - Dataset size
+
+        ## Command line / Script to reproduce
+        - Include any specific optimizations or flags used
+        ```bash
+        # paste commands here
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs-screenshots
+    attributes:
+      label: Performance data or Screenshots
+      description: If you have workload data or data from a profiling tool like [VTune Profiler](https://github.com/intel/optimization-zone/blob/main/tools/vtune/README.md) or [PerfSpect](https://github.com/intel/optimization-zone/blob/main/tools/perfspect/README.md), please attach them here.
+      placeholder: |
+        - Drag and drop relevant performance data or flame graphs here.
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Tell us about the hardware and software used. Please run the commands below and paste the results after each bullet point
+      value: |
+        Please provide the output for the following:
+        * **CPU make and Model**: (try `lscpu | grep 'Model name'` or `cat /proc/cpuinfo | grep 'model name' | head -1`)
+
+        * **Baremetal or Virtualized**: If virtualised, provide instance details. (e.g. AWS c8i.4xlarge, GCP c4-standard-8)
+
+        * **OS version**: (`cat /etc/os-release`)
+
+        * **Kernel version**: (`uname -r`)
+
+        * **Compiler version**: (`gcc --version`)
+
+        * **glibc version**: (`ldd --version | head -1`)
+
+        * **Framework/Software version**: (e.g. PyTorch 2.1, PostgreSQL 16.1, Cassandra Version 4.1.3)
+        
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ### Environment Report using PerfSpect
+        Alternatively, please run **PerfSpect** to capture your system configuration report in one file. This also helps us verify if your environment is optimized for Intel hardware (Turbo Boost, NUMA, AMX, etc.).
+        
+        **Documentation:** [intel/PerfSpect](https://github.com/intel/PerfSpect)
+        
+        #### **How to capture the report:**
+        1. **Download and extract:**
+           ```bash
+           wget -qO- https://github.com/intel/PerfSpect/releases/latest/download/perfspect.tgz | tar -xvz
+           cd perfspect
+           ```
+        2. **Run the report generation:**
+           ```bash
+           ./perfspect report
+           ```
+
+  - type: textarea
+    id: perfspect-report-upload
+    attributes:
+      label: Upload PerfSpect Report
+      description: Drag and drop the generated .html output file from your environment here.
+      placeholder: Attach your report by dragging and dropping the file into this box.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: reproducibility-check
+    attributes:
+      label: Reproducibility
+      options:
+        - label: I have verified that this is a reproducible issue and not a one-off anomaly.
+          required: true

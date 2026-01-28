@@ -1,0 +1,2 @@
+# This prevents the default GitHub "Blank Issue" from appearing
+blank_issues_enabled: false
