@@ -1,0 +1,38 @@
+name: Request a New Recipe
+description: Use this template to request a new workload or software recipe to be added to optimization-zone.
+title: "[New Recipe]: "
+labels: ["recipe_request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Thanks for opening a new recipe request! 
+  - type: textarea
+    id: description
+    attributes:
+      label: Add a Description
+      description: | 
+       Please provide a short summary of the requested recipe and its intended use case.
+      value: | 
+        ## Summary of request
+
+        ### Impact & Motivation
+        * **Problem Statement**: What is the current challenge or performance gap?
+        * **Use Case**: Describe the scenarios where this recipe would be beneficial.
+        * **User/Customer Benefit**: How does this help you or your end-customers? E.g., performance improvement, cost reduction, enhanced capabilities
+
+        ### Technical Requirements
+        * **Target Hardware**: (e.g., Sapphire Rapids, Emerald Rapids)
+        * **Software Stack**: (e.g., Python version, Frameworks, Libraries)
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: Reference Materials
+      description: Links to research papers, or existing benchmarks related to your request.
+      placeholder: |
+        - URL to software repository
+        - Link to research paper or blog post
+    validations:
+      required: false
