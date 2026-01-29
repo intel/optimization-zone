@@ -1,0 +1,15 @@
+name: Ask a question
+description: Use this template to ask a question related to optimization-zone.
+title: "[QUESTION]: "
+labels: ["question"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Add a Description
+      description: | 
+       Please provide a concise description of your question.
+       If it relates to a specific recipe or workload or Intel hardware, please mention it here
+      placeholder: Type your description here...
+    validations:
+      required: true
