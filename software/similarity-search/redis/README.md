@@ -1,13 +1,10 @@
 # Redis Vector Search Optimization Guide
 
-This guide describes best practices for optimizing vector similarity search performance in Redis on Intel Xeon processors. Redis 8.2+ includes SVS-VAMANA, a graph-based vector index algorithm from Intel's Scalable Vector Search (SVS) library, optimized for Intel hardware.
+This guide describes best practices for optimizing vector similarity search performance in Redis on Intel Xeon processors. Redis 8.2+ includes SVS-VAMANA, a graph-based vector index algorithm from Intel's Scalable Vector Search (SVS) library.
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Hardware Recommendations](#hardware-recommendations)
-- [BIOS Configuration](#bios-configuration)
-- [Choosing the Right Index Type](#choosing-the-right-index-type)
 - [SVS-VAMANA Configuration](#svs-vamana-configuration)
 - [Vector Compression](#vector-compression)
 - [Performance Tuning](#performance-tuning)
@@ -17,73 +14,14 @@ This guide describes best practices for optimizing vector similarity search perf
 
 ## Overview
 
-Redis Query Engine supports three vector index types:
+Redis Query Engine supports three vector index types: FLAT, HNSW, and SVS-VAMANA. SVS-VAMANA combines the Vamana graph-based search algorithm with Intel's compression technologies (LVQ and LeanVec), delivering optimal performance on servers with AVX-512 support.
 
-| Index Type | Use Case | Accuracy | Performance |
-|------------|----------|----------|-------------|
-| **FLAT** | Small datasets (<1M vectors) | Exact | Brute-force |
-| **HNSW** | Large datasets, general use | Approximate | Good |
-| **SVS-VAMANA** | Large datasets on Intel hardware | Approximate | Best on Intel |
+**Key Benefits of SVS-VAMANA:**
 
-**Why SVS-VAMANA on Intel?**
-
-- Optimized for AVX-512 instruction set on Intel Xeon processors
-- Advanced compression (LVQ, LeanVec) reduces memory by up to 16x
-- Higher throughput with lower latency compared to HNSW
-
-## Hardware Recommendations
-
-### Recommended Intel Xeon Configurations
-
-| Workload Size | CPU | Memory | Storage |
-|---------------|-----|--------|---------|
-| Small (<1M vectors) | 4th Gen Xeon, 16 cores | 64 GB DDR5 | NVMe SSD |
-| Medium (1-10M vectors) | 4th Gen Xeon, 32 cores | 128 GB DDR5 | NVMe SSD |
-| Large (10-100M vectors) | 4th/5th Gen Xeon, 64 cores | 256 GB DDR5 | NVMe SSD |
-| X-Large (>100M vectors) | 5th Gen Xeon, 128+ cores | 512+ GB DDR5 | NVMe RAID |
-
-> **PerfTip:** 4th Gen Intel Xeon Scalable (Sapphire Rapids) and newer provide optimal AVX-512 performance for vector operations.
-
-### Key Hardware Features
-
-- **AVX-512**: Required for optimal SVS performance
-- **AMX**: Additional acceleration on 4th/5th Gen Xeon
-- **DDR5 Memory**: Higher bandwidth improves vector search throughput
-- **Large L3 Cache**: Helps with graph traversal operations
-
-## BIOS Configuration
-
-| Parameter | Recommended Setting | Description | PerfTip |
-|-----------|---------------------|-------------|---------|
-| Hyperthreading (SMT) | Enabled | Two threads per core | Up to 20% |
-| Sub-NUMA Clustering (SNC) | SNC2 or SNC4 | Better memory locality | Up to 15% |
-| Hardware Prefetcher | Enabled | Improves cache utilization | 5-10% |
-| Intel Turbo Boost | Enabled | Higher clock speeds | 10-15% |
-| Power Profile | Performance | Maximum CPU frequency | Varies |
-
-## Choosing the Right Index Type
-
-```
-                    ┌─────────────────────────────────────┐
-                    │     Do you need exact results?      │
-                    └─────────────────────────────────────┘
-                                    │
-                    ┌───────────────┴───────────────┐
-                    ▼                               ▼
-                   Yes                              No
-                    │                               │
-                    ▼                               ▼
-               Use FLAT                   ┌────────────────────┐
-                                          │ Running on Intel?  │
-                                          └────────────────────┘
-                                                    │
-                                    ┌───────────────┴───────────────┐
-                                    ▼                               ▼
-                                   Yes                              No
-                                    │                               │
-                                    ▼                               ▼
-                            Use SVS-VAMANA                      Use HNSW
-```
+- **Memory Efficiency**: 26–37% total memory savings compared to HNSW, with 51–74% reduction in index memory
+- **Higher Throughput**: Up to 144% higher QPS compared to HNSW on high-dimensional datasets
+- **Lower Latency**: Up to 60% reduction in p50/p95 latencies under load
+- **Maintained Accuracy**: Matches HNSW precision levels while delivering performance improvements
 
 ## SVS-VAMANA Configuration
 
@@ -106,15 +44,15 @@ FT.CREATE my_index
 
 | Parameter | Description | Default | Tuning Guidance |
 |-----------|-------------|---------|-----------------|
-| TYPE | Vector data type | - | FLOAT32 for accuracy, FLOAT16 for memory |
+| TYPE | Vector data type (FLOAT16, FLOAT32) | - | FLOAT32 for accuracy, FLOAT16 for memory |
 | DIM | Vector dimensions | - | Must match your embeddings |
 | DISTANCE_METRIC | L2, IP, or COSINE | - | COSINE for normalized embeddings |
 | GRAPH_MAX_DEGREE | Max edges per node | 32 | Higher = better recall, more memory |
 | CONSTRUCTION_WINDOW_SIZE | Build search window | 200 | Higher = better graph quality |
 | SEARCH_WINDOW_SIZE | Query search window | 10 | Higher = better recall, slower |
 | COMPRESSION | LVQ/LeanVec type | none | See compression section |
-
-> **PerfTip:** Setting `GRAPH_MAX_DEGREE` to 64 instead of default 32 can improve recall by 2-5% with ~2x memory overhead for the graph structure.
+| TRAINING_THRESHOLD | Vectors for learning compression | 10240 | Increase if recall is low |
+| REDUCE | Target dimension for LeanVec | DIM/2 | Lower = faster search, may reduce recall |
 
 ## Vector Compression
 
@@ -125,42 +63,22 @@ Intel SVS provides advanced compression techniques that reduce memory usage whil
 | Compression | Bits/Dim | Memory Reduction | Best For |
 |-------------|----------|------------------|----------|
 | None | 32 (FLOAT32) | 1x (baseline) | Maximum accuracy |
-| LVQ8 | 8 | 4x | Fast ingestion |
-| LVQ4x4 | 4+4 | 8x | Balanced |
-| LVQ4x8 | 4+8 | ~6x | High recall with compression |
-| LeanVec4x8 | Reduced dim + 4+8 | 8-16x | High-dimensional vectors (768+) |
-| LeanVec8x8 | Reduced dim + 8+8 | 4-8x | Best recall with LeanVec |
+| LVQ8 | 8 | ~4x | Fast ingestion, good balance |
+| LVQ4x4 | 4+4 | ~4x | Fast search, dimensions < 768 |
+| LVQ4x8 | 4+8 | ~3x | High recall with compression |
+| LeanVec4x8 | Reduced + 4+8 | ~3x | High-dimensional vectors (768+) |
+| LeanVec8x8 | Reduced + 8+8 | ~2.5x | Best recall with LeanVec |
 
-### Choosing Compression
+### Choosing Compression by Use Case
 
-```
-Vector Dimensions < 512?
-  └─► Use LVQ4x4 or LVQ4x8
+| Embedding Category | Example Embeddings | Compression Strategy |
+|--------------------|-------------------|---------------------|
+| Text Embeddings | Cohere embed-v3 (1024), OpenAI ada-002 (1536) | LeanVec4x8 |
+| Image Embeddings | ResNet-152 (2048), ViT (768+) | LeanVec4x8 |
+| Multimodal | CLIP ViT-B/32 (512) | LVQ8 |
+| Lower Dimensional | Custom embeddings (<768) | LVQ4x4 or LVQ4x8 |
 
-Vector Dimensions >= 512?
-  └─► Use LeanVec4x8 or LeanVec8x8
-
-Need maximum memory savings?
-  └─► Use LVQ4 (single-level)
-
-Need highest recall with compression?
-  └─► Use LVQ4x8 or LeanVec8x8
-```
-
-> **PerfTip:** LeanVec4x8 with 768-dimensional vectors (common for text embeddings) can reduce memory by 10x while maintaining 95%+ recall.
-
-### Two-Level Compression
-
-LVQ and LeanVec support two-level compression:
-
-1. **Level 1**: Fast candidate retrieval using compressed vectors
-2. **Level 2**: Re-ranking using residual encoding for accuracy
-
-Example: `LVQ4x8` uses 4 bits for Level 1 and 8 bits for Level 2.
-
-### Compression Training
-
-Compression parameters are learned from data. Use `TRAINING_THRESHOLD` to control the sample size:
+### Example with LeanVec Compression
 
 ```bash
 FT.CREATE my_index
@@ -168,18 +86,18 @@ FT.CREATE my_index
   PREFIX 1 doc:
   SCHEMA embedding VECTOR SVS-VAMANA 14
     TYPE FLOAT32
-    DIM 768
+    DIM 1536
     DISTANCE_METRIC COSINE
     COMPRESSION LeanVec4x8
+    REDUCE 384
     TRAINING_THRESHOLD 20000
-    REDUCE 192
 ```
-
-> **Note:** If recall is low, increase `TRAINING_THRESHOLD`. The default is 10 * 1024 = 10,240 vectors.
 
 ## Performance Tuning
 
 ### Runtime Query Parameters
+
+Adjust search parameters at query time for precision/performance trade-offs:
 
 ```bash
 FT.SEARCH my_index
@@ -194,106 +112,83 @@ FT.SEARCH my_index
 | EPSILON | Larger = wider range search | Higher latency |
 | SEARCH_BUFFER_CAPACITY | More candidates for re-ranking | Higher latency |
 
-### OS-Level Tuning
-
-```bash
-# Enable huge pages for better memory performance
-echo 'vm.nr_hugepages = 1024' >> /etc/sysctl.conf
-sysctl -p
-
-# Set CPU governor to performance
-cpupower frequency-set -g performance
-
-# Disable transparent huge pages (if not using explicitly)
-echo never > /sys/kernel/mm/transparent_hugepage/enabled
-```
-
-> **PerfTip:** Using 2MB huge pages can improve vector search throughput by 5-10%.
-
 ### Redis Configuration
 
 ```
 # redis.conf optimizations for vector workloads
 
-# Increase memory limit for large vector datasets
-maxmemory 200gb
-
 # Use multiple I/O threads for better throughput
 io-threads 4
 io-threads-do-reads yes
-
-# Disable persistence for pure search workloads (if acceptable)
-save ""
-appendonly no
 ```
 
 ## Benchmarks
 
-### Redis Query Engine Performance
+Based on [Redis and Intel benchmarking](https://redis.io/blog/tech-dive-comprehensive-compression-leveraging-quantization-and-dimensionality-reduction/), SVS-VAMANA delivers significant improvements over HNSW:
 
-Based on [Redis benchmarks](https://redis.io/blog/benchmarking-results-for-vector-databases/), Redis significantly outperforms competitors:
+### Memory Savings
 
-| Comparison | Redis Advantage |
-|------------|-----------------|
-| vs. Qdrant | Up to 3.4x higher QPS |
-| vs. Milvus | Up to 3.3x higher QPS |
-| vs. Weaviate | Up to 1.7x higher QPS |
-| vs. PostgreSQL (pgvector) | Up to 9.5x higher QPS |
-| vs. MongoDB Atlas | Up to 11x higher QPS |
-| vs. OpenSearch | Up to 53x higher QPS |
+SVS-VAMANA with LVQ8 compression achieves consistent memory reductions across datasets:
 
-### SVS Performance on Intel
+| Dataset | Dimensions | Total Memory Reduction | Index Memory Reduction |
+|---------|------------|----------------------|----------------------|
+| LAION | 512 | 26% | 51% |
+| Cohere | 768 | 35% | 70% |
+| DBpedia | 1536 | 37% | 74% |
 
-Intel SVS benchmarks show significant improvements over alternatives:
+### Throughput Improvements (FP32)
 
-| Dataset | SVS QPS | vs. HNSW |
-|---------|---------|----------|
-| deep-96-1B | 95,931 | 7.0x faster |
-| rqa-768-10M | 23,296 | 8.1x faster |
-| deep-96-100M | 140,505 | 4.5x faster |
+At 0.95+ precision, compared to HNSW:
 
-*Source: [Intel SVS Benchmarks](https://intel.github.io/ScalableVectorSearch/benchs/static/latest.html)*
+| Dataset | Dimensions | QPS Improvement |
+|---------|------------|-----------------|
+| Cohere | 768 | Up to 144% higher |
+| DBpedia | 1536 | Up to 60% higher |
+| LAION | 512 | 0-15% (marginal) |
 
-### Memory Savings with Compression
+SVS-VAMANA is most effective for medium-to-high dimensional embeddings (768–3072 dimensions).
 
-| Configuration | Memory per 1M Vectors (768-dim) | Recall@10 |
-|---------------|--------------------------------|-----------|
-| FLOAT32 (no compression) | ~3 GB | 100% |
-| LVQ4x8 | ~500 MB | ~98% |
-| LeanVec4x8 (reduce=192) | ~300 MB | ~95% |
+### Latency Improvements (FP32, High Concurrency)
+
+| Dataset | p50 Latency Reduction | p95 Latency Reduction |
+|---------|----------------------|----------------------|
+| Cohere (768d) | 60% | 57% |
+| DBpedia (1536d) | 46% | 36% |
+
+### Precision vs. Performance
+
+At every precision point from ~0.92 to 0.99, SVS-VAMANA matches HNSW accuracy while delivering higher throughput. At high precision (0.99), SVS-VAMANA sustains up to 1.5x better throughput.
+
+### Ingestion Trade-offs
+
+SVS-VAMANA index construction is slower than HNSW due to compression overhead. On x86 platforms:
+- LeanVec: Can be up to 25% faster or 33% slower than HNSW depending on dataset
+- LVQ: Up to 2.6x slower than HNSW
+
+This trade-off is acceptable for workloads where query performance and memory efficiency are priorities.
 
 ## FAQ
 
 ### Q: When should I use SVS-VAMANA vs HNSW?
 
 **A:** Use SVS-VAMANA when:
-- Running on Intel Xeon processors (4th Gen+)
-- Memory efficiency is important
-- You need maximum throughput on Intel hardware
+- Running on Intel Xeon processors with AVX-512
+- Memory efficiency is important (26-37% savings)
+- You have medium-to-high dimensional vectors (768+)
+- Query throughput and latency are priorities
 
 Use HNSW when:
-- Running on non-Intel hardware
-- You need a well-established, widely-tested algorithm
-- Compatibility with Redis Open Source without Intel optimizations
+- Running on ARM platforms (HNSW performs well on ARM)
+- You need faster index construction
+- Working with lower-dimensional vectors (<512)
 
 ### Q: Are LVQ and LeanVec available in Redis Open Source?
 
-**A:** The basic SVS-VAMANA algorithm with 8-bit scalar quantization is available in Redis Open Source. However, Intel's proprietary LVQ and LeanVec optimizations require:
-- Intel hardware
-- Redis Software (commercial) or RSALv2 license
-- Building with `BUILD_INTEL_SVS_OPT=yes`
+**A:** The basic SVS-VAMANA algorithm with 8-bit scalar quantization (SQ8) is available in Redis Open Source on all platforms. Intel's proprietary LVQ and LeanVec optimizations require:
+- Intel hardware with AVX-512
+- Redis Software (commercial) or building with `BUILD_INTEL_SVS_OPT=yes`
 
-### Q: How do I migrate from HNSW to SVS-VAMANA?
-
-**A:** Create a new index with SVS-VAMANA and reindex your data:
-
-```bash
-# Create new SVS-VAMANA index
-FT.CREATE new_index ON HASH PREFIX 1 doc: SCHEMA embedding VECTOR SVS-VAMANA 8 TYPE FLOAT32 DIM 768 DISTANCE_METRIC COSINE COMPRESSION LVQ4x8
-
-# Reindex data (use your application or Redis CLI)
-# The data format is identical, only the index type changes
-```
+On non-Intel platforms (AMD, ARM), SVS-VAMANA falls back to SQ8 compression.
 
 ### Q: What if recall is too low with compression?
 
@@ -302,11 +197,19 @@ FT.CREATE new_index ON HASH PREFIX 1 doc: SCHEMA embedding VECTOR SVS-VAMANA 8 T
 2. Switch to higher-bit compression (LVQ4x8 → LVQ8, or LeanVec4x8 → LeanVec8x8)
 3. Increase `GRAPH_MAX_DEGREE` (e.g., 64 or 128)
 4. Increase `SEARCH_WINDOW_SIZE` at query time
+5. For LeanVec, try a larger `REDUCE` value (closer to original dimensions)
+
+### Q: How does performance compare across CPU vendors?
+
+**A:** Based on benchmarks:
+- **Intel**: Best performance with LVQ and LeanVec optimizations
+- **AMD**: Strong performance with SQ8 fallback, comparable to Intel in many cases
+- **ARM**: HNSW is recommended; SVS-VAMANA SQ8 fallback has slower ingestion on ARM
 
 ## References
 
 - [Redis Vector Search Documentation](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/)
 - [SVS-VAMANA Index Reference](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/#svs-vamana-index)
 - [Vector Compression Guide](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/svs-compression/)
+- [Tech Dive: Comprehensive Compression](https://redis.io/blog/tech-dive-comprehensive-compression-leveraging-quantization-and-dimensionality-reduction/)
 - [Intel Scalable Vector Search](https://intel.github.io/ScalableVectorSearch/)
-- [Redis Benchmarking Results](https://redis.io/blog/benchmarking-results-for-vector-databases/)
