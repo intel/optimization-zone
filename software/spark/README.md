@@ -169,7 +169,7 @@ For information on these knobs, please review the
 
 ## 6th Generation Intel® Xeon® 6985-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud
 
-<img src="images/oss-spark-gen-perf.png" alt="" width="60%">
+<img src="images/oss-spark-gen-perf.png" alt="" width="100%">
 
 ### 6th Generation Xeon® compared to 4th Generation Xeon® with Spark 3.5.2 In Google Cloud
 - **1.42×** speedup for **TPCDS**-Like SF3TB
