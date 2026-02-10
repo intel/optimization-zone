@@ -79,7 +79,7 @@ cmake --build build -j
 
 FAISS provides a factory string format for creating SVS indexes:
 
-```
+```text
 SVSVamana<degree>[,<compression>[_<dims>]]
 ```
 

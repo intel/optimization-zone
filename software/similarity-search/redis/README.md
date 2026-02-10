@@ -188,6 +188,8 @@ Use HNSW when:
 - Intel hardware with AVX-512
 - Redis Software (commercial) or building with `BUILD_INTEL_SVS_OPT=yes`
 
+**⚠️ Licensing Note:** If you use Redis Open Source under AGPLv3 or SSPLv1, you cannot use Intel's proprietary LVQ/LeanVec binaries—the Intel SVS license is incompatible with those licenses. LVQ and LeanVec optimizations are only available when Redis Open Source is distributed under RSALv2. See [Redis SVS compression docs](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/svs-compression/) for details.
+
 On non-Intel platforms (AMD, ARM), SVS-VAMANA falls back to SQ8 compression.
 
 ### Q: What if recall is too low with compression?
