@@ -184,13 +184,11 @@ Use HNSW when:
 
 ### Q: Are LVQ and LeanVec available in Redis Open Source?
 
-**A:** The basic SVS-VAMANA algorithm with 8-bit scalar quantization (SQ8) is available in Redis Open Source on all platforms. Intel's proprietary LVQ and LeanVec optimizations require:
+**A:** The basic SVS-VAMANA algorithm with 8-bit scalar quantization (SQ8) is available in Redis Open Source on all platforms. Intel's LVQ and LeanVec optimizations require:
 - Intel hardware with AVX-512
 - Redis Software (commercial) or building with `BUILD_INTEL_SVS_OPT=yes`
 
-**⚠️ Licensing Note:** If you use Redis Open Source under AGPLv3 or SSPLv1, you cannot use Intel's proprietary LVQ/LeanVec binaries—the Intel SVS license is incompatible with those licenses. LVQ and LeanVec optimizations are only available when Redis Open Source is distributed under RSALv2. See [Redis SVS compression docs](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/svs-compression/) for details.
-
-On non-Intel platforms (AMD, ARM), SVS-VAMANA falls back to SQ8 compression.
+On non-Intel platforms (AMD, ARM), SVS-VAMANA automatically falls back to SQ8 compression—no code changes required.
 
 ### Q: What if recall is too low with compression?
 
@@ -201,12 +199,15 @@ On non-Intel platforms (AMD, ARM), SVS-VAMANA falls back to SQ8 compression.
 4. Increase `SEARCH_WINDOW_SIZE` at query time
 5. For LeanVec, try a larger `REDUCE` value (closer to original dimensions)
 
-### Q: How does performance compare across CPU vendors?
+### Q: Does SVS-VAMANA work on non-Intel hardware?
 
-**A:** Based on benchmarks:
-- **Intel**: Best performance with LVQ and LeanVec optimizations
-- **AMD**: Strong performance with SQ8 fallback, comparable to Intel in many cases
-- **ARM**: HNSW is recommended; SVS-VAMANA SQ8 fallback has slower ingestion on ARM
+**A:** Yes! The API is unified and SVS-VAMANA runs on any x86 or ARM platform—no code changes needed. The library automatically selects the best available implementation:
+
+- **Intel (AVX-512)**: Full LVQ/LeanVec optimizations for maximum performance
+- **AMD/Other x86**: SQ8 fallback implementation, which benchmarks show is also quite fast—often comparable performance
+- **ARM**: SQ8 fallback works; however, HNSW may be preferable due to slower SVS ingestion on ARM
+
+Your application code stays the same regardless of hardware. Ideal performance is achieved on Intel Xeon with AVX-512, but you can deploy and test on any platform without modification.
 
 ## References
 
