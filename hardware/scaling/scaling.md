@@ -166,4 +166,4 @@ Minimize contention for true sharing:
 
 avoids unnecessary writes to a shared cache line.
 
-Use a scalable malloc such as [jemalloc](https://jemalloc.net/) or [tcmalloc](https://github.com/google/tcmalloc) or TBB malloc if malloc library contention shows up. 
+Use a scalable malloc such as [jemalloc](https://jemalloc.net/) or [tcmalloc](https://github.com/google/tcmalloc) or [oneTBB malloc](https://uxlfoundation.github.io/oneTBB/main/tbb_userguide/automatically-replacing-malloc.html) if malloc library contention shows up. 
