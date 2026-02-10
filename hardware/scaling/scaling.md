@@ -58,7 +58,7 @@ This is the basic test, however other factors (such as bandwidth limitations on 
 ### Using Perfmon to identify memory contention
 
 The Intel Performance Monitoring Unit (PMU) can be used to identify memory contention in programs.
-The availability of these features in cloud instances may vary.
+The availability of these features in cloud instances may vary. For more details, see [PMU](../PMU/README.md)
 
 #### Using Perfmon metrics
 
