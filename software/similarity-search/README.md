@@ -79,7 +79,7 @@ The naming convention reflects bits per dimension at each level:
 | Software | Description | Guide |
 |----------|-------------|-------|
 | **Redis** | Redis Query Engine with SVS-VAMANA | [Redis Guide](redis/README.md) |
-| **FAISS** | Facebook AI Similarity Search with SVS indexes | Coming soon |
+| **FAISS** | Facebook AI Similarity Search with SVS indexes | [FAISS Guide](faiss/README.md) |
 
 ## References
 
