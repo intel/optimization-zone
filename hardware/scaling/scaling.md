@@ -145,7 +145,7 @@ Consider the trade-offs for read/write locks: Most read locks transfers the lock
 
 Chose the right lock type. Trade off spin locks versus sleeping locks such as glibc mutexes. Sleeping locks should be only used for very long critical sections, as they can have high transfer overhead. For spin locks advanced ticket locks can perform much better under contention (however it is usually better to reduce contention instead of tuning the locks itself). Ticket locks should be avoided when the CPUs are over subscribed because they have inherent ordering which may conflict with scheduling decisions.
 
-Example implementation of advanced locks are in [ConcurrencyKit](https://concurrencykit.org/) or [Intel TBB](https://uxlfoundation.github.io/oneTBB/) 
+Example implementation of advanced locks are in [ConcurrencyKit](https://concurrencykit.org/) or [oneTBB](https://uxlfoundation.github.io/oneTBB/) 
 
 # Low level tuning: Basic cache line tuning
 
