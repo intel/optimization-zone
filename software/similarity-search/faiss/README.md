@@ -10,7 +10,6 @@ This guide describes best practices for optimizing vector similarity search perf
 - [Creating SVS Indexes](#creating-svs-indexes)
 - [Vector Compression](#vector-compression)
 - [Performance Tuning](#performance-tuning)
-- [Benchmarks](#benchmarks)
 - [FAQ](#faq)
 - [References](#references)
 
@@ -28,9 +27,9 @@ FAISS (Facebook AI Similarity Search) is a library for efficient similarity sear
 
 **Key Benefits:**
 
-- Up to 13.5x higher throughput compared to HNSW at billion scale
-- 51-74% memory reduction with compression
-- Optimized for servers with AVX-512 support
+- High-performance graph-based similarity search optimized for Intel CPUs
+- Significant memory reduction with LVQ and LeanVec compression
+- Best performance on Intel Xeon with AVX-512 support
 
 ## SVS Index Types in FAISS
 
@@ -207,36 +206,6 @@ faiss.write_index(index, "my_index.faiss")
 index = faiss.read_index("my_index.faiss")
 ```
 
-## Benchmarks
-
-Based on Intel SVS benchmarks, SVS indexes in FAISS deliver significant performance improvements:
-
-### Throughput Comparison (Queries Per Second)
-
-| Dataset | Dimensions | Size | SVS QPS | vs. HNSW |
-|---------|------------|------|---------|----------|
-| deep-96 | 96 | 1B | 95,931 | 7.0x faster |
-| deep-96 | 96 | 100M | 140,505 | 4.5x faster |
-| rqa-768 | 768 | 10M | 23,296 | 8.1x faster |
-| open-images | 512 | 13M | 79,507 | 3.3x faster |
-
-*Source: [Intel SVS Benchmarks](https://intel.github.io/ScalableVectorSearch/benchs/static/latest.html)*
-
-### Memory Savings with Compression
-
-| Configuration | Memory per 1M Vectors (768-dim) |
-|---------------|--------------------------------|
-| float32 (no compression) | ~3 GB |
-| LVQ8 | ~750 MB |
-| LVQ4x8 | ~500 MB |
-| LeanVec4x8 (reduce to 192) | ~300 MB |
-
-### Hardware Recommendations
-
-Best performance is achieved on servers with AVX-512 support:
-- 4th Gen Intel Xeon Scalable (Sapphire Rapids) or newer
-- On non-Intel platforms, SVS falls back to basic 8-bit scalar quantization
-
 ## FAQ
 
 ### Q: How do I check if SVS is available in my FAISS installation?
@@ -252,7 +221,7 @@ print(hasattr(faiss, 'IndexSVSVamana'))  # True if SVS is available
 
 ### Q: What happens on non-Intel hardware?
 
-**A:** On AMD or ARM platforms, SVS uses a fallback 8-bit scalar quantization (SQ8) instead of LVQ/LeanVec. Performance will be good but not as optimized as on Intel with AVX-512.
+**A:** SVS indexes are designed for Intel CPUs. On Intel platforms without AVX-512, performance is still good but not optimal. On non-Intel platforms (AMD, ARM), consider using standard FAISS indexes like IndexHNSW.
 
 ### Q: How does IndexSVSVamana compare to IndexHNSW?
 
