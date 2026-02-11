@@ -48,6 +48,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [VTune Profiler](tools/vtune/README.md)
 - Hardware
   - [PMU](hardware/PMU/README.md)
+  - [Scaling](hardware/scaling/README.md)
 
 ## Contributing
 
