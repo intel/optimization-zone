@@ -152,3 +152,26 @@ Results may vary.
 
 ### Intel® Xeon® 6 with Efficiency Cores Summary
 Both **Gluten** and **Spark 3.3.1** show significant performance-per-watt improvements on the **Intel® Xeon® 6780E** compared to the **Intel® Xeon® 8358**. Additionally, **Gluten consistently outperforms Spark 3.3.1** on the same hardware, making it a compelling choice for energy-efficient data processing workloads.
+
+## 6th Generation Intel® Xeon® 6985-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud
+
+<img src="images/gluten-gen-perf.png" alt="" width="60%">
+
+### 6th Generation Xeon® compared to 4th Generation Xeon® with Spark 3.5.2 In Google Cloud
+- **1.49×** speedup for **TPCDS**-Like SF3TB
+- **1.25×** perf/$ improvement for **TPCDS**-Like SF3TB
+
+<img src="images/oss-spark-gluten-gen-perf.png" alt="" width="60%">
+
+### Gluten + Velox vs. Spark 3.5.2 In Google Cloud
+- **2.13×** speedup for **TPCDS**-Like SF3TB on 4th Generation Intel® Xeon® Platinum 8481C in Google Cloud (c3-standard-88-lssd)
+- **2.22×** speedup **TPCDS**-Like SF3TB on 6th Generation Intel® Xeon® 6985-C in Google Cloud (c4-standard-96-lssd)
+
+### Details
+Testing Date: Performance results are based on testing by Intel as of 1 Aug 2025 and may not reflect all publicly available security updates.
+
+OSS Spark on SPR: 1-node, 1x Intel(R) Xeon(R) Platinum 8481C CPU @ 2.70GHz, 44 cores, c3-standard-88-lssd VM, HT On, Turbo Off, NUMA 1, Total Memory 352GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card10, 1x 375G nvme_card8, 1x 375G nvme_card12, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card11, 1x 375G nvme_card15, 1x 375G nvme_card14, 1x 375G nvme_card0, 1x 375G nvme_card3, 1x 375G nvme_card13, 1x 375G nvme_card1, 1x 375G nvme_card4, 1x 375G nvme_card7, 1x 375G nvme_card9, 1x 375G nvme_card6, Ubuntu 24.04.2 LTS, 6.14.0-1011-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 2786 sec
+
+OSS Spark on GNR: 1-node, 1x Intel(R) Xeon(R) 6985P-C CPU @ 2.30GHz, 48 cores, c4-standard-96-lssd VM, HT On, Turbo Off, NUMA 2, Total Memory 360GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card14, 1x 375G nvme_card1, 1x 375G nvme_card3, 1x 375G nvme_card0, 1x 375G nvme_card4, 1x 375G nvme_card8, 1x 375G nvme_card15, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card9, 1x 375G nvme_card11, 1x 375G nvme_card6, 1x 375G nvme_card7, 1x 375G nvme_card10, 1x 375G nvme_card12, 1x 375G nvme_card13, Ubuntu 24.04.2 LTS, 6.14.0-1012-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 1871 sec
+
+Results may vary.
