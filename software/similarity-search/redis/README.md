@@ -27,7 +27,7 @@ Redis Query Engine supports three vector index types: FLAT, HNSW, and SVS-VAMANA
 
 ### Creating an SVS-VAMANA Index
 
-```bash
+```
 FT.CREATE my_index
   ON HASH
   PREFIX 1 doc:
@@ -46,9 +46,9 @@ FT.CREATE my_index
 |-----------|-------------|---------|-----------------|
 | TYPE | Vector data type (FLOAT16, FLOAT32) | - | FLOAT32 for accuracy, FLOAT16 for memory |
 | DIM | Vector dimensions | - | Must match your embeddings |
-| DISTANCE_METRIC | L2, IP, or COSINE | - | COSINE for normalized embeddings |
+| DISTANCE_METRIC | L2, IP, or COSINE | - | L2 for normalized embeddings |
 | GRAPH_MAX_DEGREE | Max edges per node | 32 | Higher = better recall, more memory |
-| CONSTRUCTION_WINDOW_SIZE | Build search window | 200 | Higher = better graph quality |
+| CONSTRUCTION_WINDOW_SIZE | Build search window | 200 | Higher = better graph quality, slower build |
 | SEARCH_WINDOW_SIZE | Query search window | 10 | Higher = better recall, slower |
 | COMPRESSION | LVQ/LeanVec type | none | See compression section |
 | TRAINING_THRESHOLD | Vectors for learning compression | 10240 | Increase if recall is low |
@@ -65,9 +65,11 @@ Intel SVS provides advanced compression techniques that reduce memory usage whil
 | None | 32 (FLOAT32) | 1x (baseline) | Maximum accuracy |
 | LVQ8 | 8 | ~4x | Fast ingestion, good balance |
 | LVQ4x4 | 4+4 | ~4x | Fast search, dimensions < 768 |
-| LVQ4x8 | 4+8 | ~3x | High recall with compression |
-| LeanVec4x8 | Reduced + 4+8 | ~3x | High-dimensional vectors (768+) |
-| LeanVec8x8 | Reduced + 8+8 | ~2.5x | Best recall with LeanVec |
+| LVQ4x8 | 4+8 | ~2.5x | High recall with compression |
+| LeanVec4x8 |4/f+8 | ~3x | High-dimensional vectors (768+) |
+| LeanVec8x8 | 8/f+8 | ~2.5x | Best recall with LeanVec |
+
+The LeanVec dimensionality reduction factor `f` is the full dimensionality divided by the reduced dimensionality.
 
 ### Choosing Compression by Use Case
 
@@ -80,11 +82,11 @@ Intel SVS provides advanced compression techniques that reduce memory usage whil
 
 ### Example with LeanVec Compression
 
-```bash
+```
 FT.CREATE my_index
   ON HASH
   PREFIX 1 doc:
-  SCHEMA embedding VECTOR SVS-VAMANA 14
+  SCHEMA embedding VECTOR SVS-VAMANA 12
     TYPE FLOAT32
     DIM 1536
     DISTANCE_METRIC COSINE
@@ -109,7 +111,6 @@ FT.SEARCH my_index
 | Parameter | Effect | Trade-off |
 |-----------|--------|-----------|
 | SEARCH_WINDOW_SIZE | Larger = higher recall | Higher latency |
-| EPSILON | Larger = wider range search | Higher latency |
 | SEARCH_BUFFER_CAPACITY | More candidates for re-ranking | Higher latency |
 
 ### Redis Configuration
@@ -124,7 +125,7 @@ io-threads-do-reads yes
 
 ## Benchmarks
 
-Based on [Redis and Intel benchmarking](https://redis.io/blog/tech-dive-comprehensive-compression-leveraging-quantization-and-dimensionality-reduction/), SVS-VAMANA delivers significant improvements over HNSW:
+Based on [Redis benchmarking](https://redis.io/blog/tech-dive-comprehensive-compression-leveraging-quantization-and-dimensionality-reduction/), SVS-VAMANA delivers significant improvements over HNSW:
 
 ### Memory Savings
 
@@ -138,7 +139,7 @@ SVS-VAMANA with LVQ8 compression achieves consistent memory reductions across da
 
 ### Throughput Improvements (FP32)
 
-At 0.95+ precision, compared to HNSW:
+At 0.95 precision, compared to HNSW:
 
 | Dataset | Dimensions | QPS Improvement |
 |---------|------------|-----------------|
@@ -146,7 +147,7 @@ At 0.95+ precision, compared to HNSW:
 | DBpedia | 1536 | Up to 60% higher |
 | LAION | 512 | 0-15% (marginal) |
 
-SVS-VAMANA is most effective for medium-to-high dimensional embeddings (768–3072 dimensions).
+SVS-VAMANA is most effective at improving throughput for medium-to-high dimensional embeddings (768–3072 dimensions).
 
 ### Latency Improvements (FP32, High Concurrency)
 

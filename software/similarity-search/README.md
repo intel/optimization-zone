@@ -14,7 +14,7 @@ Vector similarity search is a core component of modern AI applications including
 
 ## Intel Scalable Vector Search (SVS)
 
-[Intel Scalable Vector Search (SVS)](https://intel.github.io/ScalableVectorSearch/) is a high-performance library for vector similarity search, optimized for Intel hardware. SVS can be used directly as a standalone library, and we are working on integrating it into various popular solutions to bring these optimizations to a wider audience.
+[Intel Scalable Vector Search (SVS)](https://intel.github.io/ScalableVectorSearch/) is a high-performance library for vector similarity search, optimized for Intel hardware. SVS can be used directly as a standalone library, and is integrated into popular solutions to bring these optimizations to a wider audience.
 
 SVS features:
 
@@ -52,12 +52,12 @@ Best suited for:
 Both LVQ and LeanVec support two-level compression schemes:
 
 1. **Level 1**: Fast candidate retrieval using compressed vectors
-2. **Level 2**: Re-ranking using residual encoding for accuracy
+2. **Level 2**: Re-ranking for accuracy (LVQ encodes residuals, LeanVec encodes the full dimensionality data)
 
 The naming convention reflects bits per dimension at each level:
 - `LVQ4x8`: 4 bits for Level 1, 8 bits for Level 2 (12 bits total per dimension)
 - `LVQ8`: Single-level, 8 bits per dimension
-- `LeanVec4x8`: Dimensionality reduction + 4-bit Level 1 + 8-bit Level 2
+- `LeanVec4x8`: 4-bit Level 1 encoding of reduced dimensionality data + 8-bit Level 2 encoding of full dimensionality data
 
 ## Vector Compression Selection
 
