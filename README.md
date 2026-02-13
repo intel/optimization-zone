@@ -36,6 +36,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [Java](software/java/README.md)
   - [Spark](software/spark/README.md)
   - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
+  - [Kafka](software/kafka/README.md)
 - Workloads
   - [Cassandra Stress](workloads/cassandra-stress/README.md)
   - [HPC](workloads/hpc/README.md)
