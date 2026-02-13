@@ -153,7 +153,7 @@ Results may vary.
 ### Intel® Xeon® 6 with Efficiency Cores Summary
 Both **Gluten** and **Spark 3.3.1** show significant performance-per-watt improvements on the **Intel® Xeon® 6780E** compared to the **Intel® Xeon® 8358**. Additionally, **Gluten consistently outperforms Spark 3.3.1** on the same hardware, making it a compelling choice for energy-efficient data processing workloads.
 
-## 6th Generation Intel® Xeon® 6985-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud
+## 6th Generation Intel® Xeon® 6985P-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud
 
 <img src="images/gluten-gen-perf.png" alt="" width="60%">
 
@@ -165,7 +165,7 @@ Both **Gluten** and **Spark 3.3.1** show significant performance-per-watt improv
 
 ### Gluten + Velox vs. Spark 3.5.2 In Google Cloud
 - **2.13×** speedup for **TPCDS**-Like SF3TB on 4th Generation Intel® Xeon® Platinum 8481C in Google Cloud (c3-standard-88-lssd)
-- **2.22×** speedup **TPCDS**-Like SF3TB on 6th Generation Intel® Xeon® 6985-C in Google Cloud (c4-standard-96-lssd)
+- **2.22×** speedup **TPCDS**-Like SF3TB on 6th Generation Intel® Xeon® 6985P-C in Google Cloud (c4-standard-96-lssd)
 
 ### Details
 Testing Date: Performance results are based on testing by Intel as of 1 Aug 2025 and may not reflect all publicly available security updates.

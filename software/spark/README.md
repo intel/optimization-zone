@@ -167,14 +167,14 @@ For information on these knobs, please review the
 
 ## Performance Results for Intel® Xeon® 6 with Performance Cores
 
-## 6th Generation Intel® Xeon® 6985-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud
+## 6th Generation Intel® Xeon® 6985P-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud
 
 <img src="images/oss-spark-gen-perf.png" alt="" width="60%">
 
 ### 6th Generation Xeon® compared to 4th Generation Xeon® with Spark 3.5.2 In Google Cloud
 - **1.42×** speedup for **TPCDS**-Like SF3TB
 - **1.19×** perf/$ improvement for **TPCDS**-Like SF3TB
-- For performance with Apache Gluten, reference the [Gluten article](../gluten/README.md) in Optimization Zone.
+- For performance with Apache Gluten, reference the [Gluten article](../gluten/README.md#6th-generation-intel-xeon-6985p-c-vs-4th-generation-intel-xeon-platinum-8481c-in-google-cloud) in Optimization Zone.
 
 ### Details
 Testing Date: Performance results are based on testing by Intel as of 1 Aug 2025 and may not reflect all publicly available security updates.
