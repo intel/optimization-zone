@@ -1,7 +1,5 @@
 This workload tuning guide describes the best known practices to optimize performance on Intel Xeon CPUs when running Apache Kafka. Default configurations may vary across hardware vendors, thus this guide helps provide a set of recommended settings for getting the best performance throughput/latency. This document assumes the user is running Kafka in cloud instances, with a section recommending settings for single node benchmarking at the end of the document.
 
-> **Note**: This guide is based on testing with Kafka 4.2.0 release candidate (RC). Users should verify configurations and features with the final Kafka 4.2.0 release when available, as some behaviors or settings may change.
-
 # This document is organized with the following topics:
 - [Document Nomenclature](#document-nomenclature)
 - [Kafka Cluster Topology](#kafka-cluster-topology)
@@ -127,8 +125,8 @@ An alternative to adding volumes would be to scale up the brokers to systems wit
 
 # Operating System, Kernel, & Software Configuration
 We recommend using the latest LTS version of Linux OS and kernel with current security and performance patches applied. We describe specific versions of Kafka and Java for testing and compatibility.
-- **Kafka version**: Kafka 4.2.0 release candidate (RC) is used for this guide as it includes an enhancement to the producer performance test that enables a warmup period before collecting steady-state statistics.
-- **Java version**: Java version 17 or 23 are officially supported by Kafka 4.2.0 RC. Do not use Java 8 because it has been deprecated since Kafka 4.0. Additionally, Java 11 is not recommended due to incomplete support for Kafka Connect and Kafka Server. See [Compatibility](https://kafka.apache.org/41/getting-started/compatibility/) for further information.
+- **Kafka version**: Kafka 4.2.0 is used for this guide as it includes an enhancement to the producer performance test that enables a warmup period before collecting steady-state statistics.
+- **Java version**: Java version 17 or 23 are officially supported by Kafka 4.2.0. Do not use Java 8 because it has been deprecated since Kafka 4.0. Additionally, Java 11 is not recommended due to incomplete support for Kafka Connect and Kafka Server. See [Compatibility](https://kafka.apache.org/42/getting-started/compatibility/) for further information.
 
 ## Operating System Settings
 In this section, we describe some Linux operating system settings that can help optimize storage and networking resources to improve Kafka's request latency performance.
@@ -162,7 +160,7 @@ See the example at [Example System Startup Script](#example-system-startup-scrip
 Settings in this section apply to all members of the Kafka cluster
 
 ## Encryption
-These settings enable TLS encryption, but common stores and passwords are not recommended for production clusters. For more information, see [Encryption and Authentication using SSL](https://kafka.apache.org/41/security/encryption-and-authentication-using-ssl/)
+These settings enable TLS encryption, but common stores and passwords are not recommended for production clusters. For more information, see [Encryption and Authentication using SSL](https://kafka.apache.org/42/security/encryption-and-authentication-using-ssl/)
 - `ssl.enabled.protocols=TLSv1.2,TLSv1.3`
 - Common truststore (copy) between brokers and clients
 - Common keystore (copy) between brokers and clients
@@ -176,7 +174,7 @@ These settings enable TLS encryption, but common stores and passwords are not re
 - Most other Controller settings can be defaults
 
 # Kafka Broker Configuration
-- Kafka 4.2.0 release candidate (containing warmup patch from KIP-1052)
+- Kafka 4.2.0 (containing warmup patch from KIP-1052)
   - [Downloads | Apache Kafka](https://kafka.apache.org/downloads)
 - **Threads**: Increase network and replica fetcher threads since replication is the slow part of producing a message. Increase socket receive and socket send buffers to minimize dropped packets at the network.
   - Example: Cloud instance with 16 vCPUs
@@ -226,7 +224,7 @@ Benchmarking Kafka is typically accomplished with the `kafka-producer-perf-test`
 In this test, the producer sends data to Kafka on a specified topic at a provided rate for a provided number of records. 
 This test measures the latency of a producer request which is composed of the producer generating a message, sending the message to the brokers, the message being replicated among brokers, and the response from the leader broker to the producer.
 At the end of the test, the producer reports resulting statistics comprising average latency and throughput as well as median and tail latencies like p99 which is used for the SLA.
-To get a more accurate measurement of a Kafka cluster's performance during steady-state operation, utilize the `warmup-records` feature available in the `kafka-producer-perf-test` in Kafka 4.2.0 RC.
+To get a more accurate measurement of a Kafka cluster's performance during steady-state operation, utilize the `warmup-records` feature available in the `kafka-producer-perf-test` in Kafka 4.2.0.
 The `--warmup-records` parameter instructs the producer to classify a fraction of the provided `num-records` as a "warmup" and keep them separate from the steady-state performance which is reported separately from the whole test in the metrics summary statistics lines printed at the end of the test run.
 In choosing the test duration, `num-records`, the test should be long enough to get sufficient repeatability in the steady-state p99 measurements. 
 A warmup allows some time for the broker and producer JVMs to warm up, network connections to be established, and variability from these changes to reach equilibrium as the cluster reaches steady state.
@@ -293,7 +291,7 @@ When operating Kafka in production, it's often undesirable to use multiple addit
 In these cases, Kafka has Java Management Extensions (JMX) metrics that can be passively gathered by Kafka and either logged or displayed on dashboards such as Grafana.
 Since it's built into Kafka and Java, JMX can offer additional insights into the internal operations of Kafka that cannot otherwise be monitored with external tooling.
 To enable JMX on a Kafka process, add the `JMX_PORT` variable to the environment of the process.
-For more info on JMX see [Monitoring](https://kafka.apache.org/41/operations/monitoring/)
+For more info on JMX see [Monitoring](https://kafka.apache.org/42/operations/monitoring/)
 
 Finally, if users need to better understand the call stacks of Kafka or where Kafka is spending time on CPU, tools such as [flamegraphs](https://www.brendangregg.com/flamegraphs.html) can be extremely useful to gather and understand their call stacks.
 To enable flamegraphs for any Java process including Kafka, add the following arguments to the Java command line for each process:
