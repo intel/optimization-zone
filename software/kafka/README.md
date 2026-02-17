@@ -123,7 +123,7 @@ If any members of the cluster are close to their Network throughput limits, depe
 Another potential resource bottleneck in a cloud deployment can be the storage bandwidth of volumes in their default configuration. It's usually possible to increase the I/O operations per second (IOPS) and bandwidth for a volume at creation time. It's recommended that these volumes be configured with high IOPS and throughput where possible. If storage performance of a single volume that's been configured for maximum throughput is still insufficient to meet an SLA, additional volumes may be attached to brokers or the brokers may be moved to instances with direct-attached NVMes. 
 As with other system resources, storage telemetry should be monitored to ensure individual devices are not operating beyond their allotted steady-state performance.
 Scaling storage when hitting instance resource limits is somewhat more flexible than scaling the network because, in addition to the possibility of growing the cluster capacity with scale-out of additional brokers, additional storage volumes can usually be added to brokers to increase their storage capacity.
-An alternative to adding volumes would be to scale up the brokers to systems with direct-attached NVMe's that enable high-performance storage.
+An alternative to adding volumes would be to scale up the brokers to systems with direct-attached NVMes that enable high-performance storage.
 
 # Operating System, Kernel, & Software Configuration
 We recommend using the latest LTS version of Linux OS and kernel with current security and performance patches applied. We describe specific versions of Kafka and Java for testing and compatibility.
@@ -182,7 +182,7 @@ These settings enable TLS encryption, but common stores and passwords are not re
   - Example: Cloud instance with 16 vCPUs
     - `num.network.threads=6`: should be less than or equal to half the CPU cores assigned to a broker
     - `num.io.threads=8`: should be less than or equal to the count of CPU cores assigned to a broker
-    - `num.replica.fetchers=2`: increased beyond the default of 2 to improve replication latency
+    - `num.replica.fetchers=2`: increased beyond the default of 1 to improve replication latency
     - `socket.receive.buffer.bytes=102400000`: Increased to 100MB from the default of 100kB to improve network performance
     - `socket.send.buffer.bytes=102400000`: Increased to 100MB from the default of 100kB to improve network performance
 
@@ -323,7 +323,7 @@ Ensure that each broker has sufficient storage bandwidth by assigning at least o
 
 ## Single-node BIOS Configuration Recommendations
 If the user has access to the BIOS for a system, here are some parameters that can be changed to improve Kafka performance.
-- **Sub-NUMA CLustering (SNC)**: enabls multiple NUMA nodes so each broker can run on its own NUMA node 
+- **Sub-NUMA Clustering (SNC)**: enables multiple NUMA nodes so each broker can run on its own NUMA node
 - **Hyperthreading**: enabled
 - **Latency Optimized mode**: Some Xeon BIOS use this parameter. This setting optimizes for latency vs. power of the memory subsystem which helps latency-sensitive workloads
 
@@ -361,7 +361,7 @@ net.ipv4.tcp_rmem='4096 87380 16777216' \
 net.ipv4.tcp_wmem='4096 65536 16777216'
 
 ################################################################
-#setting the system to performance mode for best possible perf #
+# setting the system to performance mode for best possible perf #
 ################################################################
 for CPUFREQ in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 do
