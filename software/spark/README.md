@@ -21,11 +21,12 @@ focused on TPC-DS, please reference
   - [Storage Configuration](#storage-configuration)
   - [Network Configuration](#network-configuration)
 - [Software Tuning](#software-tuning)
-  - [Linux Kernel Optimization Settings](#linux-kernel-optimization-settings)
-    - [Configure `ulimit`](#configure-ulimit)
-    - [Configure Transparent Huge Pages](#configure-transparent-huge-pages)
+  - [Linux Optimization Settings](#linux-optimization-settings)
+    - [Configure `limits.conf`](#configure-limitsconf)
+    - [Configure Huge Pages](#configure-huge-pages)
   - [Spark Parameter Tuning](#spark-parameter-tuning)
     - [Memory Tuning](#memory-tuning)
+- [Performance Results](#performance-results)
 
 # References
 
@@ -124,7 +125,7 @@ good candidates for experimentation in your deployment.
 For information on these knobs, please review the 
 [Spark documentation](https://spark.apache.org/docs/latest/configuration.html).
 
-| Parameters | Description & Recommend Setting |
+| Parameters | Description & Recommended Setting |
 |:-------|:--------------------------------|
 | spark.executor.cores | The number of cores to use on each executor.<br><br>**Recommended:** Recommend to allocate 4 to 8 cores per executor. Please note that using an odd number of cores is not advised on systems with Simultaneous Multithreading (SMT) enabled |
 | spark.executor.instances | The number of executors to launch for this session.<br><br>**Recommended:** Divide the output of `nproc` by the number of cores per executor (`spark.executor.cores`) |
@@ -156,9 +157,34 @@ some experimentation.
 For information on these knobs, please review the 
 [Spark documentation](https://spark.apache.org/docs/latest/configuration.html).
 
-| Parameters | Description & Recommend Setting |
+| Parameters | Description & Recommended Setting |
 |:-----------|:--------------------------------|
 | spark.executor.memoryOverhead | Memory that accounts for things like VM overheads, interned strings, other native overheads, etc.<br><br>**Recommended:** 1g |
 | spark.executor.memory | Amount of memory to use per executor process<br><br>**Recommended:** 35% of total memory, divided by number of executors |
 | spark.memory.offHeap.enabled | Determines if Spark will use off-heap memory for certain operations<br><br>**Recommended:** true |
 | spark.memory.offHeap.size | The absolute amount of memory which can be used for off-heap allocation<br><br>**Recommended:** 45% of total memory, divided by number of executors |
+
+# Performance Results
+
+[Performance Results for Intel® Xeon® 6 with Performance Cores](#performance-results-for-intel-xeon-6-with-performance-cores)
+
+## Performance Results for Intel® Xeon® 6 with Performance Cores
+- [6th Generation Intel® Xeon® 6985P-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud](#6th-generation-intel-xeon-6985p-c-vs-4th-generation-intel-xeon-platinum-8481c-in-google-cloud)
+
+## 6th Generation Intel® Xeon® 6985P-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud
+
+<img src="images/oss-spark-gen-perf.png" alt="" width="60%">
+
+### 6th Generation Xeon® compared to 4th Generation Xeon® with Spark 3.5.2 In Google Cloud
+- **1.42×** speedup for **TPCDS**-Like SF3TB
+- **1.19×** perf/$ improvement for **TPCDS**-Like SF3TB
+- For 6th Generation Xeon® performance compared to 4th Generation Xeon® in perfomance Google Cloud using Apache Gluten, reference the [Gluten article](../gluten/README.md#6th-generation-intel-xeon-6985p-c-vs-4th-generation-intel-xeon-platinum-8481c-in-google-cloud) in Optimization Zone.
+
+### Details
+Testing Date: Performance results are based on testing by Intel as of 1 Aug 2025 and may not reflect all publicly available security updates.
+
+OSS Spark on SPR: 1-node, 1x Intel(R) Xeon(R) Platinum 8481C CPU @ 2.70GHz, 44 cores, c3-standard-88-lssd VM, HT On, Turbo Off, NUMA 1, Total Memory 352GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card10, 1x 375G nvme_card8, 1x 375G nvme_card12, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card11, 1x 375G nvme_card15, 1x 375G nvme_card14, 1x 375G nvme_card0, 1x 375G nvme_card3, 1x 375G nvme_card13, 1x 375G nvme_card1, 1x 375G nvme_card4, 1x 375G nvme_card7, 1x 375G nvme_card9, 1x 375G nvme_card6, Ubuntu 24.04.2 LTS, 6.14.0-1011-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 5926 sec
+
+OSS Spark on GNR: 1-node, 1x Intel(R) Xeon(R) 6985P-C CPU @ 2.30GHz, 48 cores, c4-standard-96-lssd VM, HT On, Turbo Off, NUMA 2, Total Memory 360GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card14, 1x 375G nvme_card1, 1x 375G nvme_card3, 1x 375G nvme_card0, 1x 375G nvme_card4, 1x 375G nvme_card8, 1x 375G nvme_card15, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card9, 1x 375G nvme_card11, 1x 375G nvme_card6, 1x 375G nvme_card7, 1x 375G nvme_card10, 1x 375G nvme_card12, 1x 375G nvme_card13, Ubuntu 24.04.2 LTS, 6.14.0-1012-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 4162 sec
+
+Results may vary.
