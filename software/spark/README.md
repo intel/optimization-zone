@@ -23,7 +23,7 @@ focused on TPC-DS, please reference
 - [Software Tuning](#software-tuning)
   - [Linux Optimization Settings](#linux-optimization-settings)
     - [Configure `limits.conf`](#configure-limitsconf)
-    - [CConfigure Huge Pages](#configure-huge-pages)
+    - [Configure Huge Pages](#configure-huge-pages)
   - [Spark Parameter Tuning](#spark-parameter-tuning)
     - [Memory Tuning](#memory-tuning)
 - [Performance Results](#performance-results)
@@ -176,7 +176,7 @@ For information on these knobs, please review the
 ### 6th Generation Xeon® compared to 4th Generation Xeon® with Spark 3.5.2 In Google Cloud
 - **1.42×** speedup for **TPCDS**-Like SF3TB
 - **1.19×** perf/$ improvement for **TPCDS**-Like SF3TB
-- For performance with Apache Gluten, reference the [Gluten article](../gluten/README.md#6th-generation-intel-xeon-6985p-c-vs-4th-generation-intel-xeon-platinum-8481c-in-google-cloud) in Optimization Zone.
+- For 6th Generation Xeon® performance compared to 4th Generation Xeon® in perfomance Google Cloud using Apache Gluten, reference the [Gluten article](../gluten/README.md#6th-generation-intel-xeon-6985p-c-vs-4th-generation-intel-xeon-platinum-8481c-in-google-cloud) in Optimization Zone.
 
 ### Details
 Testing Date: Performance results are based on testing by Intel as of 1 Aug 2025 and may not reflect all publicly available security updates.
