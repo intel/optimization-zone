@@ -9,18 +9,18 @@ Click to learn more about [Gluten](https://github.com/apache/incubator-gluten) a
 
 # Contents
 
-[Parameter Tuning](#gluten-related-Parameter-Tuning)  
-[Intel® Optimizations](#intel-optimizations)  
-[Performance Results](#performance-results)
+- [Parameter Tuning](#gluten-related-Parameter-Tuning)  
+- [Intel® Optimizations](#intel-optimizations)  
+- [Performance Results](#performance-results)
 
 
 # Gluten related Parameter Tuning
 
-| Parameters | Description | Recommend Setting |
+| Parameters | Description | Recommended Setting |
 | ---------- | ----------- | ----------------- |
 | spark.executor.instances | |Depends on total cores per host and related to cores setting |
 | spark.executor.cores | | Recommend to allocate 4 to 8 cores per executor. Please note that using an odd number of cores is not advised on systems with Simultaneous Multithreading(SMT) enabled|
-| spark.executor.memory | | At least 0.5GB-1GB per core. Please note too small heap memory size could trigger GC and hurt the performance.|
+| spark.executor.memory | | Recommend to allocate at least 0.5GB-1GB per core. Please note too small heap memory size could trigger GC and hurt the performance.|
 | spark.executor.memoryOverhead | | Keep a few memory size for memoryOverhead |
 | spark.memory.offHeap.enabled | Gluten uses offHeap memory for the native engine. | true  |
 | spark.memory.offHeap.size | Set up offHeap memory size | In fully offload cases, please allocate as much memory as possible for offHeap. |
@@ -40,7 +40,7 @@ Click to learn more about [Gluten](https://github.com/apache/incubator-gluten) a
 | spark.gluten.sql.columnar.physicalJoinOptimizationLevel | | 18. Intend to fallback to JVM engine when consequent join happen like q72 in TPC-DS. |
 | spark.gluten.sql.columnar.physicalJoinOptimizeEnable | | true |
 | spark.gluten.sql.columnar.numaBinding | | Set true for bare metal and false for Cloud environment. |
-| spark.gluten.sql.columnar.coreRange | | This parameters only works when numaBinding is enabled. Please use numactl tool to find the detailed NUMA topology then set the number to align with the NUMA topology in the Intel® processor. |
+| spark.gluten.sql.columnar.coreRange | | This parameter only works when numaBinding is enabled. Please use numactl tool to find the detailed NUMA topology then set the number to align with the NUMA topology in the Intel® processor. |
 
 ## Differences between Spark and Gluten in the Memory setting
 In Spark, the total executor memory is calculated as:
@@ -88,7 +88,10 @@ Please refer to [Velox HBM](https://apache.github.io/incubator-gluten/get-starte
 
 ## Performance Results for Intel® Xeon® 6 with Performance Cores
 
-## Intel® Xeon® 6960P vs. 5th Generation Intel® Xeon® 8592+
+- [6th Generation Intel® Xeon® 6960P vs. 5th Generation Intel® Xeon® 8592+](#6th-generation-intel-xeon-6960p-vs-5th-generation-intel-xeon-8592)
+- [6th Generation Intel® Xeon® 6985P-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud](#6th-generation-intel-xeon-6985p-c-vs-4th-generation-intel-xeon-platinum-8481c-in-google-cloud)
+
+## 6th Generation Intel® Xeon® 6960P vs. 5th Generation Intel® Xeon® 8592+
 
 <img src="images/TPCH-Like_SF6TB_Intel_6960P.jpg" alt="" width="60%">
 <img src="images/TPCDS-Like_SF6TB_Intel_6960P.jpg" alt="" width="60%">
@@ -118,12 +121,40 @@ Gluten on GNR: 1-node, 2x Intel(R) Xeon(R) 6960P, 72 cores, HT On, Turbo On, NUM
 
 Results may vary.
 
+## 6th Generation Intel® Xeon® 6985P-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud
+
+<img src="images/gluten-gen-perf.png" alt="" width="60%">
+
+### 6th Generation Xeon® compared to 4th Generation Xeon® with Gluten + Velox In Google Cloud
+- **1.49×** speedup for **TPCDS**-Like SF3TB
+- **1.25×** perf/$ improvement for **TPCDS**-Like SF3TB
+
+<img src="images/oss-spark-gluten-gen-perf.png" alt="" width="60%">
+
+### Gluten + Velox vs. Spark 3.5.2 In Google Cloud
+- **2.13×** speedup for **TPCDS**-Like SF3TB on 4th Generation Intel® Xeon® Platinum 8481C in Google Cloud (c3-standard-88-lssd)
+- **2.22×** speedup **TPCDS**-Like SF3TB on 6th Generation Intel® Xeon® 6985P-C in Google Cloud (c4-standard-96-lssd)
+
+### Details
+Testing Date: Performance results are based on testing by Intel as of 1 Aug 2025 and may not reflect all publicly available security updates.
+
+Gluten on SPR: 1-node, 1x Intel(R) Xeon(R) Platinum 8481C CPU @ 2.70GHz, 44 cores, c3-standard-88-lssd VM, HT On, Turbo Off, NUMA 1, Total Memory 352GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card10, 1x 375G nvme_card8, 1x 375G nvme_card12, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card11, 1x 375G nvme_card15, 1x 375G nvme_card14, 1x 375G nvme_card0, 1x 375G nvme_card3, 1x 375G nvme_card13, 1x 375G nvme_card1, 1x 375G nvme_card4, 1x 375G nvme_card7, 1x 375G nvme_card9, 1x 375G nvme_card6, Ubuntu 24.04.2 LTS, 6.14.0-1011-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 2786 sec
+
+Gluten on GNR: 1-node, 1x Intel(R) Xeon(R) 6985P-C CPU @ 2.30GHz, 48 cores, c4-standard-96-lssd VM, HT On, Turbo Off, NUMA 2, Total Memory 360GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card14, 1x 375G nvme_card1, 1x 375G nvme_card3, 1x 375G nvme_card0, 1x 375G nvme_card4, 1x 375G nvme_card8, 1x 375G nvme_card15, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card9, 1x 375G nvme_card11, 1x 375G nvme_card6, 1x 375G nvme_card7, 1x 375G nvme_card10, 1x 375G nvme_card12, 1x 375G nvme_card13, Ubuntu 24.04.2 LTS, 6.14.0-1012-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 1871 sec
+
+OSS Spark on SPR: 1-node, 1x Intel(R) Xeon(R) Platinum 8481C CPU @ 2.70GHz, 44 cores, c3-standard-88-lssd VM, HT On, Turbo Off, NUMA 1, Total Memory 352GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card10, 1x 375G nvme_card8, 1x 375G nvme_card12, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card11, 1x 375G nvme_card15, 1x 375G nvme_card14, 1x 375G nvme_card0, 1x 375G nvme_card3, 1x 375G nvme_card13, 1x 375G nvme_card1, 1x 375G nvme_card4, 1x 375G nvme_card7, 1x 375G nvme_card9, 1x 375G nvme_card6, Ubuntu 24.04.2 LTS, 6.14.0-1011-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 5926 sec
+
+OSS Spark on GNR: 1-node, 1x Intel(R) Xeon(R) 6985P-C CPU @ 2.30GHz, 48 cores, c4-standard-96-lssd VM, HT On, Turbo Off, NUMA 2, Total Memory 360GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card14, 1x 375G nvme_card1, 1x 375G nvme_card3, 1x 375G nvme_card0, 1x 375G nvme_card4, 1x 375G nvme_card8, 1x 375G nvme_card15, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card9, 1x 375G nvme_card11, 1x 375G nvme_card6, 1x 375G nvme_card7, 1x 375G nvme_card10, 1x 375G nvme_card12, 1x 375G nvme_card13, Ubuntu 24.04.2 LTS, 6.14.0-1012-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 4162 sec
+
+Results may vary.
+
 ### Intel® Xeon® 6 with Performance Cores Summary
 The combination of **Intel® Xeon® 6 with Performance Cores** and **Gluten + Velox** demonstrates consistent performance advantages making it a strong candidate for high-performance data processing workloads.
 
 ## Performance Results for Intel® Xeon® 6 with Efficiency Cores
+- [6th Generation Intel® Xeon® 6780E vs. 3rd Generation Intel® Xeon®](#6th-generation-intel-xeon-6780e-vs-3rd-generation-intel-xeon)
 
-### Intel® Xeon® 6780E vs. 3rd Generation Intel® Xeon®
+### 6th Generation Intel® Xeon® 6780E vs. 3rd Generation Intel® Xeon®
 
 <img src="images/TPCH-Like_SF3TB_Intel_6780E.jpg" alt="" width="60%">
 <img src="images/TPCDS-Like_SF3TB_Intel_6780E.jpg" alt="" width="60%">
@@ -152,30 +183,3 @@ Results may vary.
 
 ### Intel® Xeon® 6 with Efficiency Cores Summary
 Both **Gluten** and **Spark 3.3.1** show significant performance-per-watt improvements on the **Intel® Xeon® 6780E** compared to the **Intel® Xeon® 8358**. Additionally, **Gluten consistently outperforms Spark 3.3.1** on the same hardware, making it a compelling choice for energy-efficient data processing workloads.
-
-## 6th Generation Intel® Xeon® 6985P-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud
-
-<img src="images/gluten-gen-perf.png" alt="" width="60%">
-
-### 6th Generation Xeon® compared to 4th Generation Xeon® with Spark 3.5.2 In Google Cloud
-- **1.49×** speedup for **TPCDS**-Like SF3TB
-- **1.25×** perf/$ improvement for **TPCDS**-Like SF3TB
-
-<img src="images/oss-spark-gluten-gen-perf.png" alt="" width="60%">
-
-### Gluten + Velox vs. Spark 3.5.2 In Google Cloud
-- **2.13×** speedup for **TPCDS**-Like SF3TB on 4th Generation Intel® Xeon® Platinum 8481C in Google Cloud (c3-standard-88-lssd)
-- **2.22×** speedup **TPCDS**-Like SF3TB on 6th Generation Intel® Xeon® 6985P-C in Google Cloud (c4-standard-96-lssd)
-
-### Details
-Testing Date: Performance results are based on testing by Intel as of 1 Aug 2025 and may not reflect all publicly available security updates.
-
-Gluten on SPR: 1-node, 1x Intel(R) Xeon(R) Platinum 8481C CPU @ 2.70GHz, 44 cores, c3-standard-88-lssd VM, HT On, Turbo Off, NUMA 1, Total Memory 352GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card10, 1x 375G nvme_card8, 1x 375G nvme_card12, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card11, 1x 375G nvme_card15, 1x 375G nvme_card14, 1x 375G nvme_card0, 1x 375G nvme_card3, 1x 375G nvme_card13, 1x 375G nvme_card1, 1x 375G nvme_card4, 1x 375G nvme_card7, 1x 375G nvme_card9, 1x 375G nvme_card6, Ubuntu 24.04.2 LTS, 6.14.0-1011-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 2786 sec
-
-Gluten on GNR: 1-node, 1x Intel(R) Xeon(R) 6985P-C CPU @ 2.30GHz, 48 cores, c4-standard-96-lssd VM, HT On, Turbo Off, NUMA 2, Total Memory 360GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card14, 1x 375G nvme_card1, 1x 375G nvme_card3, 1x 375G nvme_card0, 1x 375G nvme_card4, 1x 375G nvme_card8, 1x 375G nvme_card15, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card9, 1x 375G nvme_card11, 1x 375G nvme_card6, 1x 375G nvme_card7, 1x 375G nvme_card10, 1x 375G nvme_card12, 1x 375G nvme_card13, Ubuntu 24.04.2 LTS, 6.14.0-1012-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 1871 sec
-
-OSS Spark on SPR: 1-node, 1x Intel(R) Xeon(R) Platinum 8481C CPU @ 2.70GHz, 44 cores, c3-standard-88-lssd VM, HT On, Turbo Off, NUMA 1, Total Memory 352GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card10, 1x 375G nvme_card8, 1x 375G nvme_card12, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card11, 1x 375G nvme_card15, 1x 375G nvme_card14, 1x 375G nvme_card0, 1x 375G nvme_card3, 1x 375G nvme_card13, 1x 375G nvme_card1, 1x 375G nvme_card4, 1x 375G nvme_card7, 1x 375G nvme_card9, 1x 375G nvme_card6, Ubuntu 24.04.2 LTS, 6.14.0-1011-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 5926 sec
-
-OSS Spark on GNR: 1-node, 1x Intel(R) Xeon(R) 6985P-C CPU @ 2.30GHz, 48 cores, c4-standard-96-lssd VM, HT On, Turbo Off, NUMA 2, Total Memory 360GB, BIOS Google, 1x Compute Engine Virtual Ethernet [gVNIC], 1x 375G nvme_card14, 1x 375G nvme_card1, 1x 375G nvme_card3, 1x 375G nvme_card0, 1x 375G nvme_card4, 1x 375G nvme_card8, 1x 375G nvme_card15, 1x 512G nvme_card-pd, 1x 375G nvme_card2, 1x 375G nvme_card5, 1x 375G nvme_card9, 1x 375G nvme_card11, 1x 375G nvme_card6, 1x 375G nvme_card7, 1x 375G nvme_card10, 1x 375G nvme_card12, 1x 375G nvme_card13, Ubuntu 24.04.2 LTS, 6.14.0-1012-gcp, TPC-DS Like SF3T, JDK 1.8, GCC 11, Spark 3.5.2, Hadoop 3.3.5, score=TPC-DS Like SF3T 4162 sec
-
-Results may vary.

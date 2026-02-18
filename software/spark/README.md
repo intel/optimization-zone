@@ -21,11 +21,12 @@ focused on TPC-DS, please reference
   - [Storage Configuration](#storage-configuration)
   - [Network Configuration](#network-configuration)
 - [Software Tuning](#software-tuning)
-  - [Linux Kernel Optimization Settings](#linux-kernel-optimization-settings)
-    - [Configure `ulimit`](#configure-ulimit)
-    - [Configure Transparent Huge Pages](#configure-transparent-huge-pages)
+  - [Linux Optimization Settings](#linux-optimization-settings)
+    - [Configure `limits.conf`](#configure-limitsconf)
+    - [CConfigure Huge Pages](#configure-huge-pages)
   - [Spark Parameter Tuning](#spark-parameter-tuning)
     - [Memory Tuning](#memory-tuning)
+- [Performance Results](#performance-results)
 
 # References
 
@@ -124,7 +125,7 @@ good candidates for experimentation in your deployment.
 For information on these knobs, please review the 
 [Spark documentation](https://spark.apache.org/docs/latest/configuration.html).
 
-| Parameters | Description & Recommend Setting |
+| Parameters | Description & Recommended Setting |
 |:-------|:--------------------------------|
 | spark.executor.cores | The number of cores to use on each executor.<br><br>**Recommended:** Recommend to allocate 4 to 8 cores per executor. Please note that using an odd number of cores is not advised on systems with Simultaneous Multithreading (SMT) enabled |
 | spark.executor.instances | The number of executors to launch for this session.<br><br>**Recommended:** Divide the output of `nproc` by the number of cores per executor (`spark.executor.cores`) |
@@ -156,7 +157,7 @@ some experimentation.
 For information on these knobs, please review the 
 [Spark documentation](https://spark.apache.org/docs/latest/configuration.html).
 
-| Parameters | Description & Recommend Setting |
+| Parameters | Description & Recommended Setting |
 |:-----------|:--------------------------------|
 | spark.executor.memoryOverhead | Memory that accounts for things like VM overheads, interned strings, other native overheads, etc.<br><br>**Recommended:** 1g |
 | spark.executor.memory | Amount of memory to use per executor process<br><br>**Recommended:** 35% of total memory, divided by number of executors |
@@ -166,6 +167,7 @@ For information on these knobs, please review the
 # Performance Results
 
 ## Performance Results for Intel® Xeon® 6 with Performance Cores
+- [6th Generation Intel® Xeon® 6985P-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud](#6th-generation-intel-xeon-6985p-c-vs-4th-generation-intel-xeon-platinum-8481c-in-google-cloud)
 
 ## 6th Generation Intel® Xeon® 6985P-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud
 
