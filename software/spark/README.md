@@ -166,6 +166,8 @@ For information on these knobs, please review the
 
 # Performance Results
 
+[Performance Results for Intel® Xeon® 6 with Performance Cores](#performance-results-for-intel-xeon-6-with-performance-cores)
+
 ## Performance Results for Intel® Xeon® 6 with Performance Cores
 - [6th Generation Intel® Xeon® 6985P-C vs. 4th Generation Intel® Xeon® Platinum 8481C In Google Cloud](#6th-generation-intel-xeon-6985p-c-vs-4th-generation-intel-xeon-platinum-8481c-in-google-cloud)
 

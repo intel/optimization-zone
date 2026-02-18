@@ -86,6 +86,9 @@ Please refer to [Velox HBM](https://apache.github.io/incubator-gluten/get-starte
 
 # Performance Results
 
+- [Performance Results for Intel® Xeon® 6 with Performance Cores](#performance-results-for-intel-xeon-6-with-performance-cores)
+- [Performance Results for Intel® Xeon® 6 with Efficiency Cores](#performance-results-for-intel-xeon-6-with-efficiency-cores)
+
 ## Performance Results for Intel® Xeon® 6 with Performance Cores
 
 - [6th Generation Intel® Xeon® 6960P vs. 5th Generation Intel® Xeon® 8592+](#6th-generation-intel-xeon-6960p-vs-5th-generation-intel-xeon-8592)
