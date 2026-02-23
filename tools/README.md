@@ -2,33 +2,55 @@
 
 This directory contains documentation for performance monitoring and profiling tools used in optimization work.
 
-## Tool Reference
+## Contents
 
-### Intel® gProfiler
+- [Intel® Tools Reference](#intel-tools-reference)
+  - [Intel® PerfSpect](#intel-perfspect)
+  - [Intel® VTune™ Profiler](#intel-vtune-profiler)
+  - [Intel® Performance Counter Monitor (PCM)](#intel-performance-counter-monitor-pcm)
+  - [Intel® gProfiler](#intel-gprofiler)
+- [Other Tools Reference](#other-tools-reference)
+  - [Linux `perf`](#linux-perf)
+  - [Linux eBPF](#linux-ebpf-extended-berkeley-packet-filter)
+- [Choosing the Right Tool](#choosing-the-right-tool)
 
-System-wide profiler combining multiple sampling profilers across native programs, Java, Python runtimes, and kernel routines. Includes optional gProfiler Performance Studio for cluster-wide aggregation.
+## Intel® Tools Reference
 
-📊 **Best for:** Production monitoring, multi-language environments, cluster analysis, low-overhead continuous profiling
+### Intel® [PerfSpect](perfspect/README.md)
 
-### Intel® Performance Counter Monitor (PCM)
-
-API and toolset for monitoring performance and energy metrics of Intel processors including memory bandwidth, cache behavior, PCIe bandwidth, and energy states.
-
-📊 **Best for:** Hardware-level metrics, memory analysis, power consumption, real-time dashboards
-
-### Intel® PerfSpect
-
-**Easy to install and use.** Comprehensive performance engineering toolkit for system health reporting, configuration analysis, flamegraph generation, telemetry collection, and tuning parameter modification. Provides quick insights across multiple dimensions without the learning curve or deep complexity of other tools.
+**Easy to install and use.** Comprehensive performance engineering toolkit for system health reporting, configuration analysis, architectural metrics, flamegraph generation, telemetry collection, and tuning parameter modification. Provides quick insights across multiple dimensions without the learning curve or deep complexity of other tools.
 
 📊 **Best for:** System assessment, configuration validation, quick troubleshooting, health checks, getting started with performance analysis
 
 ⚡ **Key advantage:** Accessibility and speed of use, though with less depth than specialized tools
 
-### Intel® VTune™ Profiler
+### Intel® [VTune™ Profiler](vtune/README.md)
 
 In-depth application and system profiler with microarchitecture analysis, parallelism examination, multi-node analysis, and GPU/accelerator optimization capabilities.
 
 📊 **Best for:** Deep application optimization, microarchitecture analysis, GPU optimization, HPC workloads, complex debugging
+
+### Intel® [Performance Counter Monitor (PCM)](pcm/README.md)
+
+API and toolset for monitoring performance and energy metrics of Intel processors including memory bandwidth, cache behavior, PCIe bandwidth, and energy states.
+
+📊 **Best for:** Hardware-level metrics, memory analysis, power consumption, real-time dashboards
+
+### Intel® [gProfiler](gprofiler/README.md)
+
+System-wide profiler combining multiple sampling profilers across native programs, Java, Python runtimes, and kernel routines. Includes optional gProfiler Performance Studio for cluster-wide aggregation.
+
+📊 **Best for:** Production monitoring, multi-language environments, cluster analysis, low-overhead continuous profiling
+
+## Other Tools Reference
+
+### Linux `perf`
+
+Powerful performance analysis tool for Linux systems, providing a wide range of profiling capabilities including CPU performance counters, tracepoints, and dynamic probes.
+
+### Linux ebpf (extended Berkeley Packet Filter)
+
+A powerful technology for tracing and monitoring kernel and user-space events with minimal overhead, allowing for custom performance analysis and observability.
 
 ## Choosing the Right Tool
 
@@ -53,18 +75,37 @@ Start with your primary goal or problem, then follow the decision path to find t
 
 **→ Do you need to analyze multiple languages or continuous production monitoring?**
 
-- **YES (multi-language or production monitoring)** → **Use: gProfiler**
+- **YES (multi-language or continuous monitoring)** → **Use: gProfiler**
   - Multi-language environments (native, Java, Python) requiring unified profiling
   - Finding performance bottlenecks in microservices architectures
   - Analyzing resource utilization across production systems with low overhead
   - Identifying hot functions and stack traces without code instrumentation
   - Compare performance patterns across multiple machines over time
 
-- **NO (single application, development/testing)** → **Use: VTune**
-  - Optimizing algorithm efficiency by identifying instruction-level bottlenecks
-  - Deep investigation with detailed performance metrics
-  - Identifying specific microarchitecture bottlenecks (stalls, cache misses)
-  - Complex performance investigations requiring advanced visualization
+- **NO (ad-hoc analysis)** → **Use: PerfSpect**
+  - Flamegraphs for quick visualization of call stacks and hot paths
+  - Simple setup for immediate insights during development
+  - Quick identification of performance bottlenecks without deep configuration
+  - System Telemetry collection for understanding overall system behavior during testing
+  - Architectural metrics for understanding how the application interacts with hardware resources
+
+---
+
+#### **"I want to correlate application performance with hardware performance metrics"**
+
+**→ Do you have application source code?**
+
+- **YES (have source code)** → **Use: VTune**
+  - Correlating application performance with microarchitecture metrics
+  - Analyzing cache behavior and memory bandwidth in relation to code execution
+  - Identifying specific code regions causing hardware bottlenecks
+  - GPU/accelerator optimization and analysis
+
+- **NO (no source code)** → **Use: PerfSpect**
+  - System-wide performance analysis without needing source code
+  - Architectural metrics to understand hardware interactions
+  - Flamegraphs to visualize hot paths even without code instrumentation
+  - System Telemetry for overall system health and performance insights
 
 ---
 
@@ -145,10 +186,3 @@ Start with your primary goal or problem, then follow the decision path to find t
   - More sophisticated analysis capabilities
 
 ---
-
-## More Information
-
-- [gProfiler](gprofiler/README.md)
-- [PCM](pcm/README.md)
-- [PerfSpect](perfspect/README.md)
-- [VTune](vtune/README.md)
