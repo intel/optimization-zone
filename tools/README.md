@@ -48,7 +48,7 @@ System-wide profiler combining multiple sampling profilers across native program
 
 Powerful performance analysis tool for Linux systems, providing a wide range of profiling capabilities including CPU performance counters, tracepoints, and dynamic probes.
 
-### Linux ebpf (extended Berkeley Packet Filter)
+### Linux eBPF (extended Berkeley Packet Filter)
 
 A powerful technology for tracing and monitoring kernel and user-space events with minimal overhead, allowing for custom performance analysis and observability.
 
