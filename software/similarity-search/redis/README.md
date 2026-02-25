@@ -101,7 +101,7 @@ FT.CREATE my_index
 
 Adjust search parameters at query time for precision/performance trade-offs:
 
-```bash
+```
 FT.SEARCH my_index
   "*=>[KNN 10 @embedding $BLOB SEARCH_WINDOW_SIZE $SW]"
   PARAMS 4 BLOB "\x12\xa9..." SW 50
@@ -111,7 +111,6 @@ FT.SEARCH my_index
 | Parameter | Effect | Trade-off |
 |-----------|--------|-----------|
 | SEARCH_WINDOW_SIZE | Larger = higher recall | Higher latency |
-| SEARCH_BUFFER_CAPACITY | More candidates for re-ranking | Higher latency |
 
 ### Redis Configuration
 
