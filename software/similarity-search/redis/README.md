@@ -52,7 +52,6 @@ FT.CREATE my_index
 | SEARCH_WINDOW_SIZE | Query search window | 10 | Higher = better recall, slower |
 | COMPRESSION | LVQ/LeanVec type | none | See compression section |
 | TRAINING_THRESHOLD | Vectors for learning compression | 10240 | Increase if recall is low |
-| REDUCE | Target dimension for LeanVec | DIM/2 | Lower = faster search, may reduce recall |
 
 ## Vector Compression
 
@@ -179,25 +178,24 @@ This trade-off is acceptable for workloads where query performance and memory ef
 
 Use HNSW when:
 - Running on ARM platforms (HNSW performs well on ARM)
-- You need faster index construction
-- Working with lower-dimensional vectors (<512)
+- Working with lower-dimensional vectors (<512) and needing faster index construction
 
 ### Q: Are LVQ and LeanVec available in Redis Open Source?
 
 **A:** The basic SVS-VAMANA algorithm with 8-bit scalar quantization (SQ8) is available in Redis Open Source on all platforms. Intel's LVQ and LeanVec optimizations require:
 - Intel hardware with AVX-512
-- Redis Software (commercial) or building with `BUILD_INTEL_SVS_OPT=yes`
+- Redis Software (commercial) or [building Redis Open Source](https://github.com/redis/redis?tab=readme-ov-file#running-redis-with-the-query-engine-and-optional-proprietary-intel-svs-vamana-optimisations) with `BUILD_INTEL_SVS_OPT=yes`
 
 On non-Intel platforms (AMD, ARM), SVS-VAMANA automatically falls back to SQ8 compression—no code changes required.
 
 ### Q: What if recall is too low with compression?
 
 **A:** Try these steps in order:
-1. Increase `TRAINING_THRESHOLD` (e.g., 50000)
-2. Switch to higher-bit compression (LVQ4x8 → LVQ8, or LeanVec4x8 → LeanVec8x8)
-3. Increase `GRAPH_MAX_DEGREE` (e.g., 64 or 128)
-4. Increase `SEARCH_WINDOW_SIZE` at query time
-5. For LeanVec, try a larger `REDUCE` value (closer to original dimensions)
+1. Increase `SEARCH_WINDOW_SIZE` at query time
+2. Increase `TRAINING_THRESHOLD` (e.g., 50000) if using LeanVec
+3. For LeanVec, try a larger `REDUCE` value (closer to original dimensions)
+4. Switch to higher-bit compression (LVQ4x8 → LVQ8, or LeanVec4x8 → LeanVec8x8)
+5. Increase `GRAPH_MAX_DEGREE` (e.g., 64 or 128)
 
 ### Q: Does SVS-VAMANA work on non-Intel hardware?
 
