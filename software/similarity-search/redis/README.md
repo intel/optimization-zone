@@ -50,6 +50,7 @@ FT.CREATE my_index
 | GRAPH_MAX_DEGREE | Max edges per node | 32 | Higher = better recall, more memory |
 | CONSTRUCTION_WINDOW_SIZE | Build search window | 200 | Higher = better graph quality, slower build |
 | SEARCH_WINDOW_SIZE | Query search window | 10 | Higher = better recall, slower |
+| REDUCE | Target dimension for LeanVec | DIM/2 | Lower = faster search, may reduce recall |
 | COMPRESSION | LVQ/LeanVec type | none | See compression section |
 | TRAINING_THRESHOLD | Vectors for learning compression | 10240 | Increase if recall is low |
 
