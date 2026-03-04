@@ -1,6 +1,6 @@
 # Redis Vector Search Optimization Guide
 
-This guide describes best practices for optimizing vector similarity search performance in Redis on Intel Xeon processors. Redis 8.2+ includes SVS-VAMANA, a graph-based vector index algorithm from Intel's Scalable Vector Search (SVS) library.
+This guide describes best practices for optimizing vector similarity search performance in Redis on Intel Xeon processors. Redis 8.2+ includes SVS-VAMANA, a graph-based vector index with Intel's compression technologies (LVQ and LeanVec) from Intel's Scalable Vector Search (SVS) library.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ This guide describes best practices for optimizing vector similarity search perf
 
 ## Overview
 
-Redis Query Engine supports three vector index types: FLAT, HNSW, and SVS-VAMANA. SVS-VAMANA combines the Vamana graph-based search algorithm with Intel's compression technologies (LVQ and LeanVec), delivering optimal performance on servers with AVX-512 support.
+Redis Query Engine supports three vector index types: FLAT, HNSW, and SVS-VAMANA. SVS-VAMANA combines the [Vamana graph-based search algorithm](https://proceedings.neurips.cc/paper_files/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf) (Subramanya et al., NeurIPS 2019) with Intel's compression technologies (LVQ and LeanVec), delivering optimal performance on servers with AVX-512 support.
 
 **Key Benefits of SVS-VAMANA:**
 
@@ -47,7 +47,7 @@ FT.CREATE my_index
 | TYPE | Vector data type (FLOAT16, FLOAT32) | - | FLOAT32 for accuracy, FLOAT16 for memory |
 | DIM | Vector dimensions | - | Must match your embeddings |
 | DISTANCE_METRIC | L2, IP, or COSINE | - | L2 for normalized embeddings |
-| GRAPH_MAX_DEGREE | Max edges per node | 32 | Higher = better recall, more memory |
+| GRAPH_MAX_DEGREE | Max edges per node | 32 | Equivalent to HNSW's M × 2; higher = better recall, more memory |
 | CONSTRUCTION_WINDOW_SIZE | Build search window | 200 | Higher = better graph quality, slower build |
 | SEARCH_WINDOW_SIZE | Query search window | 10 | Higher = better recall, slower |
 | REDUCE | Target dimension for LeanVec | DIM/2 | Lower = faster search, may reduce recall |
@@ -128,7 +128,7 @@ Based on [Redis benchmarking](https://redis.io/blog/tech-dive-comprehensive-comp
 
 ### Memory Savings
 
-SVS-VAMANA with LVQ8 compression achieves consistent memory reductions across datasets:
+SVS-VAMANA with LVQ8 compression achieves consistent memory reductions across datasets (LVQ8 used as a common baseline; for Cohere and DBpedia embeddings, LeanVec is recommended in production — see [Compression section](#vector-compression)):
 
 | Dataset | Dimensions | Total Memory Reduction | Index Memory Reduction |
 |---------|------------|----------------------|----------------------|
@@ -146,7 +146,7 @@ At 0.95 precision, compared to HNSW:
 | DBpedia | 1536 | Up to 60% higher |
 | LAION | 512 | 0-15% (marginal) |
 
-SVS-VAMANA is most effective at improving throughput for medium-to-high dimensional embeddings (768–3072 dimensions).
+SVS-VAMANA is most effective at improving throughput for medium-to-high dimensional embeddings (768+ dimensions).
 
 ### Latency Improvements (FP32, High Concurrency)
 
@@ -161,7 +161,7 @@ At every precision point from ~0.92 to 0.99, SVS-VAMANA matches HNSW accuracy wh
 
 ### Ingestion Trade-offs
 
-SVS-VAMANA index construction is slower than HNSW due to compression overhead. On x86 platforms:
+SVS-VAMANA index construction is slower than HNSW due to graph construction complexity and compression processing. On x86 platforms:
 - LeanVec: Can be up to 25% faster or 33% slower than HNSW depending on dataset
 - LVQ: Up to 2.6x slower than HNSW
 
@@ -178,7 +178,7 @@ This trade-off is acceptable for workloads where query performance and memory ef
 - Query throughput and latency are priorities
 
 Use HNSW when:
-- Running on ARM platforms (HNSW performs well on ARM)
+- Running on ARM platforms (HNSW offers both faster search and faster ingestion on ARM)
 - Working with lower-dimensional vectors (<512) and needing faster index construction
 
 ### Q: Are LVQ and LeanVec available in Redis Open Source?
@@ -193,8 +193,8 @@ On non-Intel platforms (AMD, ARM), SVS-VAMANA automatically falls back to SQ8 co
 
 **A:** Try these steps in order:
 1. Increase `SEARCH_WINDOW_SIZE` at query time
-2. Increase `TRAINING_THRESHOLD` (e.g., 50000) if using LeanVec
-3. For LeanVec, try a larger `REDUCE` value (closer to original dimensions)
+2. For LeanVec, try a larger `REDUCE` value (closer to original dimensions)
+3. Increase `TRAINING_THRESHOLD` (e.g., 50000) if using LeanVec
 4. Switch to higher-bit compression (LVQ4x8 → LVQ8, or LeanVec4x8 → LeanVec8x8)
 5. Increase `GRAPH_MAX_DEGREE` (e.g., 64 or 128)
 
