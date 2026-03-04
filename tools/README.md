@@ -12,6 +12,7 @@ This directory contains documentation for performance monitoring and profiling t
 - [Other Tools Reference](#other-tools-reference)
   - [Linux `perf`](#linux-perf)
   - [Linux eBPF](#linux-ebpf-extended-berkeley-packet-filter)
+- [Environment Considerations: Baremetal vs. Cloud](#environment-considerations-baremetal-vs-cloud)
 - [Choosing the Right Tool](#choosing-the-right-tool)
 
 ## Intel® Tools Reference
@@ -19,6 +20,8 @@ This directory contains documentation for performance monitoring and profiling t
 ### Intel® [PerfSpect](perfspect/README.md)
 
 **Easy to install and use.** Comprehensive performance engineering toolkit for system health reporting, configuration analysis, architectural metrics, flamegraph generation, telemetry collection, and tuning parameter modification. Provides quick insights across multiple dimensions without the learning curve or deep complexity of other tools.
+
+🎯 **Expertise Level:** 🟢 Beginner - 🟡 Intermediate
 
 📊 **Best for:** System assessment, configuration validation, quick troubleshooting, health checks, getting started with performance analysis
 
@@ -28,17 +31,23 @@ This directory contains documentation for performance monitoring and profiling t
 
 In-depth application and system profiler with microarchitecture analysis, parallelism examination, multi-node analysis, and GPU/accelerator optimization capabilities.
 
+🎯 **Expertise Level:** 🔴 Advanced — requires expertise in microarchitecture concepts and profiling methodology
+
 📊 **Best for:** Deep application optimization, microarchitecture analysis, GPU optimization, HPC workloads, complex debugging
 
 ### Intel® [Performance Counter Monitor (PCM)](pcm/README.md)
 
 API and toolset for monitoring performance and energy metrics of Intel processors including memory bandwidth, cache behavior, PCIe bandwidth, and energy states.
 
+🎯 **Expertise Level:** 🟡 Intermediate - 🔴 Advanced — requires understanding of hardware performance counters
+
 📊 **Best for:** Hardware-level metrics, memory analysis, power consumption, real-time dashboards
 
 ### Intel® [gProfiler](gprofiler/README.md)
 
 System-wide profiler combining multiple sampling profilers across native programs, Java, Python runtimes, and kernel routines. Includes optional gProfiler Performance Studio for cluster-wide aggregation.
+
+🎯 **Expertise Level:** 🟡 Intermediate (single node) - 🔴 Advanced (multi-node cluster)
 
 📊 **Best for:** Production monitoring, multi-language environments, cluster analysis, low-overhead continuous profiling
 
@@ -48,13 +57,57 @@ System-wide profiler combining multiple sampling profilers across native program
 
 Powerful performance analysis tool for Linux systems, providing a wide range of profiling capabilities including CPU performance counters, tracepoints, and dynamic probes.
 
+🎯 **Expertise Level:** 🔴 Advanced — requires familiarity with Linux internals and performance events
+
 ### Linux eBPF (extended Berkeley Packet Filter)
 
 A powerful technology for tracing and monitoring kernel and user-space events with minimal overhead, allowing for custom performance analysis and observability.
 
+🎯 **Expertise Level:** 🔴 Advanced — requires knowledge of kernel tracing, BPF programs, and Linux internals
+
+## Environment Considerations: Baremetal vs. Cloud
+
+Not all tools work equally well in every environment. The key factor is access to hardware configuration settings and hardware events, e.g., **PMU (Performance Monitoring Unit) counter access**, which varies significantly between baremetal and cloud deployments.
+
+### Baremetal
+
+Full PMU counter access is typically available, so all tools can operate at their full potential. This is the ideal environment for deep hardware-level analysis with PerfSpect, VTune, PCM, and perf.
+
+### Cloud
+
+Cloud vendors vary in PMU counter availability. Many instance types restrict or disable access to hardware performance counters, which limits the effectiveness of tools that depend on them.
+
+- **Recommended starting point:** Use **PerfSpect** for quick performance insights — it does not depend on full PMU access and works reliably across cloud environments.
+- **VTune** depends on PMU counters. Check your cloud vendor's documentation for PMU support:
+  - Some vendors offer dedicated/metal instance types with full PMU access.
+  - Standard VM instances may have limited or no PMU counter availability.
+- **gProfiler** works well in cloud environments for software-level profiling and does not require PMU access.
+
+### Quick Reference by Environment
+
+| Tool | Baremetal | Cloud (standard VM) | Cloud (metal/dedicated) |
+| ---- | --------- | ------------------- | ----------------------- |
+| PerfSpect | ✅ Full support | ⚠️ Some Features Limited | ✅ Full support |
+| gProfiler | ✅ Full support | ✅ Full support | ✅ Full support |
+| VTune | ✅ Full support | ⚠️ Limited | ✅ Full support |
+| PCM | ✅ Full support | ⚠️ Some Features Limited | ✅ Full support |
+| Linux perf | ✅ Full support | ⚠️ Some Features Limited | ✅ Full support |
+| Linux eBPF | ✅ Full support | ✅ Supported (needs kernel support) | ✅ Full support |
+
 ## Choosing the Right Tool
 
 Start with your primary goal or problem, then follow the decision path to find the best tool(s).
+
+### Tool Summary
+
+| Tool | Expertise Level | Baremetal | Cloud | Best Starting Point |
+| ---- | --------------- | --------- | ----- | ------------------- |
+| PerfSpect | 🟢 Beginner - 🟡 Intermediate| ✅ Yes | ⚠️ Limited | ✅ Yes |
+| gProfiler | 🟡 Intermediate - 🔴 Advanced | ✅ Yes | ✅ Yes | ✅ Sometimes |
+| VTune | 🔴 Advanced | ✅ Yes | ⚠️ Limited | No |
+| PCM | 🟡 Intermediate - 🔴 Advanced | ✅ Yes | ⚠️ Limited | ✅ Sometimes |
+| Linux perf | 🔴 Advanced | ✅ Yes | ⚠️ Limited | No |
+| Linux eBPF | 🔴 Advanced | ✅ Yes | ✅ Yes | No |
 
 ### START: What is your primary goal?
 
