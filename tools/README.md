@@ -102,7 +102,7 @@ Start with your primary goal or problem, then follow the decision path to find t
 
 | Tool | Expertise Level | Baremetal | Cloud | Best Starting Point |
 | ---- | --------------- | --------- | ----- | ------------------- |
-| PerfSpect | 🟢 Beginner - 🟡 Intermediate| ✅ Yes | ⚠️ Limited | ✅ Yes |
+| PerfSpect | 🟢 Beginner - 🟡 Intermediate | ✅ Yes | ⚠️ Limited | ✅ Yes |
 | gProfiler | 🟡 Intermediate - 🔴 Advanced | ✅ Yes | ✅ Yes | ✅ Sometimes |
 | VTune | 🔴 Advanced | ✅ Yes | ⚠️ Limited | No |
 | PCM | 🟡 Intermediate - 🔴 Advanced | ✅ Yes | ⚠️ Limited | ✅ Sometimes |
