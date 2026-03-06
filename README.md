@@ -34,6 +34,8 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [Cassandra](software/cassandra/README.md)
   - [Gluten](software/gluten/README.md)
   - [Java](software/java/README.md)
+  - [Similarity Search](software/similarity-search/README.md)
+    - [Redis](software/similarity-search/redis/README.md)
   - [Spark](software/spark/README.md)
   - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
   - [Kafka](software/kafka/README.md)
