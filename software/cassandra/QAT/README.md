@@ -100,7 +100,7 @@ use_zlib_uncompress=1
 Once the zlib-accel library has been built, It is simple to use Cassandra to build the 
 
 ```
-LD_PRELOAD=/root/zlib-accel/build/libzlib-accel.so bin/cassandra -R
+LD_PRELOAD=/opt/zlib-accel/build/libzlib-accel.so bin/cassandra -R
 ```
 
 ## Future Enhancements
