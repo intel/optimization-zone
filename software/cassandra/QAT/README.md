@@ -3,7 +3,7 @@
 
 - [Overview](#overview)
 - [QAT Hardware Requirement](#qat-hardware-requirement)
-- [QAT Software Requirement](#qat-software-requirement)
+- [QAT Software Requirement and Prequisites](#qat-software-requirement-and-prerequisite)
 - [Cassandra Configuration](#cassandra-configuration)
 - [Building and configuring zlib-accel](#building-zlib-accel)
 - [Using Cassandra with zlib-accel](#cassandra-with-zlib-accel)
@@ -12,16 +12,13 @@
 
 ## Overview
 
-Intel® QuickAssist Technology (Intel® QAT) zlib-accel library.
+Compression takes up a significant portion of resources in the data center.   Hardware acceleration like Intel® QuickAssist Technology (Intel® QAT) can be used to offload the compression portion of a workload to provide higher throughput and lower latency than using the CPU alone.  The zlib-accel library uses a shim approach to seamless integrate Intel® QAT for compression operations.  Using zlib-accel allows the user to take advantage of hardware compression with QAT without having to make code changes to the underlying Cassandra codebase.
 
-Without sacrificing compression ratios, zlib-accel with QAT offers higher throughput using a workload of NoSQLBench , 18% higher than
-zstd, 98% higher than zlib, and 36% higher than zlib-ng.  CPU cycles per Cassandra operation is also better; compared to zlib, using QAT with zlib-accel uses only 43% of the CPU cycles per Cassandra operation.
-
+Without sacrificing compression ratios, zlib-accel with QAT offers higher throughput using a workload of NoSQLBench , 18% higher than zstd, 98% higher than zlib, and 36% higher than zlib-ng.  CPU cycles per Cassandra operation is also better; compared to zlib, using QAT with zlib-accel uses only 43% of the CPU cycles per Cassandra operation.
 
 ## QAT Hardware Requirement
 
-
-At least one Intel® QAT engine is required.  This can be verified by running the following command:
+At least one Intel® QAT engine is required and the individual engine might need to be updated in the BIOS.  This can be verified by running the following command:
 
 ```
 echo `(lspci -d 8086:4940 && lspci -d 8086:4941 && lspci -d 8086:4942 && lspci -d 8086:4943 && lspci -d 8086:4944 && lspci -d 8086:4945 && lspci -d 8086:4946 && lspci -d 8086:4947) | wc -l` supported devices found.
@@ -60,20 +57,32 @@ sudo cp qat_4xxx*.bin qat_402xx*.bin /lib/firmware
 rm qat_4xxx*.bin qat_402xx*.bin
 ```
 
-## QAT Software Requirement
+After firmware is updated, the initramfs must be updated.  This differs based on the Linux distribution.  
 
-QAT drivers, available in-tree in Linux kernel
-QATlib library
-QATzip library (v1.3.0 and above)
+## QAT Software Requirements and Prerequisites
+
+The QAT driver is available either "in-tree" as part of a release kernel or can be built outside of the release.  This document assumes the use of the in-tree driver that is already available with kernsl after version 5.19. 
+
+QATLib provides user space libraries that allows QAT device access and expose APIs for use by higher level applications.  The QATLib driver can be installed using your distributions package manager.  For Ubuntu 24.04:
+
+```
+sudo -E apt install -y libqat4 libqat-dev qatlib-service qatlib-examples libusdm-dev
+```
+
+QATzip is a user-space library built on top of the Intel® QuickAssist Technology (QAT) user-space library. It provides extended compression and decompression capabilities by offloading these operations to Intel® QAT Accelerators.
+
+```
+sudo -E apt install -y qatzip libqatzip3
+```
+
+Please note that "intel_iommu=on" will be required as a kernel parameter.
 
 ## Cassandra Configuration
 
+The Cassandra configuration mentioned in the base optimization-zone repository can still be used with zlib-accel.  zlib-accel requires the following software versions:
+
 OpenJDK 17
 Cassandra 5.0.6
-
-The Cassandra configuration mentioned in the base optimization-zone article.  
-
-https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/tree/intel/qat
 
 ## Building and configuring zlib-accel
 
@@ -97,7 +106,7 @@ use_zlib_uncompress=1
 
 ## Using Cassandra with zlib-accel
 
-Once the zlib-accel library has been built, It is simple to use Cassandra to build the 
+Once the zlib-accel library has been built, It is simple to use Cassandra to enable hardware compression.
 
 ```
 LD_PRELOAD=/opt/zlib-accel/build/libzlib-accel.so bin/cassandra -R
@@ -105,10 +114,14 @@ LD_PRELOAD=/opt/zlib-accel/build/libzlib-accel.so bin/cassandra -R
 
 ## Future Enhancements
 
-Support for QAT plugin into Cassandra is in progress and waiting to be upstreamed.  This includes support for ZSTD and Deflate.
+Support for QAT plugin into Cassandra is in progress and waiting to be upstreamed.  This includes support for ZSTD.
 
 ## References
 
-
 zib-accel: https://github.com/intel/zlib-accel
+
 NoSQLBench: https://github.com/nosqlbench/nosqlbench
+
+QATLib: https://intel.github.io/quickassist/qatlib/index.html
+
+
