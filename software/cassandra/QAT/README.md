@@ -13,13 +13,16 @@
 
 ## Overview
 
-Compression takes up a significant portion of resources in the data center.   Hardware acceleration like Intel® QuickAssist Technology (Intel® QAT) can be used to offload the compression portion of a workload to provide higher throughput and lower latency than using the CPU alone.  The zlib-accel library uses a shim approach to seamless integrate Intel® QAT for compression operations.  Using zlib-accel allows the user to take advantage of hardware compression with QAT without having to make code changes to the underlying Cassandra codebase.
+Compression takes up a significant portion of resources in the data center.   Hardware acceleration like Intel® QuickAssist Technology (Intel® QAT) can be used to offload the compression portion of a workload.  Offloading these operations will free up CPU cores to do other work and will improve compress/decompress performance.  The zlib-accel library uses a shim approach to seamless integrate Intel® QAT for compression operations using the Deflate algorithm.  Using zlib-accel allows the user to take advantage of hardware compression with QAT without having to make code changes to the underlying Cassandra codebase.
 
-Without sacrificing compression ratios, zlib-accel with QAT offers higher throughput using a workload of NoSQLBench , 18% higher than zstd, 98% higher than zlib, and 36% higher than zlib-ng.  CPU cycles per Cassandra operation is also better; compared to zlib, using QAT with zlib-accel uses only 43% of the CPU cycles per Cassandra operation.
+Without sacrificing compression ratios, zlib-accel with QAT offers higher throughput using a workload of NoSQLBench.  The compression throughput of zlib-accel with QAT is 18% higher than zstd, 98% higher than zlib, and 36% higher than zlib-ng.  CPU cycles per Cassandra operation is also better; compared to zlib, using QAT with zlib-accel uses only 43% of the CPU cycles per Cassandra operation.
+
 
 ## QAT Hardware Requirement
 
-At least one Intel® QAT engine is required and the individual engine might need to be updated in the BIOS.  This can be verified by running the following command:
+At least one Intel® QAT engine is required and the individual engine might need to be updated in the BIOS.  The following steps should be performed to be reading to use the QAT device(s). 
+
+1.  Check for QAT device availability.  This can be verified by running the following command:
 
 ```
 echo `(lspci -d 8086:4940 && lspci -d 8086:4941 && lspci -d 8086:4942 && lspci -d 8086:4943 && lspci -d 8086:4944 && lspci -d 8086:4945 && lspci -d 8086:4946 && lspci -d 8086:4947) | wc -l` supported devices found.
@@ -31,7 +34,7 @@ If a device is found, the output of the command with be:
 8 supported devices found.
 ```
 
-Verify that the QAT firmware is already loaded by using the following command:
+2. Verify that the QAT firmware is already loaded by using the following command:
 
 ```
 ls /lib/firmware/{qat_4xxx,qat_402xx,qat_420xx}.bin* 2>/dev/null
@@ -62,9 +65,31 @@ rm qat_4xxx*.bin qat_402xx*.bin qat_420xx*.bin
 
 After firmware is updated, the initramfs must be updated.  This differs based on the Linux distribution.  
 
+3.  Verify that the kernel drivers are loaded using the following command.
+
+```
+lsmod | grep qat
+```
+
+The output should be similar to the following:
+
+```
+qat_4xxx               16384  0
+intel_qat             172032  1 qat_4xxx
+```
+
+If the kernel modules are not found, they can be installed using:
+
+```
+sudo modprobe intel_qat
+sudo modprobe qat_4xxx
+```
+
+If the kernel modules could not be installed, it might be needed to either install them through a kernel configuration or to install that with the distribution's package manger.  
+
 ## QAT Software Requirements and Prerequisites
 
-The QAT driver is available either "in-tree" as part of a release kernel or can be built outside of the release.  This document assumes the use of the in-tree driver that is already available with kernal after version 5.19.  The distribution used for this benchmarking was Ubuntu 24.04 with the in-tree driver. 
+The QAT driver is available either "in-tree" as part of a release kernel or can be built outside of the release.  This document assumes the use of the in-tree driver that is already available with kernel after version 5.19.  The distribution used for this benchmarking was Ubuntu 24.04 with the in-tree driver. 
 
 QATLib provides user space libraries that allows QAT device access and expose APIs for use by higher level applications.  The QATLib driver can be installed using your distributions package manager.  For Ubuntu 24.04:
 
@@ -84,7 +109,7 @@ Please note that "intel_iommu=on" will be required as a kernel parameter.
 
 ## Cassandra Configuration
 
-The Cassandra configuration mentioned in the base optimization-zone repository can still be used with zlib-accel.  zlib-accel requires the following software versions:
+The Cassandra configuration mentioned in the base [optimization-zone] (https://github.com/intel/optimization-zone/tree/main/software/cassandra) repository can still be used with zlib-accel.  This Cassandra with QAT/zlib-accel optimization was tested the following software versions:
 
 OpenJDK 17
 Cassandra 5.0.6
@@ -123,7 +148,14 @@ NoSQLBench is used for benchmarking Cassandra.  The results mentioned in the Ove
 
 ## Future Enhancements
 
-Support for QAT plugin into Cassandra is in progress and waiting to be upstreamed.  This includes support for ZSTD.
+Support for QAT plugin into Cassandra is in progress and waiting to be upstreamed.  This includes support for ZSTD.  Please refer to the [enhancement proposal] (https://cwiki.apache.org/confluence/display/CASSANDRA/CEP-49%3A+Hardware-accelerated+compression) for more info and the latest status and  on the QAT plugin.
+
+
+## Details
+
+Cassandra on GNR 128c (Intel Xeon 6980P): 1-node, 2x Intel(R) Xeon(R) 6980P, 128 cores, 500W TDP, HT On, Turbo On, NUMA 6, Total Memory 1536GB (24x64GB DDR5 6400 MT/s [6400 MT/s]), BIOS F23, microcode 0x10003f3, 2x 1350 Gigabit Network Connection, 1x14.3G SanDisk 3.2Gen1, 8x3.5T Samsung MZQL23T8HCL5-00A07, 1x7T Micron_7450_MTFDK8G1T9TFR, Ubuntu 24.04.3  LTS, 6.8.0-86-generic. Test by Intel as of Nov 18, 2025, Apache Cassandra 5.0.5, OpenJDK 64-Bit Server VM 17.0.16, NoSQLBench version 4.15.104
+
+Results may vary.
 
 ## References
 
