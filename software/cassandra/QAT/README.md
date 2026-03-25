@@ -3,7 +3,7 @@
 
 - [Overview](#overview)
 - [QAT Hardware Requirement](#qat-hardware-requirement)
-- [QAT Software Requirement and Prequisites](#qat-software-requirement-and-prerequisites)
+- [QAT Software Requirement and Prerequisites](#qat-software-requirement-and-prerequisites)
 - [Cassandra Configuration](#cassandra-configuration)
 - [Building and configuring zlib-accel](#building-and-configuring-zlib-accel)
 - [Using Cassandra with zlib-accel](#using-cassandra-with-zlib-accel)
@@ -88,7 +88,7 @@ sudo modprobe qat_4xxx
 
 If the kernel modules could not be installed, it might be needed to either install them through a kernel configuration or to install that with the distribution's package manger.  
 
-## QAT Software Requirements and Prerequisites
+## QAT Software Requirement and Prerequisites
 
 The QAT driver is available either "in-tree" as part of a release kernel or can be built outside of the release.  This document assumes the use of the in-tree driver that is already available with kernel after version 5.19.  The distribution used for this benchmarking was Ubuntu 24.04 with the in-tree driver. 
 
