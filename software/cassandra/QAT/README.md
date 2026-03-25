@@ -3,7 +3,7 @@
 
 - [Overview](#overview)
 - [QAT Hardware Requirement](#qat-hardware-requirement)
-- [QAT Software Requirement and Prequisites](#qat-software-requirement-and-prerequisites)
+- [QAT Software Requirement and Prerequisites](#qat-software-requirement-and-prerequisites)
 - [Cassandra Configuration](#cassandra-configuration)
 - [Building and configuring zlib-accel](#building-and-configuring-zlib-accel)
 - [Using Cassandra with zlib-accel](#using-cassandra-with-zlib-accel)
