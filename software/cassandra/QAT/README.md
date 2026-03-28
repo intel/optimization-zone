@@ -86,7 +86,7 @@ sudo modprobe intel_qat
 sudo modprobe qat_4xxx
 ```
 
-If the kernel modules could not be installed, it might be needed to either install them through a kernel configuration or to install that with the distribution's package manger.  
+If the kernel modules could not be installed, it might be needed to either install them through a kernel configuration or to install that with the distribution's package manager.  
 
 ## QAT Software Requirement and Prerequisites
 
