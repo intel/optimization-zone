@@ -110,7 +110,7 @@ Please note that "intel_iommu=on" will be required as a kernel parameter.
 
 ## Cassandra Configuration
 
-The Cassandra configuration mentioned in the base [optimization-zone] (https://github.com/intel/optimization-zone/tree/main/software/cassandra) repository can still be used with zlib-accel.  This Cassandra with QAT/zlib-accel optimization was tested the following software versions:
+The Cassandra configuration mentioned in the base [cassandra](https://github.com/intel/optimization-zone/blob/main/software/cassandra/README.md) readme can still be used with zlib-accel.  This Cassandra with QAT/zlib-accel optimization was tested with the following software versions:
 
 OpenJDK 17
 Cassandra 5.0.6
