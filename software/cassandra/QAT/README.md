@@ -21,7 +21,7 @@ Without sacrificing compression ratios, zlib-accel with QAT offers higher throug
 
 ## QAT Hardware Requirement
 
-At least one Intel® QAT engine is required and the individual engine might need to be updated in the BIOS.  The following steps should be performed to be reading to use the QAT device(s). 
+At least one Intel® QAT engine is required and the individual engine might need to be updated in the BIOS.  The following steps should be performed to be ready to use the QAT device(s). 
 
 1.  Check for QAT device availability.  This can be verified by running the following command:
 
