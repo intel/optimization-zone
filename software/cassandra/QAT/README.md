@@ -160,7 +160,7 @@ Results may vary.
 
 ## References
 
-zib-accel: https://github.com/intel/zlib-accel
+zlib-accel: https://github.com/intel/zlib-accel
 
 NoSQLBench: https://github.com/nosqlbench/nosqlbench
 
