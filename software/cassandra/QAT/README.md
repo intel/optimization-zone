@@ -16,7 +16,7 @@
 
 Compression takes up a significant portion of resources in the data center.   Hardware acceleration like Intel® QuickAssist Technology (Intel® QAT) can be used to offload the compression portion of a workload.  Offloading these operations will free up CPU cores to do other work and will improve compress/decompress performance.  The zlib-accel library uses a shim approach to seamless integrate Intel® QAT for compression operations using the Deflate algorithm.  Using zlib-accel allows the user to take advantage of hardware compression with QAT without having to make code changes to the underlying Cassandra codebase.
 
-Without sacrificing compression ratios, zlib-accel with QAT offers higher throughput using a workload of NoSQLBench.  The compression throughput of zlib-accel with QAT is 18% higher than zstd, 98% higher than zlib, and 36% higher than zlib-ng.  CPU cycles per Cassandra operation is also better; compared to zlib, using QAT with zlib-accel uses only 43% of the CPU cycles per Cassandra operation.
+Without sacrificing compression ratios, zlib-accel with QAT offers higher throughput using a workload of [NoSQLBench](https://github.com/nosqlbench/nosqlbench).  The compression throughput of zlib-accel with QAT is 18% higher than zstd, 98% higher than zlib, and 36% higher than zlib-ng.  CPU cycles per Cassandra operation is also better; compared to zlib, using QAT with zlib-accel uses only 43% of the CPU cycles per Cassandra operation.
 
 
 ## QAT Hardware Requirement
@@ -29,7 +29,7 @@ At least one Intel® QAT engine is required and the individual engine might need
 echo `(lspci -d 8086:4940 && lspci -d 8086:4941 && lspci -d 8086:4942 && lspci -d 8086:4943 && lspci -d 8086:4944 && lspci -d 8086:4945 && lspci -d 8086:4946 && lspci -d 8086:4947) | wc -l` supported devices found.
 ```
 
-If a device is found, the output of the command with be:
+If at least one device is found, the output of the command will be:
 
 ```
 8 supported devices found.
@@ -55,11 +55,11 @@ https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/tree
 ```
 cd ~
 wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/intel/qat/qat_4xxx.bin
-wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/intel/qat/qat_4xxx.bin
+wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/intel/qat/qat_4xxx_mmp.bin
 wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/intel/qat/qat_402xx.bin
-wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/intel/qat/qat_402xx.bin
+wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/intel/qat/qat_402xx_mmp.bin
 wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/intel/qat/qat_420xx.bin
-wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/intel/qat/qat_420xx.bin
+wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/intel/qat/qat_420xx_mmp.bin
 sudo cp qat_4xxx*.bin qat_402xx*.bin qat_420xx*.bin /lib/firmware
 rm qat_4xxx*.bin qat_402xx*.bin qat_420xx*.bin
 ```
@@ -86,7 +86,7 @@ sudo modprobe intel_qat
 sudo modprobe qat_4xxx
 ```
 
-If the kernel modules could not be installed, it might be needed to either install them through a kernel configuration or to install that with the distribution's package manager.  
+If the kernel modules could not be installed, it might be needed to either install them through a kernel configuration or to install them with the distribution's package manager.  
 
 ## QAT Software Requirement and Prerequisites
 
@@ -104,7 +104,7 @@ QATzip is a user-space library built on top of the Intel® QuickAssist Technolog
 sudo -E apt install -y qatzip libqatzip3
 ```
 
-Depending on the use case, the user can configure the number of QAT engines to use with the workload.  In "Managed Mode", the QATLib can be used to restrict the workload to a specific number of engines.
+Depending on the use case, the user can configure the number of QAT engines to use with the workload.  In "Managed Mode", the [QATLib](https://intel.github.io/quickassist/qatlib/index.html) library can be used to restrict the workload to a specific number of engines.
 
 Please note that "intel_iommu=on" will be required as a kernel parameter.
 
@@ -114,6 +114,7 @@ The Cassandra configuration mentioned in the base [cassandra](https://github.com
 
 OpenJDK 17
 Cassandra 5.0.6
+zlib-accel 1.0.0
 
 ## Building and configuring zlib-accel
 
@@ -137,7 +138,16 @@ use_zlib_uncompress=1
 
 ## Using Cassandra with zlib-accel
 
-Once the zlib-accel library has been built, It is simple to use Cassandra to enable hardware compression.
+[zlib-accel] (https://github.com/intel/zlib-accel) can be built with:
+
+```
+mkdir build
+cd build
+cmake -DUSE_QAT=ON -DUSE_IAA=OFF -DDEBUG_LOG=OFF -DCOVERAGE=OFF -DCMAKE_BUILD_TYPE=Release
+make
+```
+
+Once the zlib-accel library has been built, It is simple to use Cassandra to enable hardware compression.  zlib-accel is usually installed in the /opt/zlib-accel
 
 ```
 LD_PRELOAD=/opt/zlib-accel/build/libzlib-accel.so bin/cassandra -R
@@ -145,16 +155,16 @@ LD_PRELOAD=/opt/zlib-accel/build/libzlib-accel.so bin/cassandra -R
 
 ## Benchmarking Cassandra with QAT
 
-NoSQLBench is used for benchmarking Cassandra.  The results mentioned in the Overview section were generated by using 6 independent Cassandra servers and servers.  The benchmark used a mix of 80% reads and 20% writes using the default CQL timeseries schema.
+NoSQLBench is used for benchmarking Cassandra.  The results mentioned in the Overview section were generated by using 6 independent Cassandra clients and servers.  The benchmark used a mix of 80% reads and 20% writes using the default CQL timeseries schema. 
 
 ## Future Enhancements
 
-Support for QAT plugin into Cassandra is in progress and waiting to be upstreamed.  This includes support for ZSTD.  Please refer to the [enhancement proposal] (https://cwiki.apache.org/confluence/display/CASSANDRA/CEP-49%3A+Hardware-accelerated+compression) for more info and the latest status and  on the QAT plugin.
+Support for QAT plugin into Cassandra is in progress and waiting to be upstreamed.  This includes support for ZSTD.  Please refer to the [enhancement proposal](https://cwiki.apache.org/confluence/display/CASSANDRA/CEP-49%3A+Hardware-accelerated+compression) for more info and the latest status and  on the QAT plugin.
 
 
 ## Details
 
-Cassandra on GNR 128c (Intel Xeon 6980P): 1-node, 2x Intel(R) Xeon(R) 6980P, 128 cores, 500W TDP, HT On, Turbo On, NUMA 6, Total Memory 1536GB (24x64GB DDR5 6400 MT/s [6400 MT/s]), BIOS F23, microcode 0x10003f3, 2x 1350 Gigabit Network Connection, 1x14.3G SanDisk 3.2Gen1, 8x3.5T Samsung MZQL23T8HCL5-00A07, 1x7T Micron_7450_MTFDK8G1T9TFR, Ubuntu 24.04.3  LTS, 6.8.0-86-generic. Test by Intel as of Nov 18, 2025, Apache Cassandra 5.0.5, OpenJDK 64-Bit Server VM 17.0.16, NoSQLBench version 4.15.104
+Cassandra on GNR 128c (Intel Xeon 6980P): 1-node, 2x Intel(R) Xeon(R) 6980P, 128 cores, 500W TDP, HT On, Turbo On, NUMA 6, Total Memory 1536GB (24x64GB DDR5 6400 MT/s [6400 MT/s]), BIOS F23, microcode 0x10003f3, 2x 1350 Gigabit Network Connection, 4 QAT engines, 1x14.3G SanDisk 3.2Gen1, 8x3.5T Samsung MZQL23T8HCL5-00A07, 1x7T Micron_7450_MTFDK8G1T9TFR, Ubuntu 24.04.3  LTS, 6.8.0-86-generic. Test by Intel as of Nov 18, 2025, Apache Cassandra 5.0.5, OpenJDK 64-Bit Server VM 17.0.16, NoSQLBench version 4.15.104, zlib-accel version 1.0.0
 
 Results may vary.
 
