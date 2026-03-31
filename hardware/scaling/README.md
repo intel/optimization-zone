@@ -161,7 +161,7 @@ Avoid false sharing of data, adding alignment/padding as needed. This can be com
 Minimize contention for true sharing:
 
 ```
-        global_flag = true   =>    if (global_flag) global_flag = true
+        global_flag = true   =>    if (!global_flag) global_flag = true
 ```
 
 avoids unnecessary writes to a shared cache line.
