@@ -156,7 +156,7 @@ NoSQLBench is used for benchmarking Cassandra.  The results mentioned in the Ove
 java -jar nb.jar  --copy cql-timeseries2
 ```
 
-2.  Change the compressor to use "Deflate" in the "create-table" blocks statemement (approximately line 46).
+2.  Change the compression to use "DeflateCompressor" in the "create-table" blocks statemement (approximately line 46).
 
 ```
 <            AND compression = { 'sstable_compression' : '<<compression:LZ4Compressor>>' }
@@ -170,11 +170,7 @@ java -jar nb.jar  --copy cql-timeseries2
 java -jar nb.jar  run driver=cql yaml=cql-timeseries2.yaml tags=phase:schema host=<ip addr of Cassandra server>
 ```
 
-4.  Pre-populate dataset with progress reported every 4s.  Along with the Host IP of the Cassandra server (same as previous step), the number of rows to enter and the number of client threads has to be specified.  The results mentioned in the Overview section used "100M" for the number of rows and "400" client threads:
-
-host=127.0.0.1
-cycles=100M
-threads=400
+4.  Pre-populate dataset with progress reported every 4s.  Along with the Host IP of the Cassandra server (same as previous step), the number of rows to enter and the number of client threads has to be specified.  The results mentioned in the Overview section used "100M" for the number of rows and "400" client threads (host=127.0.0.1 cycles=100M threads=400)
 
 ```
 java -Xmx31G -Xms31G -XX:+UseG1GC -jar nb.jar run driver=cql yaml=cql-timeseries2.yaml tags=phase:rampup host=<ip addr of Cassandra server> cycles=<# of rows to enter> threads=<client threads to use> rampup-cycles=1000000000 main-cycles=1000000000 --progress console:4s
