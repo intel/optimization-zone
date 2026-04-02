@@ -140,7 +140,7 @@ use_zlib_uncompress=1
 
 ## Using Cassandra with zlib-accel
 
-Once the zlib-accel library has been built, It is simple to use Cassandra to enable hardware compression.  zlib-accel is usually installed in the /opt/zlib-accel.  Please the LD_PRELOAD below to point to the shared object if it was not installed in the default directory.
+Once the [zlib-accel](https://github.com/intel/zlib-accel) library has been built, It is simple to use Cassandra to enable hardware compression.  zlib-accel is usually installed in the /opt/zlib-accel.  Please update the LD_PRELOAD below to point to the shared object if it was not installed in the default directory.
 
 ```
 LD_PRELOAD=/opt/zlib-accel/build/libzlib-accel.so bin/cassandra -R
