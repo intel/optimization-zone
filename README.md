@@ -32,6 +32,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
 
 - Software
   - [Cassandra](software/cassandra/README.md)
+      - [Cassandra QAT](software/cassandra/QAT/README.md)
   - [Gluten](software/gluten/README.md)
   - [Java](software/java/README.md)
   - [Similarity Search](software/similarity-search/README.md)
