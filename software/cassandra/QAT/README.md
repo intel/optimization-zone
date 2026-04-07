@@ -175,7 +175,7 @@ java -jar nb.jar  run driver=cql yaml=cql-timeseries2.yaml tags=phase:schema hos
 ```
 java -Xmx31G -Xms31G -XX:+UseG1GC -jar nb.jar run driver=cql yaml=cql-timeseries2.yaml tags=phase:rampup host=<ip addr of Cassandra server> cycles=<# of rows to enter> threads=<client threads to use> rampup-cycles=1000000000 main-cycles=1000000000 --progress console:4s
 ```
-4. Run the workload (mixed 80R/20W).  In addition to the values of mentioned in the previous steps, the directory name where the CSV results are stored should be specified.
+4. Run the workload (mixed 80R/20W).  In addition to the values mentioned in the previous steps, the directory name where the CSV results are stored should be specified.
 
 ```
 java -Xmx31G -Xms31G -XX:+UseG1GC -jar nb.jar run driver=cql yaml=cql-timeseries2.yaml tags=phase:main read_ratio=8 write_ratio=2 host=<ip addr of Cassandra server> threads=<client threads to use> pooling=8:8:2048 cycles=<# of iterations to run the workload> limit=1 rampup-cycles=1000000000 main-cycles=1000000000 --progress console:3s --report-csv-to <directory name>
@@ -183,7 +183,7 @@ java -Xmx31G -Xms31G -XX:+UseG1GC -jar nb.jar run driver=cql yaml=cql-timeseries
 
 ## Future Enhancements
 
-Support for QAT plugin into Cassandra is in progress and waiting to be upstreamed.  This includes support for ZSTD.  Please refer to the [enhancement proposal](https://cwiki.apache.org/confluence/display/CASSANDRA/CEP-49%3A+Hardware-accelerated+compression) for more info and the latest status and  on the QAT plugin.
+Support for QAT plugin into Cassandra is in progress and waiting to be upstreamed.  This includes support for ZSTD. 
 
 
 ## Details
