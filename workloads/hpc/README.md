@@ -32,5 +32,6 @@
 * OpenFOAM
 * QuantLib
 * RELION
+* SIMULIA PowerFLOW
 * VASP
 * WRF
