@@ -21,6 +21,7 @@ ResNet50 (Residual Network with 50 layers) is a convolutional neural network pre
 ## Prerequisites
 
 - Intel Xeon 4th Gen (or newer) with AMX `bfloat16` support
+- Docker (for TensorFlow Serving deployment)
 - Python environment with `pip`
 - Internet access to download model weights
 
@@ -201,8 +202,8 @@ https://raw.githubusercontent.com/oneapi-src/oneAPI-samples/master/AI-and-Analyt
 
 **Example:**
 
-```bash
-python freeze_optimize.py \
+```
+python freeze_optimize_v2.py \
   --input_saved_model_dir=/tmp/resnet50/1 \
   --output_saved_model_dir=/tmp/resnet50_frozen/1
 ```

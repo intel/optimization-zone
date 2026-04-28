@@ -21,8 +21,9 @@ RGAT (Relational Graph Attention Network) leverages multi-head attention over ty
 ## Prerequisites
 
 - Intel Xeon 4th Gen (or newer) with AMX `bfloat16` support
+- Docker (for TensorFlow Serving deployment)
 - Python environment with `pip`
-- Internet access to download packages
+- Internet access to download model weights
 
 ## Install Required Packages
 
@@ -278,16 +279,14 @@ Create `infer_rgat.py`:
 ```python
 import requests, json, numpy as np
 
-num_nodes, num_edges, hidden_dim = 4, 5, 64
+num_nodes, num_edges, hidden_dim = 4, 5, 256
 
 payload = {
-    "instances": [{
-        "paper_sizes": [num_nodes],
+    "inputs": {
         "paper_features": np.random.randn(num_nodes, hidden_dim).tolist(),
-        "cites_sizes": [num_edges],
         "cites_source": [0, 1, 2, 3, 0],
         "cites_target": [1, 2, 3, 0, 2]
-    }]
+    }
 }
 
 resp = requests.post(
@@ -298,7 +297,7 @@ resp = requests.post(
 )
 
 if resp.status_code == 200:
-    preds = np.array(resp.json()["predictions"])
+    preds = np.array(resp.json()["outputs"])
     print("Inference successful!")
     print("Output shape:", preds.shape)
     print("First node logits:", preds[0][:5], "...")
@@ -325,8 +324,8 @@ Output logits for each node (untrained weights will give random results).
 
 ```
 Inference successful!
-Output shape: (512, 256)
-First node logits: [-0.67578125 -0.15625     0.38867188 -0.55859375  1.46875   ] ...
+Output shape: (4, 256)
+First node logits: [0.625      2.625      0.49414062 0.9453125  0.18359375] ...
 ```
 
 ## Key Validation Steps

@@ -20,8 +20,9 @@ BERT (Bidirectional Encoder Representations from Transformers) is a transformer 
 
 ## Prerequisites
 
-- Intel Xeon 4th Gen (or newer) with AMX BF16 support
-- Python environment with pip
+- Intel Xeon 4th Gen (or newer) with AMX `bfloat16` support
+- Docker (for TensorFlow Serving deployment)
+- Python environment with `pip`
 - Internet access to download model weights
 
 ## Install Required Packages
@@ -94,7 +95,7 @@ def serving_fn(input_ids, attention_mask):
     return {"logits": tf.identity(logits, name="float32_output")}
 
 output_model_path = "/tmp/bert_large_hf/1"  # versioned directory
-model.save(output_model_path, include_optimizer=False, signatures={"serving_default": serving_fn})
+tf.saved_model.save(model, output_model_path, signatures={"serving_default": serving_fn})
 print("Exported to:", output_model_path)
 ```
 
@@ -186,7 +187,7 @@ resp = requests.post(
 
 if resp.status_code == 200:
     preds = np.array(resp.json()["predictions"])
-    print("Inference successful")
+    print("Inference successful!")
     logits = preds[0]
     probs = tf.nn.softmax(logits).numpy()
     print("Logits:", logits)
@@ -212,7 +213,7 @@ I0000 00:00:1758754431.978969    3797 auto_mixed_precision.cc:2263] Converted 18
 
 Logits and probabilities for binary classification (untrained weights will give random results):
 
-```bash
+```
 Inference successful!
 Logits: [-0.123 0.456]
 Probabilities: [0.412 0.588]
@@ -228,7 +229,7 @@ https://raw.githubusercontent.com/oneapi-src/oneAPI-samples/master/AI-and-Analyt
 **Example:**
 
 ```bash
-python freeze_optimize.py \
+python freeze_optimize_v2.py \
   --input_saved_model_dir=/tmp/bert_large_hf/1 \
   --output_saved_model_dir=/tmp/bert_large_hf_frozen/1
 ```
