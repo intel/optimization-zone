@@ -107,6 +107,6 @@ For guidance on how to enable AMX for different AI use-cases, follow the links b
 
 | Use Case | Model | Description | README |
 |----------|-------|-------------|--------|
-| Natural Language Processing | BERT-Large (Uncased) | Sequence classification with mixed BF16 | [Link](./nlp-transformers-bert/README.md) |
+| Natural Language Processing | BERT-Large (Uncased) | Sequence classification | [Link](./nlp-transformers-bert/README.md) |
 | Graph Neural Networks | R-GAT | Relational graph attention network inference | [Link](./graph-neural-networks-rgat/README.md) |
-| Computer Vision | ResNet50 v1.5 | Image classification (CNN) with AMX BF16/FP16 | [Link](./computer-vision-resnet50/README.md) |
+| Computer Vision | ResNet50 v1.5 | Image classification (CNN) | [Link](./computer-vision-resnet50/README.md) |
