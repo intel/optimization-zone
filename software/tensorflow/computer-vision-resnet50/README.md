@@ -1,16 +1,32 @@
 # Computer Vision (CV): Inference with ResNet50 v1.5
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Install Required Packages](#install-required-packages)
+- [Quick Start: Keras Mixed Precision](#quick-start-keras-mixed-precision)
+- [Deploying with TensorFlow Serving (bfloat16 Auto Mixed Precision)](#deploying-with-tensorflow-serving-bfloat16-auto-mixed-precision)
+  - [Export the Model (SavedModel, float32 weights)](#export-the-model-savedmodel-float32-weights)
+  - [Pull TensorFlow Serving](#pull-tensorflow-serving)
+  - [Start the Server (Enable bfloat16)](#start-the-server-enable-bfloat16)
+- [Client Inference (REST)](#client-inference-rest)
+- [Optional: Graph Freezing for Additional Performance](#optional-graph-freezing-for-additional-performance)
+- [Key Validation Steps](#key-validation-steps)
+
+## Overview
+
 ResNet50 (Residual Network with 50 layers) is a convolutional neural network pretrained on ImageNet for image classification. This example shows how to run ResNet50 v1.5 (Keras built-in) for 1000-class image classification on Intel Xeon processors with AMX acceleration using `bfloat16` mixed precision.
 
-### Prerequisites
+## Prerequisites
 
 - Intel Xeon 4th Gen (or newer) with AMX `bfloat16` support
 - Python environment with `pip`
 - Internet access to download model weights
 
-### Install Required Packages
+## Install Required Packages
 
-(Exact versions ensure consistency.)
+Pinned versions are shown below for reproducibility.
 
 ```bash
 pip install tensorflow==2.21.0
@@ -79,7 +95,7 @@ python export_resnet50.py
 
 ### Pull TensorFlow Serving
 
-(Using the official CPU image.)
+Pull the official TensorFlow Serving CPU image:
 
 ```bash
 docker pull tensorflow/serving
@@ -193,14 +209,13 @@ python freeze_optimize.py \
 
 Run this after exporting the `SavedModel` (server side).
 
-----------------------------------------------------------------------
-Key Validation Steps
-----------------------------------------------------------------------
+## Key Validation Steps
+
 - **Functional:** REST returns logits JSON with 1000 class scores
 - **Precision:** Logs show `auto_mixed_precision_onednn_bfloat16`
 - **AMX:** `ONEDNN_VERBOSE` lines include `amx` and `bf16` datatypes
 - **Rollback:** Remove `--mixed_precision` flag on TF Serving; delete policy in Keras path
 
-----------------------------------------------------------------------
-Summary:
+## Summary:
+
 Enabled `bfloat16` mixed precision for ResNet50 on Xeon with minimal code change, deployed via TensorFlow Serving, verified AMX acceleration, and optionally optimized the model by freezing the graph.

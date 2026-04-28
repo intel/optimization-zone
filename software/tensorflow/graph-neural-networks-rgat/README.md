@@ -1,13 +1,33 @@
 # Graph Neural Networks (GNN): Inference with RGAT using TF-GNN
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Install Required Packages](#install-required-packages)
+- [Keras Version Compatibility](#keras-version-compatibility)
+- [Quick Start: Keras Mixed Precision](#quick-start-keras-mixed-precision)
+- [Deploying with TensorFlow Serving (bfloat16 Auto Mixed Precision)](#deploying-with-tensorflow-serving-bfloat16-auto-mixed-precision)
+  - [Export the Model (SavedModel, float32 weights)](#export-the-model-savedmodel-float32-weights)
+  - [Pull TensorFlow Serving](#pull-tensorflow-serving)
+  - [Start the Server (Enable bfloat16)](#start-the-server-enable-bfloat16)
+- [Client Inference (REST)](#client-inference-rest)
+- [Key Validation Steps](#key-validation-steps)
+
+## Overview
+
 RGAT (Relational Graph Attention Network) leverages multi-head attention over typed edges to learn rich node representations on heterogeneous graphs, capturing the unique importance of different relationship types. This example shows how to run an RGAT-style model using TensorFlow GNN (TF-GNN) on Intel Xeon processors with AMX acceleration using `bfloat16` mixed precision.
 
-### Prerequisites
+## Prerequisites
+
 - Intel Xeon 4th Gen (or newer) with AMX `bfloat16` support
 - Python environment with `pip`
 - Internet access to download packages
 
-### Install Required Packages
-(Exact versions ensure consistency.)
+## Install Required Packages
+
+Pinned versions are shown below for reproducibility.
+
 ```bash
 pip install tensorflow==2.21.0
 pip install tf-keras==2.21.0 --no-deps
@@ -22,7 +42,7 @@ pip install tensorflow-gnn==1.0.3
 export TF_USE_LEGACY_KERAS=1
 ```
 
-## Enable `bfloat16` Mixed Precision with AMX
+## Quick Start: Keras Mixed Precision
 
 To execute GNN layers in `bfloat16` on AMX, enable a `mixed_bfloat16` policy BEFORE creating the model. This keeps model weights in `float32` for numerical stability while executing math (`matmul`, attention, feed-forward) in `bfloat16` on AMX-capable Intel Xeon processors. Note that this approach to enable auto-mixed precision can be used for any Keras model, including graph neural networks built with TF-GNN.
 
@@ -104,9 +124,11 @@ Notes:
 ### Export the Model (`SavedModel`, `float32` weights)
 
 TF-GNN models consume `GraphTensor` (a composite tensor). To export a usable `SavedModel` for TF Serving, define a `tf.function` signature that accepts flat tensors and reassembles the graph internally.
+
 > **Note:** We don't need to explicitly enable `bfloat16` mixed precision with Keras while exporting the model, because the `--mixed_precision=bfloat16` flag passed when starting the inference server handles that automatically (see [Start the Server (Enable `bfloat16`)](#start-the-server-enable-bfloat16) below).
 
 Create `export_rgat.py`:
+
 ```python
 import os
 # Ensure legacy Keras is being used (required by tensorflow_gnn)
@@ -199,20 +221,27 @@ output_model_path = "/tmp/rgat_model/1"
 tf.saved_model.save(model, output_model_path, signatures={"serving_default": serving_fn})
 print("Exported to:", output_model_path)
 ```
+
 Run:
+
 ```bash
 python export_rgat.py
 ```
 
 ### Pull TensorFlow Serving
-(Using the official CPU image.)
+
+Pull the official TensorFlow Serving CPU image:
+
 ```bash
 docker pull tensorflow/serving
 ```
+
 Reference setup guide: https://github.com/tensorflow/serving?tab=readme-ov-file#set-up
 
 ### Start the Server (Enable `bfloat16`)
+
 TensorFlow Serving (CPU) currently supports `bfloat16` mixed precision (`fp16` not yet enabled for CPU on TensorFlow Serving).
+
 ```bash
 docker run -t --rm \
   -p 8501:8501 \
@@ -221,6 +250,7 @@ docker run -t --rm \
   -e ONEDNN_VERBOSE=1 \
   tensorflow/serving --mixed_precision=bfloat16
 ```
+
 Sample log indicators:
 - `auto_mixed_precision_onednn_bfloat16` graph optimizer
 - `brg_matmul` with `amx` and `src_bf16` / `wei_bf16`
@@ -238,11 +268,13 @@ Troubleshooting 403:
 ## Client Inference (REST)
 
 Install:
+
 ```bash
 pip install requests==2.33.1 numpy==2.4.4
 ```
 
 Create `infer_rgat.py`:
+
 ```python
 import requests, json, numpy as np
 
@@ -273,7 +305,9 @@ if resp.status_code == 200:
 else:
     print("Error:", resp.status_code, resp.text)
 ```
+
 Run:
+
 ```bash
 python infer_rgat.py
 ```
@@ -295,15 +329,13 @@ Output shape: (512, 256)
 First node logits: [-0.67578125 -0.15625     0.38867188 -0.55859375  1.46875   ] ...
 ```
 
-----------------------------------------------------------------------
-Key Validation Steps
-----------------------------------------------------------------------
+## Key Validation Steps
+
 - **Functional:** REST returns logits JSON for each node
 - **Precision:** Logs show `auto_mixed_precision_onednn_bfloat16`
 - **AMX:** `ONEDNN_VERBOSE` lines include `amx` and `bf16` datatypes
 - **Rollback:** Remove `--mixed_precision` flag; delete policy in Keras path
 
-----------------------------------------------------------------------
-Summary:
-Enabled `bfloat16` mixed precision for an RGAT model on Xeon with minimal code change using TF-GNN's `GATv2Conv`, deployed via TensorFlow Serving, and verified AMX acceleration.
+## Summary
 
+Enabled `bfloat16` mixed precision for an RGAT model on Xeon with minimal code change using TF-GNN's `GATv2Conv`, deployed via TensorFlow Serving, and verified AMX acceleration.

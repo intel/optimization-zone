@@ -1,18 +1,40 @@
 # Natural Language Processing (NLP): Inference with BERT-Large (Uncased)
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Install Required Packages](#install-required-packages)
+- [Quick Start: Keras Mixed Precision](#quick-start-keras-mixed-precision)
+- [Deploying with TensorFlow Serving (bfloat16 Auto Mixed Precision)](#deploying-with-tensorflow-serving-bfloat16-auto-mixed-precision)
+  - [Export the Model (SavedModel, float32 weights)](#export-the-model-savedmodel-float32-weights)
+  - [Pull TensorFlow Serving](#pull-tensorflow-serving)
+  - [Start the Server (Enable bfloat16)](#start-the-server-enable-bfloat16)
+- [Client Inference (REST)](#client-inference-rest)
+- [Optional: Graph Freezing for Additional Performance](#optional-graph-freezing-for-additional-performance)
+- [Key Validation Steps](#key-validation-steps)
+
+## Overview
+
 BERT (Bidirectional Encoder Representations from Transformers) is a transformer model pretrained on large English text corpora using self-supervised objectives. This example shows how to run BERT-Large (uncased, Hugging Face) for sequence (binary) classification on Intel Xeon processors with AMX acceleration using bfloat16 (BF16) mixed precision.
 
-Prerequisites
+## Prerequisites
+
 - Intel Xeon 4th Gen (or newer) with AMX BF16 support
 - Python environment with pip
 - Internet access to download model weights
 
-### Install Required Packages
-(Exact versions ensure consistency.)
+## Install Required Packages
+
+Pinned versions are shown below for reproducibility.
+
 ```bash
 pip install tensorflow==2.20.0
 pip install tf-keras==2.20.1 --no-deps
 pip install transformers==4.49.0
 ```
+
+## Quick Start: Keras Mixed Precision
 
 To reuse the standard FP32 (pretrained) BERT-Large model while executing layers in BF16 on AMX, enable a `mixed_bfloat16` policy BEFORE creating/loading the model. This keeps model weights in FP32 for stability while executing math (matmul, attention, feed‑forward) in BF16 on AMX-capable Intel Xeon processors. Note that this approach to enable auto-mixed precision can be used for any Keras model.
 
@@ -41,15 +63,19 @@ pred = tf.argmax(logits, axis=-1)
 print("Logits:", logits.numpy())
 print("Predicted class:", pred.numpy())
 ```
+
 Notes:
-- Set ONEDNN_VERBOSE=1 to confirm AMX usage (look for brg_matmul ... amx).
+- Set `ONEDNN_VERBOSE=1` to confirm AMX usage (look for `brg_matmul ... amx`).
 - Revert to full FP32 by removing the policy or setting mixed_precision to float32.
 
-----------------------------------------------------------------------
-Deploying with TensorFlow Serving (BF16 Auto Mixed Precision)
-----------------------------------------------------------------------
+## Deploying with TensorFlow Serving (BF16 Auto Mixed Precision)
 
-1. Export the Model (SavedModel, FP32 weights)
+### Export the Model (SavedModel, FP32 weights)
+
+> **Note:** We don't need to explicitly enable `bfloat16` mixed precision with Keras while exporting the model, because the `--mixed_precision=bfloat16` flag passed when starting the inference server handles that automatically (see [Start the Server (Enable bfloat16)](#start-the-server-enable-bfloat16) below).
+
+Create `export_bert_large.py`:
+
 ```python
 import tensorflow as tf
 from transformers import TFBertForSequenceClassification, BertTokenizer
@@ -71,20 +97,27 @@ output_model_path = "/tmp/bert_large_hf/1"  # versioned directory
 model.save(output_model_path, include_optimizer=False, signatures={"serving_default": serving_fn})
 print("Exported to:", output_model_path)
 ```
+
 Run:
+
 ```bash
 python export_bert_large.py
 ```
 
-2. Pull TensorFlow Serving
-(Using the official CPU image.)
+### Pull TensorFlow Serving
+
+Pull the official TensorFlow Serving CPU image:
+
 ```bash
 docker pull tensorflow/serving
 ```
+
 Reference setup guide: https://github.com/tensorflow/serving?tab=readme-ov-file#set-up
 
-3. Start the Server (Enable BF16)
+### Start the Server (Enable BF16)
+
 TensorFlow Serving (CPU) currently supports bfloat16 mixed precision (fp16 not yet enabled for CPU).
+
 ```bash
 docker run -t --rm \
   -p 8501:8501 \
@@ -93,6 +126,7 @@ docker run -t --rm \
   -e ONEDNN_VERBOSE=1 \
   tensorflow/serving --mixed_precision=bfloat16
 ```
+
 Sample log indicators:
 - `auto_mixed_precision_onednn_bfloat16` graph optimizer
 - `brg_matmul` with `amx` and `src_bf16` / `wei_bf16`
@@ -111,16 +145,17 @@ Troubleshooting 403:
 - Check container logs: docker logs <id>.
 - Disable proxies: export no_proxy=localhost,127.0.0.1.
 
-----------------------------------------------------------------------
-Client Inference (REST)
-----------------------------------------------------------------------
+## Client Inference (REST)
+
 Install:
+
 ```bash
 pip install requests==2.32.5 numpy==2.3.3 transformers==4.49.0 tensorflow==2.20.0
 pip install tf-keras==2.20.1 --no-deps
 ```
 
-Create infer_bert_large.py:
+Create `infer_bert_large.py`:
+
 ```python
 import requests, json, numpy as np, tensorflow as tf
 from transformers import BertTokenizer
@@ -159,7 +194,9 @@ if resp.status_code == 200:
 else:
     print("Error:", resp.text)
 ```
+
 Run:
+
 ```bash
 python infer_bert_large.py
 ```
@@ -175,30 +212,30 @@ I0000 00:00:1758754431.978969    3797 auto_mixed_precision.cc:2263] Converted 18
 
 Logits and probabilities for binary classification (untrained weights will give random results):
 
-----------------------------------------------------------------------
-Optional: Graph Freezing for Additional Performance
-----------------------------------------------------------------------
+## Optional: Graph Freezing for Additional Performance
+
 Freeze variables to constants for a lean inference graph (removes variable-loading overhead).
 
-Script (public reference):
+**Script (public reference):**
 https://raw.githubusercontent.com/oneapi-src/oneAPI-samples/master/AI-and-Analytics/Features-and-Functionality/IntelTensorFlow_InferenceOptimization/scripts/freeze_optimize_v2.py
 
-Example:
+**Example:**
+
 ```bash
 python freeze_optimize.py \
   --input_saved_model_dir=/tmp/bert_large_hf/1 \
   --output_saved_model_dir=/tmp/bert_large_hf_frozen/1
 ```
+
 Run this after exporting the `SavedModel` (server side).
 
-----------------------------------------------------------------------
-Key Validation Steps
-----------------------------------------------------------------------
-- Functional: REST returns logits JSON
-- Precision: Logs show auto_mixed_precision_onednn_bfloat16
-- AMX: ONEDNN_VERBOSE lines include amx and bf16 datatypes
-- Rollback: Remove mixed_precision flag; delete policy in Keras path
+## Key Validation Steps
 
-----------------------------------------------------------------------
-Summary:
+- **Functional:** REST returns logits JSON
+- **Precision:** Logs show `auto_mixed_precision_onednn_bfloat16`
+- **AMX:** `ONEDNN_VERBOSE` lines include `amx` and `bf16` datatypes
+- **Rollback:** Remove `--mixed_precision` flag; delete policy in Keras path
+
+## Summary
+
 Enabled BF16 mixed precision on Xeon with minimal code change, deployed via TensorFlow Serving, verified AMX acceleration, and optionally optimized the model by freezing the graph.
