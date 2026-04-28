@@ -212,6 +212,12 @@ I0000 00:00:1758754431.978969    3797 auto_mixed_precision.cc:2263] Converted 18
 
 Logits and probabilities for binary classification (untrained weights will give random results):
 
+```bash
+Inference successful!
+Logits: [-0.123 0.456]
+Probabilities: [0.412 0.588]
+```
+
 ## Optional: Graph Freezing for Additional Performance
 
 Freeze variables to constants for a lean inference graph (removes variable-loading overhead).
