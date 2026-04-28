@@ -6,7 +6,7 @@ Prerequisites
 - Python environment with pip
 - Internet access to download model weights
 
-Install Required Packages
+### Install Required Packages
 (Exact versions ensure consistency.)
 ```bash
 pip install tensorflow==2.20.0
