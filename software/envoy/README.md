@@ -138,26 +138,11 @@ To use GreenTea GC, build Fortio with Go 1.25.1 and the GreenTea flag enabled or
 Fortio and Envoy are intentionally run on a reduced number of CPU cores to avoid excessive spin-lock contention and busy-waiting behavior. By limiting core availability, the benchmark prevents threads from continuously spinning on shared locks and instead exposes meaningful contention, scheduling, and proxy-path behavior under realistic CPU pressure 
 
 ---
-### 6. Other Envoy Tuning
+### 6. Other Envoy Tuning -- which can be explored
 
 #### Worker and socket tuning
 - **`SO_REUSEPORT`**: Already used by Envoy by default. Verify it is not disabled by any sysctls - it distributes `accept()` load evenly across worker threads without a shared accept mutex.
-- **`--concurrency`**: Tune thread concurrency to match the number of physical cores assigned to the container. Over-provisioning causes false sharing; under-provisioning wastes hardware.
-
-#### Network stack
-```bash
-# Increase socket backlog for burst acceptance
-sysctl -w net.core.somaxconn=65535
-sysctl -w net.ipv4.tcp_tw_reuse=1
-
-# Larger socket send/receive buffers for high-throughput proxying
-sysctl -w net.core.rmem_max=134217728
-sysctl -w net.core.wmem_max=134217728
-```
-
-#### IRQ affinity
-Pin NIC receive queues to a dedicated set of cores separate from Envoy workers. This prevents NIC softirq processing from preempting Envoy's event loops.
-
+- **`--concurrency`**: Tune thread concurrency to match the number of physical cores assigned to the container. Over-provisioning causes false sharing, under-provisioning wastes hardware.
 
 #### Huge pages (TLB pressure)
 Envoy's memory allocator (`tcmalloc` / `jemalloc`) benefits from 2 MB huge pages, which reduce TLB miss rates when proxying many concurrent flows:
