@@ -186,10 +186,11 @@ Ensure you have configured the floowing as deflaut in BIOS or from the OS(using 
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | High `native_queued_spin_lock_slowpath` in perf | Cross-NUMA memory access | Pin both containers to NUMA node 0 |
+| High TLB in perf or spinlocks | Cross-NUMA memory access | Ensure Huge Pages are enabled |
 | High `native_queued_spin_lock_slowpath` from Go threads | Too many Go OS threads | Set `GOMAXPROCS` = `--cpus` value |
 | High LLC-load-misses in `perf stat` | Cross-NUMA memory access | Pin to single NUMA node |
 | GC overhead in perf traces (`gcDrain`, `trygetfull`) | High allocation rate with default GC | Build Fortio with GreenTea GC (Go 1.25.1); raise `GOGC` |
-| Envoy CPU bottlenecked in TLS | mTLS handshake overhead | Enable TLS session resumption; use ECDSA keys |
-| NIC softirq on same cores as Envoy | IRQ affinity not set | Separate NIC IRQ cores from Envoy worker cores |
+| Envoy CPU bottlenecked in TLS | mTLS handshake overhead | Enable TLS session resumption. Make TLS communicaiton/handshake Async |
+| NIC softirq on same cores as Envoy | IRQ affinity not set or not part of of same NUMA | Separate NIC IRQ cores from Envoy worker cores or ensure cores + mem + NIC are on same NUMA |
 | Latency spikes every few seconds | CPU frequency scaling | Set `performance` governor |
 | Throughput limited despite headroom | CPU quota too low | Increase `--cpus` for both containers together with `--concurrency` |
