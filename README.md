@@ -44,6 +44,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
     - [ResNet50 – Computer Vision](software/tensorflow/computer-vision-resnet50/README.md)
     - [BERT – NLP](software/tensorflow/nlp-transformers-bert/README.md)
     - [RGAT – Graph Neural Networks](software/tensorflow/graph-neural-networks-rgat/README.md)
+  - [vLLM](software/vllm/README.md)
 - Workloads
   - [Cassandra Stress](workloads/cassandra-stress/README.md)
   - [HPC](workloads/hpc/README.md)
