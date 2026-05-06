@@ -2,7 +2,7 @@
 
 ## Overview
 
-This tuning guide describes best known practises to optimize Fortio + Envoy performance. It evaluates Envoy running as a TCP proxy in front of Fortio, which acts as the backend load generator. The benchmark focuses on proxy-path performance and behavior under load, measuring metrics such as QPS and latency. Both server-side and client-side components are used to generate traffic and collect results, with Envoy and Fortio running in Docker containers based on the images listed below:
+This tuning guide describes best known practices to optimize Fortio + Envoy performance. It evaluates Envoy running as a TCP proxy in front of Fortio, which acts as the backend load generator. The benchmark focuses on proxy-path performance and behavior under load, measuring metrics such as QPS and latency. Both server-side and client-side components are used to generate traffic and collect results, with Envoy and Fortio running in Docker containers based on the images listed below:
 
 - **Fortio**: `fortio/fortio:1.71.1`
 - **Envoy**: `envoyproxy/envoy:v1.31.10`
@@ -65,7 +65,7 @@ flowchart RL
 
 > **1.** Default proxy mode - traffic traverses both Envoy proxies.  
 > **2.** `direct-bench(secure mesh)` mode - both Envoys (side cars) are bypassed. Fortio client hits Fortio server directly.  
-> **3.** Server and Client are run on different machines & Clinet side measures QPS/latencies.  
+> **3.** Server and Client are run on different machines & Client side measures QPS/latencies.  
 > **4.** Setup: Used a high core count machine such as Intel Xeon 6 (Granite Rapids)-- 6980P (128C/256T) for both server & Client
 
 ---
@@ -100,7 +100,7 @@ Key configs:
 
 Starts containers on the client machine and drives load toward the server. Supports two modes:
 
-**Default mode** — spins up a client-side Envoy that proxies to the server, then runs Fortio through it:
+**Default Proxy mode** — spins up a client-side Envoy that proxies to the server, then runs Fortio through it:
 
 1. Writes `envoy_client.yaml` pointing to `REMOTE_IP:9090`
 2. Starts **Envoy client-side** listening on `localhost:9091`
@@ -132,13 +132,13 @@ GOMAXPROCS=16 SECURE_MESH=true CONCURRENCY=1000 ./client.sh <server-ip> direct-b
 
 ---
 
-## CPU Utilization and CPU Quota
+## CPU Utilization and CPU Quota (baseline/problem)
 
-The script applies Docker CPU quotas (`--cpus 16` for Fortio, `--cpus 8` for Envoy). On a high core-count server (eg., 128 cores/256Threads), Docker enforces these quotas via cgroup CPU BW control. The OS spreads threads across all cores but throttles aggregate CPU time, resulting in roughly **6 - 7% per-core utilization** across all server cores - not saturation. The CPU quota is the binding constraint, not the WL.
+The script applies Docker CPU quotas (`--cpus 16` for Fortio, `--cpus 8` for Envoy). On a high core-count server (eg., 128 cores/256Threads), Docker enforces these quotas via cgroup CPU BW control. The OS spreads threads across all cores but throttles aggregate CPU time, resulting in roughly **6 - 7% per-core utilization** across all server cores - not saturation. The CPU quota is the binding constraint, not the workload.
 
 ---
 
-## Spin Lock Overhead on High Core Count Machines
+## Spin Lock Overhead on High Core Count Machines (baseline/problem)
 
 ### What happens
 
@@ -162,7 +162,7 @@ Latency p99/p99.9 climbs, throughput plateaus below the theoretical limit, and `
 
 ---
 
-## Perf Report (Baseline) <a name="perf-report-baseline"></a>
+## Perf Report (Baseline-problem: When all cores are used on high core count system(96C or higher)) <a name="perf-report-baseline"></a>
 
 `perf report` output from a baseline run (no optimizations applied), 112K samples of `cycles:P`:
 
@@ -242,8 +242,8 @@ Pin both Fortio and Envoy to a single NUMA node on server side. This is the sing
 
 ```bash
 # Pin both containers to NUMA node 0
-sudo docker run ... --cpuset-cpus "<numa0 CPU range based on the SKU>" --cpuset-mems "0" fortio/fortio:1.71.1 ...
-sudo docker run ... --cpuset-cpus "<numa0 CPU range based on the SKU>" --cpuset-mems "0" envoyproxy/envoy:v1.31.10 ...
+sudo docker run ... --cpuset-cpus "<numa0 CPU range based on the SKU>" --cpuset-mems "N" --cpus "N" fortio/fortio:1.71.1 ...
+sudo docker run ... --cpuset-cpus "<numa0 CPU range based on the SKU>" --cpuset-mems "N" --cpus "N" envoyproxy/envoy:v1.31.10 ...
 ```
 
 Or on the host directly:
@@ -252,27 +252,28 @@ Or on the host directly:
 numactl --cpunodebind=0 --membind=0 -- envoy -c envoy.yaml --concurrency 16
 ```
 
-**Why it helps**: Cross-socket coherency traffic is the dominant cause of `native_queued_spin_lock_slowpath` overhead on high core-count systems. Confining the WL to NUMA node 0 eliminates this entirely.
+**Why it helps**: Cross-socket coherency traffic is the dominant cause of `native_queued_spin_lock_slowpath` overhead on high core-count systems. Confining the workload to NUMA node 0 eliminates this entirely.
 
 ---
 
-### 2. Increase CPU Quota for Both Containers
+### 2. Tune CPU Quota for Both Containers
 
-With NUMA pinning in place, increasing the CPU quota for both Fortio and Envoy containers further reduces scheduling delays and spin lock overhead. Keep `--concurrency` equal to `--cpus` to avoid over-subscription. The numbers are just examples. Tune this based on the SKU/cores used. 
+With NUMA pinning in place, tuning the CPU quota for both Fortio and Envoy containers further reduces scheduling delays and spin lock overhead. The numbers are just examples. Tune this based on the SKU/cores used.
 
 ```bash
-# Example: raise Fortio from --cpus 16 to --cpus 32, Envoy from --cpus 8 to --cpus 16
-sudo docker run ... --cpus 32 -e GOMAXPROCS=32 fortio/fortio:1.71.1 ...
-sudo docker run ... --cpus 16 ... envoyproxy/envoy:v1.31.10 -c /etc/envoy/envoy.yaml --concurrency 16
+# Example: Fortio --cpus 32, Envoy --cpus 16, both pinned to NUMA node 0
+# --cpus and --cpuset-cpus count must always match (see opt #5)
+sudo docker run ... --cpus 32 --cpuset-cpus "<32 physical cores from NUMA node 0>" --cpuset-mems 0 -e GOMAXPROCS=32 fortio/fortio:1.71.1 ...
+sudo docker run ... --cpus 16 --cpuset-cpus "<16 physical cores from NUMA node 0>" --cpuset-mems 0 envoyproxy/envoy:v1.31.10 -c /etc/envoy/envoy.yaml --concurrency 16
 ```
 
-Always apply NUMA pinning first; increasing quota without NUMA pinning gives diminishing returns on high core-count machines.
+Always apply NUMA pinning first; Tuning quota without NUMA pinning gives diminishing returns on high core-count machines.
 
 ---
 
 ### 3. Limit GOMAXPROCS (Fortio)
 
-Set `GOMAXPROCS` to match the Docker `--cpus` allocation so the Go scheduler does not create more OS threads than there are physical CPUs available. The numbers are just examples. Tune this based on the SKU/cores used. :
+Set `GOMAXPROCS` to match the Docker `--cpus` allocation so the Go scheduler does not create more OS threads than there are physical CPUs available. The numbers are just examples. Tune this based on the SKU/cores used.
 
 ```bash
 sudo docker run ... --cpus 16 -e GOMAXPROCS=16 fortio/fortio:1.71.1 ...
@@ -287,26 +288,33 @@ sudo docker run ... --cpus 16 -e GOMAXPROCS=16 fortio/fortio:1.71.1 ...
 
 Fortio's load generator creates large numbers of short-lived objects (request/response structs, buffers, timers). The default Go GC (tricolor mark-and-sweep) scans the object graph one object at a time, causing poor spatial locality, high contention on global queues, and significant cycles spent in the scan loop.
 
-**GreenTea GC** (prototype in Go 1.24, available in Go 1.25.1(as exp feature)) is a span-centric generational collector. Should be enabled by default in Go 1.26:
+**GreenTea GC** (prototype in Go 1.24, available in Go 1.25.1 (as experimental feature)) is a span-centric generational collector. Should be enabled by default in Go 1.26:
 
 - Scans in aligned 8 KB spans rather than individual objects -> better cache behavior and less evictions.
 - Reduces overhead from `gcDrain`, `trygetfull`, and `lfstack` paths observed in perf traces.
 - New span operations (`tryDeferToSpanScan`, `localSpanQueue.stealFrom`) distribute GC work more evenly across processors.
 - Results in less time spent in GC and more CPU available for the application.
 
-To use GreenTea GC, build Fortio with Go 1.25.1 and the GreenTea flag enabled or use 1.26 where its enabled by default.
+To use GreenTea GC, build Fortio with Go 1.25.1 and the GreenTea flag enabled or use 1.26 where it's enabled by default.
 
 
 ---
-### 5. Use fewer CPU cores as possible to run Envoy + fortio
-Fortio and Envoy are intentionally run on a reduced number of CPU cores to avoid excessive spin-lock contention and busy-waiting behavior. By limiting core availability, the benchmark prevents threads from continuously spinning on shared locks and instead exposes meaningful contention, scheduling, and proxy-path behavior under realistic CPU pressure 
+### 5. Match CPU quota to pinned cores — always set `--cpus` = `--cpuset-cpus` count
+
+The CPU quota must match the number of pinned cores. `--cpus` sets the usage quota. `--cpuset-cpus` is the hard CPU pin. They must be equal:
+
+```bash
+docker run --cpus 11 --cpuset-cpus "0-10" --cpuset-mems 0 ...
+```
+
+`--cpus` alone (no `--cpuset-cpus`) lets the OS spread threads across all NUMA nodes and merely throttles aggregate time i.e there is no NUMA confinement. A quota larger than the cpuset allows the container to borrow time from other cores on the node. A quota smaller than the cpuset throttles it below what the pinned cores can deliver.
 
 ---
 ### 6. Other Envoy Tuning -- which can be explored
 
 #### Worker and socket tuning
 - **`SO_REUSEPORT`**: Already used by Envoy by default. Verify it is not disabled by any sysctls - it distributes `accept()` load evenly across worker threads without a shared accept mutex.
-- **`--concurrency`**: Tune thread concurrency to match the number of physical cores assigned to the container. Over-provisioning causes false sharing, under-provisioning wastes hardware.
+- **`--concurrency`**: set --concurrency equal to --cpus. Over-provisioning causes false sharing, under-provisioning wastes hardware.
 
 #### Huge pages (TLB pressure)
 Envoy's memory allocator (`tcmalloc` / `jemalloc`) benefits from 2 MB huge pages, which reduce TLB miss rates when proxying many concurrent flows:
@@ -321,11 +329,74 @@ Disable dynamic frequency scaling to eliminate governor-induced latency spikes:
 ```bash
 cpupower frequency-set -g performance
 ```
-Ensure you have configured the floowing as deflaut in BIOS or from the OS(using perfspect tool) on Granite Rapids (Xeon6) or later systems 
+Ensure you have configured the following as default in BIOS or from the OS(using perfspect tool) on Granite Rapids (Xeon6) or later systems
 
 1. `Efficiency Latency Control`: Latency Optimized
 2. `Energy Performance Bias`: Performance (0)
 3. `Energy Performance Preference`:  Performance (0)
+
+
+---
+
+## Core / CPU-Quota Allocation Across SKUs
+
+Envoy + Fortio together are a single combined workload. Size them from the "thread counts you actually need", then verify the total fits within one NUMA node. Do not start from available HW capacity and fill it up — that leads to over-subscription and spin lock overhead.
+
+`CONCURRENCY=1000` is goroutines in flight, not OS threads. `GOMAXPROCS` caps the OS thread count, which is what actually consumes CPU cores. You need far fewer cores than concurrent connections.
+
+### Step 1 — Identify your NUMA topology
+
+```bash
+numactl --hardware
+```
+
+Look at `node 0 cpus:`. On a typical HT-enabled machine, `node 0 cpus: 0-42 128-170` means 43 physical cores — the first range (`0-42`) are physical cores, `128-170` are their HT siblings. **Use only physical cores** — two threads on the same physical core compete for the same execution units and degrade under load.
+
+> On dual-socket BM or single-socket with SNC2/SNC3 enabled, `numactl` shows multiple nodes. Pick **one node (preferably NUMA node 0)** and stay within it.
+
+### Step 2 — Size from thread counts, verify against NUMA node
+
+**Decide Envoy workers first.** Envoy is I/O-bound; each `--concurrency` worker is one event loop thread needing one physical core. 8 workers is enough for most TCP proxy benchmarks; 16 is a reasonable upper bound before returns diminish.
+
+**Fortio OS threads = 2 × Envoy workers.** Fortio is CPU-bound (Go runtime + GC). It needs roughly twice the compute of Envoy for the same load level. Set `GOMAXPROCS` to this value — Go spawns exactly that many OS threads, one per physical core.
+
+**Verify it fits on one NUMA node:**
+
+```
+Envoy workers  +  Fortio GOMAXPROCS  <=  physical cores in chosen NUMA node
+```
+
+If it does not fit, reduce Envoy workers (and Fortio follows at 2×) until it does. Never spill into a second NUMA node.
+
+**eg — 256 vCPU dual-socket BM (64 physical cores per NUMA node):**
+- Choose Envoy workers = 16 -> Fortio GOMAXPROCS = 32 -> total = 48 &le; 64
+- `--cpus 16 --cpuset-cpus "0-15" --cpuset-mems 0 --concurrency 16` for Envoy
+- `--cpus 32 --cpuset-cpus "16-47" --cpuset-mems 0 -e GOMAXPROCS=32` for Fortio
+
+**eg — 16 vCPU VM (8 physical cores, 1 NUMA node):**
+- Choose Envoy workers = 2 -> Fortio GOMAXPROCS = 4 -> total = 6 ≤ 8
+- `--cpus 2 --cpuset-cpus "0-1" --cpuset-mems 0 --concurrency 2` for Envoy
+- `--cpus 4 --cpuset-cpus "2-5" --cpuset-mems 0 -e GOMAXPROCS=4` for Fortio
+
+Three settings must be consistent on each container, or spin locks return:
+
+- `--cpuset-cpus` and `--cpus` must cover the **same** cores — `--cpus` is a quota and `--cpuset-cpus` is the hard pin. They must match
+- `--cpuset-mems` must be set to the **same NUMA node id** — without it the kernel allocates memory on a remote socket even when CPUs are pinned
+- Envoy `--concurrency` must equal its `--cpus` value, and Fortio `GOMAXPROCS` must equal its `--cpus` value — extra threads beyond available cores spin on empty queues causing `native_queued_spin_lock_slowpath`
+
+### Reference — Envoy workers and NUMA fit check across SKUs
+
+| SKU | Physical cores / NUMA node | Envoy workers (`--concurrency` / `--cpus`) | Fortio (`GOMAXPROCS` / `--cpus`) | Total cores used |
+|---|---|---|---|---|
+| 16 vCPU VM | 8 | 2 | 4 | 6 of 8 |
+| 32 vCPU VM | 16 | 4 | 8 | 12 of 16 |
+| 64 vCPU BM | 32 | 8 | 16 | 24 of 32 |
+| 96 vCPU BM, dual socket | 24 | 6 | 12 | 18 of 24 |
+| 128 vCPU BM (SNC2 or dual socket) | 32 | 8 | 16 | 24 of 32 |
+| 256 vCPU BM, dual socket | 64 | 16 | 32 | 48 of 64 |
+| 256 vCPU BM, single socket SNC3  | 43 | 14 | 28 | 42 of 43 |
+
+If QPS/latency is not saturated at these worker counts, increase Envoy workers by 2 and Fortio by 4 (keeping the 1:2 ratio) and rerun — but verify the new total still fits within the NUMA node's physical core count.
 
 
 ---
@@ -338,8 +409,7 @@ Ensure you have configured the floowing as deflaut in BIOS or from the OS(using 
 | High TLB in perf or spinlocks | Cross-NUMA memory access | Ensure Huge Pages are enabled |
 | High `native_queued_spin_lock_slowpath` from Go threads | Too many Go OS threads | Set `GOMAXPROCS` = `--cpus` value |
 | High LLC-load-misses in `perf stat` | Cross-NUMA memory access | Pin to single NUMA node |
-| GC overhead in perf traces (`gcDrain`, `trygetfull`) | High allocation rate with default GC | Build Fortio with GreenTea GC (Go 1.25.1); raise `GOGC` |
-| Envoy CPU bottlenecked in TLS | mTLS handshake overhead | Enable TLS session resumption. Make TLS communicaiton/handshake Async |
-| NIC softirq on same cores as Envoy | IRQ affinity not set or not part of of same NUMA | Separate NIC IRQ cores from Envoy worker cores or ensure cores + mem + NIC are on same NUMA |
+| GC overhead in perf traces (`gcDrain`, `trygetfull`) | High allocation rate with default GC | Build Fortio with GreenTea GC (Go 1.25.1); or Go 1.26 (enabled by default) |
+| Envoy CPU bottlenecked in TLS | mTLS handshake overhead | Enable TLS session resumption. Make TLS communication/handshake Async |
 | Latency spikes every few seconds | CPU frequency scaling | Set `performance` governor |
-| Throughput limited despite headroom | CPU quota too low | Increase `--cpus` for both containers together with `--concurrency` |
+| Throughput limited despite headroom | CPU quota too low | Increase `--cpus` for both containers together with `--concurrency`, --cpuset-cpus"  |
