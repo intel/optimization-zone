@@ -314,6 +314,28 @@ docker run --cpus 11 --cpuset-cpus "0-10" --cpuset-mems 0 ...
 
 #### Worker and socket tuning
 - **`SO_REUSEPORT`**: Already used by Envoy by default. Verify it is not disabled by any sysctls - it distributes `accept()` load evenly across worker threads without a shared accept mutex.
+
+
+This can be verified using:
+
+```bash
+ss -tlnpo | grep 9090
+```
+
+Eg output:
+
+```bash
+LISTEN 0 4096 0.0.0.0:9090 0.0.0.0:* users:(("envoy",pid=2496229,fd=53))
+LISTEN 0 4096 0.0.0.0:9090 0.0.0.0:* users:(("envoy",pid=2496229,fd=52))
+LISTEN 0 4096 0.0.0.0:9090 0.0.0.0:* users:(("envoy",pid=2496229,fd=51))
+LISTEN 0 4096 0.0.0.0:9090 0.0.0.0:* users:(("envoy",pid=2496229,fd=50))
+LISTEN 0 4096 0.0.0.0:9090 0.0.0.0:* users:(("envoy",pid=2496229,fd=49))
+LISTEN 0 4096 0.0.0.0:9090 0.0.0.0:* users:(("envoy",pid=2496229,fd=48))
+LISTEN 0 4096 0.0.0.0:9090 0.0.0.0:* users:(("envoy",pid=2496229,fd=47))
+LISTEN 0 4096 0.0.0.0:9090 0.0.0.0:* users:(("envoy",pid=2496229,fd=46))
+```
+> **Note:** `SO_REUSEPORT` is enabled. This is confirmed by the presence of multiple (8) sockets bound to `0.0.0.0:9090` from the same process. Without `SO_REUSEPORT`, subsequent `bind()` calls would fail with `EADDRINUSE`.
+
 - **`--concurrency`**: set --concurrency equal to --cpus. Over-provisioning causes false sharing, under-provisioning wastes hardware.
 
 #### Huge pages (TLB pressure)
