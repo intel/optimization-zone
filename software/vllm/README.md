@@ -1,10 +1,6 @@
 # vLLM on Intel Xeon with Intel AMX
 
-This recipe shows how to configure vLLM for CPU inference and serving on Intel Xeon processors with Intel Advanced Matrix Extensions (Intel AMX). It focuses on the practical settings that most affect performance: BF16 execution, CPU thread binding, NUMA placement, KV cache sizing, batch limits, and model selection.
-
-The goal is not to replace the vLLM documentation. Use the official vLLM CPU installation guide for package-specific setup details, then use this recipe to choose a high-performance Intel Xeon configuration.
-
-vLLM CPU docs: <https://docs.vllm.ai/en/stable/getting_started/installation/cpu/>
+This recipe configures vLLM for CPU inference and serving on Intel Xeon processors with Intel Advanced Matrix Extensions (Intel AMX). It focuses on the settings that most affect performance: BF16 execution, CPU thread binding, NUMA placement, KV cache sizing, batch limits, and model selection. Pair it with the official [vLLM CPU installation guide](https://docs.vllm.ai/en/stable/getting_started/installation/cpu/) for package-specific setup details.
 
 ## Table of Contents
 
@@ -15,6 +11,7 @@ vLLM CPU docs: <https://docs.vllm.ai/en/stable/getting_started/installation/cpu/
   - [Prerequisites](#prerequisites)
   - [Serve and validate vLLM with Docker](#serve-and-validate-vllm-with-docker)
   - [AMX and BF16 Configuration](#amx-and-bf16-configuration)
+  - [Quantization (INT8 / W8A8)](#quantization-int8--w8a8)
   - [CPU Threading and NUMA](#cpu-threading-and-numa)
     - [Default Recommendation](#default-recommendation)
     - [Manual Binding Example](#manual-binding-example)
@@ -32,7 +29,7 @@ vLLM CPU docs: <https://docs.vllm.ai/en/stable/getting_started/installation/cpu/
 
 ## Overview
 
-vLLM supports model inferencing and OpenAI-compatible serving on x86 CPUs with FP32, FP16, and BF16. On Intel Xeon processors that expose Intel AMX instructions, BF16 is the preferred dtype because it reduces memory traffic and enables AMX BF16 matrix kernels designed for modern Xeon CPUs. Intel AMX also supports INT8 operations (`amx_int8`), which vLLM can leverage through INT8 quantization paths (such as compressed-tensor W8A8) for further memory and bandwidth savings when model accuracy permits.
+vLLM serves models on x86 CPUs with FP32, FP16, and BF16. On Intel Xeon processors with Intel AMX, BF16 is the preferred dtype: it cuts memory traffic and enables AMX BF16 matrix kernels. AMX also supports INT8 (`amx_int8`), which vLLM uses automatically for INT8-quantized models (e.g., compressed-tensors W8A8) to further reduce memory and bandwidth.
 
 Use this recipe when you want to:
 
@@ -103,13 +100,9 @@ docker run --rm \
 
 Note: `--security-opt seccomp=unconfined` and `--cap-add SYS_NICE` are needed for NUMA memory policy calls inside the container. Omitting them may produce `get_mempolicy: Operation not permitted` warnings.
 
+Or run vLLM directly (same env vars apply):
 
 ```bash
-export VLLM_CPU_KVCACHE_SPACE=40
-export VLLM_CPU_OMP_THREADS_BIND=auto
-export VLLM_CPU_NUM_OF_RESERVED_CPU=1
-export VLLM_CPU_SGL_KERNEL=1
-
 vllm serve Qwen/Qwen3-4B \
   --device cpu \
   --dtype=bfloat16 \
@@ -134,11 +127,6 @@ For a multi-NUMA system, start by matching tensor parallel size to the NUMA node
 ```bash
 NUMA_NODES=$(lscpu | awk '/NUMA node\(s\):/ {print $3}')
 
-export VLLM_CPU_KVCACHE_SPACE=40
-export VLLM_CPU_OMP_THREADS_BIND=auto
-export VLLM_CPU_NUM_OF_RESERVED_CPU=1
-export VLLM_CPU_SGL_KERNEL=1
-
 vllm serve meta-llama/Llama-3.1-8B-Instruct \
   --device cpu \
   --dtype=bfloat16 \
@@ -157,12 +145,29 @@ For AMX-capable Intel Xeon CPUs, the most important vLLM decision is to use BF16
 vllm serve <model> --device cpu --dtype=bfloat16
 ```
 
-Why this matters:
+BF16 is the recommended CPU dtype: it halves memory traffic versus FP32 and unlocks AMX BF16 matrix kernels for matrix-heavy LLM operations. For further gains, use INT8-quantized models to engage AMX INT8 kernels (see next section).
 
-- BF16 is the recommended CPU dtype when FP16 behavior is unstable or slower on CPU.
-- BF16 reduces memory traffic compared with FP32.
-- AMX BF16 kernels accelerate matrix-heavy LLM operations when the CPU, PyTorch, and vLLM CPU backend can use them.
-- AMX INT8 kernels provide additional acceleration for INT8-quantized models (e.g., W8A8 compressed-tensor), reducing both memory footprint and compute cost. Use INT8 after validating model quality with your target prompts.
+## Quantization (INT8 / W8A8)
+
+INT8 quantization (e.g., `compressed-tensors` W8A8) reduces model weight memory and memory-bandwidth pressure, which is often the bottleneck for CPU LLM inference. vLLM automatically selects AMX INT8 kernels when the model ships a compatible quantization config — no extra CLI flag is required beyond pointing at the quantized model:
+
+```bash
+vllm serve <org>/<model>-w8a8 \
+  --device cpu \
+  --dtype=bfloat16 \
+  --max-num-batched-tokens 2048 \
+  --max-num-seqs 64
+```
+
+`--dtype=bfloat16` here sets the activation/compute dtype; INT8 weights are loaded according to the model's quantization config.
+
+When to consider INT8:
+
+- Memory-bandwidth-bound workloads on Xeon (most LLM decode phases).
+- Larger models that don't fit comfortably per NUMA node in BF16.
+- Higher-concurrency serving where KV cache competes with weights for DRAM.
+
+Always validate accuracy on your target prompts before adopting INT8, and benchmark BF16 vs INT8 end-to-end — INT8 reduces compute and bandwidth cost but can shift quality on some tasks.
 
 ## CPU Threading and NUMA
 
@@ -231,17 +236,13 @@ If the worker exits with code 9 or the process is killed by the OOM killer, redu
 
 ## Large Models on Xeon Memory Capacity
 
-Many GPU deployments are constrained by the memory capacity of a single accelerator. Intel Xeon servers can be configured with substantially larger system memory, which can be useful when the model, KV cache, or context length does not fit comfortably in accelerator memory.
+Intel Xeon servers can be configured with substantially more system memory than a single accelerator, which is useful when the model, KV cache, or context length doesn't fit comfortably in accelerator memory. This doesn't make CPU inference universally faster than GPU — it changes the design space:
 
-This does not make CPU inference universally faster than GPU inference. It changes the design space:
-
-- Use Xeon when capacity, cost, data locality, or CPU-only deployment constraints dominate.
-- Use quantization to reduce model memory and memory bandwidth pressure.
-- Use tensor parallelism across NUMA nodes when a model shard plus KV cache fits cleanly per node.
-- Prefer smaller batch sizes for interactive latency and larger batch sizes for offline throughput.
-- Avoid filling all DRAM with weights and KV cache; memory headroom is what keeps tail latency stable.
-
-For very large models, benchmark both BF16 and quantized variants. A quantized model may reduce memory traffic enough to improve throughput, but accuracy, prompt behavior, and supported kernels must be validated for your model.
+- Use Xeon when capacity, cost, data locality, or CPU-only constraints dominate.
+- Use quantization (see [Quantization](#quantization-int8--w8a8)) to cut weight memory and bandwidth pressure.
+- Use tensor parallelism across NUMA nodes when a shard plus KV cache fits cleanly per node.
+- Prefer smaller batches for interactive latency, larger batches for offline throughput.
+- Keep DRAM headroom — filling all memory with weights and KV cache destabilizes tail latency.
 
 ## Tuning Reference
 
