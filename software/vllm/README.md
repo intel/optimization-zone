@@ -44,9 +44,9 @@ Use this recipe when you want to:
 | --- | --- |
 | vLLM version | Use vLLM `0.17.0` cpu container or newer. |
 | CPU | Intel Xeon 6 is recommended as of May 2026. Intel Xeon 4th Gen or newer with `amx_tile`, `amx_bf16`, and `amx_int8` CPU flags should be used. |
-| dtype | Use `--dtype=bfloat16` for AMX BF16 serving. For INT8 quantized models, AMX INT8 kernels are used automatically when the model provides a compatible quantization config. |
-| Memory | Size `VLLM_CPU_KVCACHE_SPACE=40` is a good starting point |
-| Threading | Start with `VLLM_CPU_OMP_THREADS_BIND=auto` |
+| dtype | Use `--dtype=bfloat16`. Also works for INT8 quantized models. |
+| Memory | Size `VLLM_CPU_KVCACHE_SPACE=40` is a good starting point. |
+| Threading | Start with `VLLM_CPU_OMP_THREADS_BIND=auto` . |
 | Parallelism | On multi-socket systems, start with tensor parallel size equal to the number of NUMA nodes, except values that the current vLLM release does not support. |
 | Python | Python 3.10 through 3.13, following the vLLM CPU installation guide. |
 
@@ -57,7 +57,6 @@ Verify the platform before tuning vLLM.
 ```bash
 lscpu | grep -E "Model name|Socket|Core|Thread|NUMA node|Flags"
 lscpu | grep -E "amx_(tile|bf16|int8)|avx512_bf16"
-numactl --hardware
 ```
 
 Expected CPU flags for AMX acceleration:
@@ -214,14 +213,6 @@ Use this sizing rule for each rank:
 ```text
 local NUMA memory > model weight shard + VLLM_CPU_KVCACHE_SPACE + runtime workspace + OS headroom
 ```
-
-Estimate BF16 model weight memory as:
-
-```text
-weight shard GiB ~= model parameters * 2 bytes / tensor_parallel_size / 2^30
-```
-
-Then leave headroom for activation buffers, tokenizer/server processes, page cache, framework overhead, and other colocated services. A practical starting point is to reserve at least 10-20% of each NUMA node's memory instead of assigning all free memory to KV cache.
 
 Examples:
 
