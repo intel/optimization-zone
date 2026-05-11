@@ -336,7 +336,9 @@ LISTEN 0 4096 0.0.0.0:9090 0.0.0.0:* users:(("envoy",pid=2496229,fd=46))
 ```
 > **Note:** `SO_REUSEPORT` is enabled. This is confirmed by the presence of multiple (8) sockets bound to `0.0.0.0:9090` from the same process. Without `SO_REUSEPORT`, subsequent `bind()` calls would fail with `EADDRINUSE`.
 
-- **`--concurrency`**: set --concurrency equal to --cpus. Over-provisioning causes false sharing, under-provisioning wastes hardware.
+- **`--concurrency`**: set --concurrency equal to --cpus. Over-provisioning causes false sharing, under-provisioning wastes hardware. This needs to be optimized both on server and client side.
+
+- Other tunable parameters include circuit breaker limits, HTTP/2 / gRPC configurations, active connection limits, queuing and backpressure controls, and worker thread count based on core availability.
 
 #### Huge pages (TLB pressure)
 Envoy's memory allocator (`tcmalloc` / `jemalloc`) benefits from 2 MB huge pages, which reduce TLB miss rates when proxying many concurrent flows:
