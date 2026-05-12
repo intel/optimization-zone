@@ -1,23 +1,26 @@
 # Envoy + Fortio Benchmarking: Spin Lock Overhead & Optimization Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [What Fortio Does](#what-fortio-does)
+- [What Envoy Does](#what-envoy-does)
+- [Topology / Setup](#topology--setup)
+- [Client/Server Configuration](#clientserver-configuration)
+- [CPU Utilization and CPU Quota (baseline/problem)](#cpu-utilization-and-cpu-quota-baselineproblem)
+- [Spin Lock Overhead on High Core Count Machines (baseline/problem)](#spin-lock-overhead-on-high-core-count-machines-baselineproblem)
+- [Perf Report (Baseline)](#perf-report-baseline)
+- [Optimizations](#optimizations)
+- [Core / CPU-Quota Allocation Across SKUs](#core--cpu-quota-allocation-across-skus)
+- [Quick Diagnosis Checklist](#quick-diagnosis-checklist)
+
+---
+
 ## Overview
 
-This tuning guide describes best known practices to optimize Fortio + Envoy performance. It evaluates Envoy running as a TCP proxy in front of Fortio, which acts as the backend load generator. The benchmark focuses on proxy-path performance and behavior under load, measuring metrics such as QPS and latency. Both server-side and client-side components are used to generate traffic and collect results, with Envoy and Fortio running in Docker containers based on the images listed below:
+This tuning guide describes best known practices to optimize Envoy TCP proxy performance. Fortio is used as a load generator, which helps to reveal bottlenecks and test optimizations. This benchmark configuration focuses on proxy-path performance and behavior under load, measuring metrics such as QPS and latency.
 
-- **Fortio**: `fortio/fortio:1.71.1`
-- **Envoy**: `envoyproxy/envoy:v1.31.10`
-
-
-
-A client machine drives load using:
-
-```bash
-# Plain HTTP through Envoy
-sudo GOMAXPROCS=16 CONCURRENCY=1000 ./client.sh <server-ip>
-
-# Secure mesh direct mode (no Envoy sidecars, raw application performance)
-sudo GOMAXPROCS=16 SECURE_MESH=true CONCURRENCY=1000 ./client.sh <server-ip> direct-bench
-```
+A client machine drives load in two modes — through the Envoy proxy chain, or directly to the Fortio server (bypassing both sidecars).
 
 ---
 
@@ -66,15 +69,20 @@ flowchart RL
 > **1.** Default proxy mode - traffic traverses both Envoy proxies.  
 > **2.** `direct-bench(secure mesh)` mode - both Envoys (side cars) are bypassed. Fortio client hits Fortio server directly.  
 > **3.** Server and Client are run on different machines & Client side measures QPS/latencies.  
-> **4.** Setup: Used a high core count machine such as Intel Xeon 6 (Granite Rapids)-- 6980P (128C/256T) for both server & Client
+> **4.** Setup: The bottlenecks identified in this analysis tend to happen on Client and Server machines with large core counts (e.g. >= 96)
+
+**Container images used:**
+
+- **Fortio**: `fortio/fortio:1.71.1`
+- **Envoy**: `envoyproxy/envoy:v1.31.10`
 
 ---
 
-## Scripts Overview
+## Client/Server Configuration
 
-### server.sh
+### Server Side
 
-Starts two Docker containers on the server machine using host networking:
+Two Docker containers run on the server machine using host networking:
 
 1. **Fortio server** — echo HTTP server, accepts traffic on `:8080`
 2. **Envoy server-side** — TCP proxy, listens on `:9090` and forwards to `127.0.0.1:8080`
@@ -84,21 +92,16 @@ Key configs:
 | Parameter | Fortio | Envoy |
 |---|---|---|
 | `--cpus` | 16 | 8 |
-| `GOMAXPROCS` | optional, via env | N/A |
+| `GOMAXPROCS` | 16 (must equal `--cpus`) | N/A |
 | listen port | 8080 | 9090 |
-| `--concurrency` | N/A | 8 |
+| `--concurrency` | N/A | 8 (must equal `--cpus`) |
 | circuit breaker | N/A | max_connections=20000 |
-
-```bash
-# Run on the server machine
-./server.sh
-```
 
 ---
 
-### client.sh
+### Client Side
 
-Starts containers on the client machine and drives load toward the server. Supports two modes:
+Containers on the client machine drive load toward the server. Supports two modes:
 
 **Default Proxy mode** — spins up a client-side Envoy that proxies to the server, then runs Fortio through it:
 
@@ -106,29 +109,24 @@ Starts containers on the client machine and drives load toward the server. Suppo
 2. Starts **Envoy client-side** listening on `localhost:9091`
 3. Runs **Fortio client** sending load to `localhost:9091`
 
-**direct-bench mode** — skips both Envoys and sends Fortio traffic directly to `REMOTE_IP:8080`. Optionally sets secure mesh labels (`UBER_NET_CLASSID`, `com.uber.secure_service_mesh`) if `SECURE_MESH=true`.
+**direct-bench mode** — skips both Envoys and sends Fortio traffic directly to `REMOTE_IP:8080`.
 
 Key configs:
 
 | Parameter | Fortio client | Envoy client-side |
 |---|---|---|
 | `--cpus` | 16 | 8 |
-| `GOMAXPROCS` | optional, via env | N/A |
-| `-c` (concurrency) | `CONCURRENCY` env (default 2000) | N/A |
+| `GOMAXPROCS` | 16 (must equal `--cpus`) | N/A |
+| `CONCURRENCY` (goroutines) | 1000–2000 | N/A |
 | `-t` (duration) | 30s | N/A |
 | `--payload-size` | 5000 bytes | N/A |
 | `-qps` | 0 (max throughput) | N/A |
 | listen port | N/A | 9091 |
-| `--concurrency` | N/A | 8 |
+| `--concurrency` | N/A | 8 (must equal `--cpus`) |
 | circuit breaker | N/A | max_connections=20000 |
 
-```bash
-# Default mode: Fortio -> client Envoy :9091 -> server Envoy :9090 -> Fortio server :8080
-GOMAXPROCS=16 CONCURRENCY=1000 ./client.sh <server-ip>
+> These are starting-point values. See [Core / CPU-Quota Allocation Across SKUs](#core--cpu-quota-allocation-across-skus) for sizing guidance per machine type.
 
-# Direct-bench mode: Fortio -> Fortio server :8080 (no Envoy)
-GOMAXPROCS=16 SECURE_MESH=true CONCURRENCY=1000 ./client.sh <server-ip> direct-bench
-```
 
 ---
 
