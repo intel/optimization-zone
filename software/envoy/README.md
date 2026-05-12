@@ -80,49 +80,28 @@ flowchart RL
 
 ## Client/Server Configuration
 
-### Server Side
+Both server-side and client-side components run as Docker containers with host networking.
 
-Two Docker containers run on the server machine using host networking:
-
+**Server side:**
 1. **Fortio server** — echo HTTP server, accepts traffic on `:8080`
 2. **Envoy server-side** — TCP proxy, listens on `:9090` and forwards to `127.0.0.1:8080`
 
-Key configs:
+**Client side** supports two modes:
+- **Default Proxy mode** — spins up a client-side Envoy that proxies to the server (`:9091` → `REMOTE_IP:9090`), then runs Fortio through it.
+- **direct-bench mode** — skips both Envoys and sends Fortio traffic directly to `REMOTE_IP:8080`.
 
-| Parameter | Fortio | Envoy |
+### Key configs
+
+| Parameter | Fortio (server & client) | Envoy (server & client) |
 |---|---|---|
 | `--cpus` | 16 | 8 |
 | `GOMAXPROCS` | 16 (must equal `--cpus`) | N/A |
-| listen port | 8080 | 9090 |
 | `--concurrency` | N/A | 8 (must equal `--cpus`) |
-| circuit breaker | N/A | max_connections=20000 |
-
----
-
-### Client Side
-
-Containers on the client machine drive load toward the server. Supports two modes:
-
-**Default Proxy mode** — spins up a client-side Envoy that proxies to the server, then runs Fortio through it:
-
-1. Writes `envoy_client.yaml` pointing to `REMOTE_IP:9090`
-2. Starts **Envoy client-side** listening on `localhost:9091`
-3. Runs **Fortio client** sending load to `localhost:9091`
-
-**direct-bench mode** — skips both Envoys and sends Fortio traffic directly to `REMOTE_IP:8080`.
-
-Key configs:
-
-| Parameter | Fortio client | Envoy client-side |
-|---|---|---|
-| `--cpus` | 16 | 8 |
-| `GOMAXPROCS` | 16 (must equal `--cpus`) | N/A |
-| `CONCURRENCY` (goroutines) | 1000–2000 | N/A |
-| `-t` (duration) | 30s | N/A |
-| `--payload-size` | 5000 bytes | N/A |
-| `-qps` | 0 (max throughput) | N/A |
-| listen port | N/A | 9091 |
-| `--concurrency` | N/A | 8 (must equal `--cpus`) |
+| `CONCURRENCY` (goroutines) | 1000–2000 (client only) | N/A |
+| `-t` (duration) | 30s (client only) | N/A |
+| `--payload-size` | 5000 bytes (client only) | N/A |
+| `-qps` | 0 / max throughput (client only) | N/A |
+| listen port | 8080 (server), N/A (client) | 9090 (server), 9091 (client) |
 | circuit breaker | N/A | max_connections=20000 |
 
 > These are starting-point values. See [Core / CPU-Quota Allocation Across SKUs](#core--cpu-quota-allocation-across-skus) for sizing guidance per machine type.
