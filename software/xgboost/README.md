@@ -2,7 +2,7 @@
 
 ## Introduction
 
-[XGBoost](https://xgboost.readthedocs.io/) is one of the most popular and efficient gradient boosting frameworks for classification and regression tasks on tabular data. This guide covers techniques to significantly accelerate XGBoost inference on Intel® Xeon® processors using Intel® oneAPI Data Analytics Library (oneDAL) via its Python interface, `daal4py`.
+[XGBoost](https://xgboost.readthedocs.io/) is one of the most popular and efficient gradient boosting frameworks for classification and regression tasks on tabular data. This guide covers techniques to significantly accelerate XGBoost inference on Intel® Xeon® processors using [Intel® oneAPI Data Analytics Library (oneDAL)](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onedal.html) via its Python interface, `daal4py`.
 
 By converting trained XGBoost models to oneDAL, you can achieve **up to 36x faster inference** with no loss in prediction quality and minimal code changes. oneDAL leverages Intel® Advanced Vector Extensions 512 (AVX-512) and optimized memory access patterns to maximize performance on Intel hardware.
 
@@ -28,7 +28,7 @@ By converting trained XGBoost models to oneDAL, you can achieve **up to 36x fast
 - [Improving the Performance of XGBoost and LightGBM Inference (Intel Analytics Software)](https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e)
 - [Fast Gradient Boosting Tree Inference for Intel Xeon Processors (Intel Analytics Software)](https://medium.com/intel-analytics-software/fast-gradient-boosting-tree-inference-for-intel-xeon-processors-35756f174f55)
 - [daal4py Model Builders Documentation](https://intelpython.github.io/daal4py/model-builders.html)
-- [oneDAL GitHub Repository](https://github.com/oneapi-src/oneDAL)
+- [oneDAL GitHub Repository](https://github.com/uxlfoundation/oneDAL)
 - [Intel Extension for Scikit-learn (sklearnex)](https://github.com/intel/scikit-learn-intelex)
 
 ## Prerequisites
@@ -196,7 +196,7 @@ The following results were measured on an Intel® Xeon® Platinum 8592+ (Emerald
 
 **Software versions:** XGBoost 2.1.4, LightGBM 4.6.0, CatBoost 1.2.10, daal4py 2024.7, Python 3.10.12, scikit-learn 1.5.2
 
-**Hardware:** Intel® Xeon® Platinum 8592+ (Emerald Rapids), 2S/64C/128T per socket, HT On, 503 GB DDR5, single NUMA node
+**Hardware:** Intel® Xeon® Platinum 8592+ (Emerald Rapids), 2 sockets, 64 cores/socket, 256 threads, HT On, 503 GB DDR5, single NUMA node
 
 Across all datasets, daal4py consistently accelerates inference for all three gradient boosting frameworks. CatBoost sees the largest gains (up to 25.9x on MLSR), while LightGBM and XGBoost benefit most on larger datasets and higher-dimensional feature spaces. Prediction quality is preserved — match rates are 99.7–100% across all tests.
 
@@ -212,7 +212,7 @@ import daal4py as d4p
 # model = trained XGBoost, LightGBM, or CatBoost model
 # X_test = numpy float32 test array
 
-# Convert the model (one line, works for all three frameworks)
+# Convert the model (works for XGBoost, LightGBM, and CatBoost)
 d4p_model = d4p.mb.convert_model(model)
 
 # Warmup
@@ -257,9 +257,9 @@ Tree structures are blocked in memory so that a subset of trees and a block of o
 |:--------|:---------------|
 | Data Format | Use NumPy contiguous arrays (`np.ascontiguousarray()`) as input for best performance |
 | Data Type | Use `float32` for maximum throughput; `float64` is also supported |
-| Batch Size | oneDAL excels at all batch sizes, with the largest advantage at batch size = 1 (online inference) |
+| Batch Size | oneDAL performs well across batch sizes, with the largest advantage at batch size = 1 (online inference) |
 | NUMA | For multi-socket systems, pin processes to a single NUMA node to minimize cross-socket memory access |
-| daal4py Version | Use the latest version for CatBoost support, missing values support, and performance improvements |
+| daal4py Version | Use daal4py 2023.2 or newer (required for missing values support). Each release includes additional optimizations and bug fixes, so the latest version is recommended |
 
 ### Scaling Inference on Multi-Socket Systems
 
@@ -287,9 +287,9 @@ Key observations:
 - **Thread scaling is sub-linear** — using 4x the cores in a single process yields only **2.1x** throughput, because cross-socket memory coherency traffic limits scaling.
 - **The tradeoff is latency**: thread scaling achieves **lower per-request latency** (1,230 us at 128 cores) because all cores collaborate on each prediction. Process scaling maintains a fixed latency (~2,000 us per worker, 32 cores each) but delivers **higher aggregate throughput**.
 
-#### Hyperthreading Hurts Performance
+#### Hyper-threading Hurts Performance
 
-daal4py's AVX-512 vectorized tree traversal is backend-bound — whether the bottleneck is core execution units or memory bandwidth, adding hyperthreads increases resource contention on the shared physical core, harming performance.
+daal4py's AVX-512 vectorized tree traversal is [backend-bound](https://www.intel.com/content/www/us/en/docs/vtune-profiler/cookbook/2023-0/top-down-microarchitecture-analysis-method.html) — whether the bottleneck is core execution units or memory bandwidth, adding hyperthreads increases resource contention on the shared physical core, harming performance.
 
 | Configuration (1 NUMA node) | Throughput (rows/s) | p50 Latency (us) |
 |:-----------------------------|--------------------:|------------------:|
