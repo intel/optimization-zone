@@ -431,6 +431,17 @@ Scikit-learn offers stochastic versions of some types of models, for example:
 
 As a general rule, when the amount of rows is in the millions, the stochastic variants might be preferrable over the regular variants, but this might vary a lot across estimators and datasets - for example, LogisticRegression might scale efficiently to much larger datasets than LinearSVC, and might be competitive against SGDClassifier up to many millions of rows.
 
+### Different solvers and parameters
+
+Many estimators in scikit-learn allow choosing the underlying solver algorithm that will be used during `.fit()`, but the default choice might not always be the most appropriate for the data. For example:
+* [LogisticRegression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html) has a default solver that scales well for L2-regularized problems with both rows and columns, but if the amount of columns is small while the amount of rows is large, then `solver="newton-cholesky"` might provide both better performance and more numerically accurate results. Likewise, for L1-regularized problems on sparse datasets, `solver="liblinear"` might be a better choice.
+* [Ridge](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html) can likewise use `solver="cholesky"` which is typically faster than the default `solver="svd"` for dense datasets.
+* [GraphicalLasso](https://scikit-learn.org/stable/modules/generated/sklearn.covariance.GraphicalLasso.html) allows a `mode` argument akind to `solver` in other estimators, and the scikit-learn page provides some hints for how to choose it, but does not implement automated heuristics to decide between the options.
+
+Other estimators might perform additional operations by default that might not be required for some use-cases - for example:
+* [EmpiricalCovariance](https://scikit-learn.org/stable/modules/generated/sklearn.covariance.EmpiricalCovariance.html) allows an argument `store_precision` (`default=True`) which calculates the inverse of the covariance matrix. Oftentimes, one might be interested in only the covariance matrix and not its inverse, in which case `store_precision=False` will speed up things without any downside.
+* [PCA](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html) allows selecting the number of components to produce. The components are deterministic and ordered, so calculating fewer components will not change the results if only a few are used in practice.
+
 ### Equivalent and near-equivalent estimators
 
 In some cases, different estimators from scikit-learn might be able to produce the exact same solution when passed different parameters, particularly when it comes to linear models. For example:
