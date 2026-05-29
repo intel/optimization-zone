@@ -1,6 +1,6 @@
 # vLLM on Intel Xeon Processors
 
-This guide provides guidance on running vLLM on Intel Xeon processors.
+This guide provides recommendations for running vLLM on Intel Xeon processors.
 
 ## Upstream First
 
