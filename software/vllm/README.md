@@ -1,4 +1,4 @@
-# vLLM on Intel Xeon CPUs
+# vLLM on Intel Xeon Processors
 
 This guide provides guidance on running vLLM on Intel Xeon processors.
 
