@@ -2,6 +2,32 @@
 
 This guide describes best practices for ensuring optimal performance in machine learning workflows that use the [scikit-learn](https://scikit-learn.org) Python library, whether by tuning configurations or by slightly modifying workflows. It covers both training and model serving (inference) workflows.
 
+## Contents
+
+* [Extension for scikit-learn](#extension-for-scikit-learn)
+* [Backends behind scikit-learn](#backends-behind-scikit-learn)
+    * [BLAS and LAPACK](#blas-and-lapack)
+    * [OpenMP](#openmp)
+    * [Verifying backends](#verifying-backends)
+* [Parallelism in scikit-learn](#parallelism-in-scikit-learn)
+    * [Serving models (inference)](#serving-models-inference)
+        * [Asynchronous calls](#asynchronous-calls)
+        * [Concurrent requests in REST frameworks](#concurrent-requests-in-rest-frameworks)
+    * [Risk of overparallelization](#risk-of-overparallelization)
+    * [Meta-estimators](#meta-estimators)
+* [Pipelines and data copies](#pipelines-and-data-copies)
+* [Sparse data representations](#sparse-data-representations)
+* [Feature selection and feature generation](#feature-selection-and-feature-generation)
+* [Natural efficiencies when designing workflows](#natural-efficiencies-when-designing-workflows)
+    * [CV estimators](#cv-estimators)
+    * [Warm starts](#warm-starts)
+    * [Stochastic routines](#stochastic-routines)
+    * [Different solvers and parameters](#different-solvers-and-parameters)
+    * [Equivalent and near-equivalent estimators](#equivalent-and-near-equivalent-estimators)
+        * [Scikit-learn-compatible libraries](#scikit-learn-compatible-libraries)
+
+**********************************************
+
 ## Extension for scikit-learn
 
 The easiest way to unlock optimal performance in scikit-learn is to use the [Extension for scikit-learn](https://uxlfoundation.github.io/scikit-learn-intelex), which can monkeypatch the `sklearn` module to use more optimized versions of classes and functions:
