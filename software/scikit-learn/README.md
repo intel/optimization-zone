@@ -1,6 +1,6 @@
 # Scikit-learn Optimization Guide
 
-This guide describes best practices for ensuring optimal performance in machine learning workflows that use the [scikit-learn](https://scikit-learn.org) Python library, whether by tuning configurations or by slightly modifying workflows. It covers both training and model serving (inerence) workflows.
+This guide describes best practices for ensuring optimal performance in machine learning workflows that use the [scikit-learn](https://scikit-learn.org) Python library, whether by tuning configurations or by slightly modifying workflows. It covers both training and model serving (inference) workflows.
 
 ## Extension for scikit-learn
 
@@ -22,7 +22,7 @@ No further code changes are required - just a call to `patch_sklearn()` that wil
 See the documentation for more details about what the Extension for scikit-learn covers under its optimizations:
 https://uxlfoundation.github.io/scikit-learn-intelex/latest/algorithms.html
 
-The Extension for scikit-learn can be easily installed through pakage managers such as `pip` and `conda`/`mamba` as package `scikit-learn-intelex`:
+The Extension for scikit-learn can be easily installed through package managers such as `pip` and `conda`/`mamba` as package `scikit-learn-intelex`:
 
 ```shell
 pip install scikit-learn-intelex
@@ -368,7 +368,7 @@ with config_context(transform_output="polars"):
 
 Oftentimes, data of interest might represent something where most values are zero by nature.
 
-For example, if data represents counts or presence/absence of specific words in a text, it is likely that that many words will only ever appear in a minority of texts of interest, with their value indicating missingness represented as zero (known as a [bag-of-words](https://en.wikipedia.org/wiki/Bag-of-words_model) representation). Or, if the data consists of categorical variables with many possible categories, it is likely that it will need to be encoded as a design matrix where each categorical feature spans a number of columns equals to its categories and observations will have a '1' for the category they contain and a '0' for everything else (known as [one-hot encoding](https://en.wikipedia.org/wiki/One-hot)).
+For example, if data represents counts or presence/absence of specific words in a text, it is likely that many words will only ever appear in a minority of texts of interest, with their value indicating missingness represented as zero (known as a [bag-of-words](https://en.wikipedia.org/wiki/Bag-of-words_model) representation). Or, if the data consists of categorical variables with many possible categories, it is likely that it will need to be encoded as a design matrix where each categorical feature spans a number of columns equals to its categories and observations will have a '1' for the category they contain and a '0' for everything else (known as [one-hot encoding](https://en.wikipedia.org/wiki/One-hot)).
 
 If it is expected that more than 90% of the values in data will be zeros, it will usually be more efficient to operate on specialized data formats that only take into account the non-zero values, known as [sparse matrices](https://en.wikipedia.org/wiki/Sparse_matrix). The SciPy library contains a module dedicated to [sparse data](https://docs.scipy.org/doc/scipy/reference/sparse.html), providing classes such as [csr_array](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_array.html) and [csc_array](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csc_array.html#scipy.sparse.csc_array) implementing many common operators and methods for tabular data.
 
@@ -388,7 +388,7 @@ Due to the way in which scikit-learn works however, even if features are not use
 
 Thus, for more efficient workflows, one might want to re-create minimalistic versions of estimators and pipelines, where only the useful features are present, and avoid having to create the unneeded features in previous steps such as transformers when serving said models / estimators. For example, after determining which coefficients in a `LogisticRegression` model are non-zero, one might want to rebuild a new estimator or pipeline in which the selected-out features are never generated and never passed to the new estimator's `.fit()` method.
 
-Alternatively, if this is not possible or not convenient, if it is known apriori that a feature will not be used (e.g. due to having a coefficient equal to zero), one might save the steps that generate the irrelevant features by filling the data with zeros.
+Alternatively, if this is not possible or not convenient, if it is known a priori that a feature will not be used (e.g. due to having a coefficient equal to zero), one might save the steps that generate the irrelevant features by filling the data with zeros.
 
 Note that, in the specific case of [LogisticRegression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html) and [linear models](https://scikit-learn.org/stable/api/sklearn.linear_model.html) for regression and classification (such as [Lasso](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html), [ElasticNet](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html), [SGDClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDClassifier.html), [SGDRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDRegressor.html), among others), if the amount of selected-in features is less than 10% of the total and one wishes to use that same estimator instead of creating a minimalistic one, one might also consider calling the [sparsify](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression.sparsify) method, which will turn the fitted coefficients into a sparse structure on which computations are typically faster.
 
@@ -408,7 +408,7 @@ When available, 'CV' versions of estimators are recommended to use instead of to
 
 ### Warm starts
 
-Ofentimes, estimators are fitted more than once to different datasets, for example when data is continuosly coming in at regular intervals.
+Oftentimes, estimators are fitted more than once to different datasets, for example when data is continuously coming in at regular intervals.
 
 If all the datasets to which a given estimator will be fit have the same features and results from refits do not differ as much from each other as they would from random data - which will be the case when fitting incrementally to progressively larger datasets - then one might want to use warm-started routines, which kickstart the mathematical optiization routines done by scikit-learn from where the last solution ended instead of from a blank state.
 
@@ -429,14 +429,14 @@ Scikit-learn offers stochastic versions of some types of models, for example:
 * [SGDRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDRegressor.html) is a stochastic analog to several regressors such as [ElasticNet](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html) or [LinearSVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVR.html).
 * [MiniBatchKMeans](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.MiniBatchKMeans.html) is an analog to [KMeans](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html).
 
-As a general rule, when the amount of rows is in the millions, the stochastic variants might be preferrable over the regular variants, but this might vary a lot across estimators and datasets - for example, LogisticRegression might scale efficiently to much larger datasets than LinearSVC, and might be competitive against SGDClassifier up to many millions of rows.
+As a general rule, when the amount of rows is in the millions, the stochastic variants might be preferable over the regular variants, but this might vary a lot across estimators and datasets - for example, LogisticRegression might scale efficiently to much larger datasets than LinearSVC, and might be competitive against SGDClassifier up to many millions of rows.
 
 ### Different solvers and parameters
 
 Many estimators in scikit-learn allow choosing the underlying solver algorithm that will be used during `.fit()`, but the default choice might not always be the most appropriate for the data. For example:
 * [LogisticRegression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html) has a default solver that scales well for L2-regularized problems with both rows and columns, but if the amount of columns is small while the amount of rows is large, then `solver="newton-cholesky"` might provide both better performance and more numerically accurate results. Likewise, for L1-regularized problems on sparse datasets, `solver="liblinear"` might be a better choice.
 * [Ridge](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html) can likewise use `solver="cholesky"` which is typically faster than the default `solver="svd"` for dense datasets.
-* [GraphicalLasso](https://scikit-learn.org/stable/modules/generated/sklearn.covariance.GraphicalLasso.html) allows a `mode` argument akind to `solver` in other estimators, and the scikit-learn page provides some hints for how to choose it, but does not implement automated heuristics to decide between the options.
+* [GraphicalLasso](https://scikit-learn.org/stable/modules/generated/sklearn.covariance.GraphicalLasso.html) allows a `mode` argument akin to `solver` in other estimators, and the scikit-learn page provides some hints for how to choose it, but does not implement automated heuristics to decide between the options.
 
 Other estimators might perform additional operations by default that might not be required for some use-cases - for example:
 * [EmpiricalCovariance](https://scikit-learn.org/stable/modules/generated/sklearn.covariance.EmpiricalCovariance.html) allows an argument `store_precision` (`default=True`) which calculates the inverse of the covariance matrix. Oftentimes, one might be interested in only the covariance matrix and not its inverse, in which case `store_precision=False` will speed up things without any downside.
@@ -454,7 +454,7 @@ Additionally, some estimators follow fitting procedures that might allow mathema
 * [Birch](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.Birch.html) can produce almost the same results as [KMeans](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html), but if the data consists of millions of rows and only a handful columns, then Birch will be orders of magnitude faster than either KMeans or MiniBatchKMeans.
 * [HistGradientBoostingClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingClassifier.html) can produce almost the same results (and oftentimes better) as [GradientBoostingClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html), but HistGradientBoostingClassifier scales much better with increased number of rows in the data, and with larger core counts in CPUs. Note that there is also an analog [HistGradientBoostingRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingRegressor.html) for [GradientBoostingRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html).
 
-For large datasets, the near-equivalent variants of estimators are usually preferrable, as they scale better and the differences in results become smaller as the amount of data grows.
+For large datasets, the near-equivalent variants of estimators are usually preferable, as they scale better and the differences in results become smaller as the amount of data grows.
 
 #### Scikit-learn-compatible libraries
 
