@@ -195,30 +195,34 @@ For example, models from scikit-learn are typically deployed in the form of HTTP
 In such cases, one might want to make scikit-learn run each independent model prediction in a single thread. This can be achieved as follows (both conditions are necessary):
 
 1. Setting `n_jobs` to 1 in the estimator object. This can be done either before or after serializing the object for serving:
-```python
-est = RandomForestRegressor(n_jobs=-1).fit(...)
-...
-est.set_params(n_jobs=1)
-```
-
+   ```python
+   est = RandomForestRegressor(n_jobs=-1).fit(...)
+   ...
+   est.set_params(n_jobs=1)
+   ```
+   
 2. Controlling parallelism in BLAS and LAPACK:
-```python
-import threadpoolctl
-with threadpool_limits(limits=1):
+   ```python
+   import threadpoolctl
+   with threadpool_limits(limits=1):
     est.predict(...)
-
-# or
-from threadpoolctl import ThreadpoolController
-controller = ThreadpoolController()
-controller.limit(limits=1)
-est.predict(...)
-```
-
+   ```
+   
+   or
+   
+   ```python
+   from threadpoolctl import ThreadpoolController
+   controller = ThreadpoolController()
+   controller.limit(limits=1)
+   est.predict(...)
+   ```
+   
 Alternatively, when using MKL, threads for BLAS / LAPACK can be controlled by setting an environment variable `MKL_NUM_THREADS=1` before importing any numeric library like NumPy or scikit-learn.
 
 Be aware however that these changes will not necessarily extend to other libraries that might be typically used together with scikit-learn. For example, Polars is likely to be used as an input and/or intermediate format in scikit-learn pipelines, but its number of threads is controlled instead by an environment variable `POLARS_MAX_THREADS`.
 
 Thus, one might want to set multiple environment variables like that in the Python process that will be serving scikit-learn requests:
+
 ```shell
 export MKL_NUM_THREADS=1
 export OMP_NUM_THREADS=1
@@ -228,6 +232,7 @@ export ARROW_IO_THREADS=1
 ```
 
 Note again that these need to be set **before** importing the libraries that they will affect. For example, if they were to be set inside the Python process instead:
+
 ```python
 # correct
 import os
@@ -486,8 +491,7 @@ For large datasets, the near-equivalent variants of estimators are usually prefe
 
 Oftentimes, Python libraries for machine learning offer scikit-learn-compatible interfaces to their algorithms, which in many cases can be swapped in place of scikit-learn estimators.
 
-See the scikit-learn central to learn about other compatible libraries in the ecosystem:
-https://scikit-learn-central.probabl.ai/#/catalog
+See the scikit-learn central to learn about other compatible libraries in the ecosystem: <https://scikit-learn-central.probabl.ai/#/catalog>
 
 In many cases, better performance might be obtained by using similar estimators from other libraries. For example:
 * [XGBoost](https://xgboost.readthedocs.io/en) provides classes such as `XGBRegressor` and `XGBClassifier` that might be more performant than scikit-learn's `HistGradientBoostingRegressor` and `HistGradientBoostingClassifier`. Same for `XGBRFRegressor` as an analog to `RandomForestRegressor`, but note that estimators are not entirely equivalent (e.g. `XGBRFClassifier` follows a very different methodology from `RandomForestClassifier` in scikit-learn).
@@ -495,5 +499,4 @@ In many cases, better performance might be obtained by using similar estimators 
 * [FAISS](https://faiss.ai/index.html) provides approximate versions of [NearestNeighbors](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html#sklearn.neighbors.NearestNeighbors), but note that it does not do so through scikit-learn-compatible interfaces.
 
 
-See also the Extension for scikit-learn:
-https://uxlfoundation.github.io/scikit-learn-intelex
+See also the Extension for scikit-learn: <https://uxlfoundation.github.io/scikit-learn-intelex>
