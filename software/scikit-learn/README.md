@@ -195,17 +195,19 @@ For example, models from scikit-learn are typically deployed in the form of HTTP
 In such cases, one might want to make scikit-learn run each independent model prediction in a single thread. This can be achieved as follows (both conditions are necessary):
 
 1. Setting `n_jobs` to 1 in the estimator object. This can be done either before or after serializing the object for serving:
+
    ```python
    est = RandomForestRegressor(n_jobs=-1).fit(...)
    ...
    est.set_params(n_jobs=1)
    ```
    
-2. Controlling parallelism in BLAS and LAPACK:
+3. Controlling parallelism in BLAS and LAPACK:
+
    ```python
    import threadpoolctl
    with threadpool_limits(limits=1):
-    est.predict(...)
+       est.predict(...)
    ```
    
    or
