@@ -409,27 +409,12 @@ clos0_cpulist.txt
 perfspect_benchmark.log
 perfspect/
 ```
-
-The latest strict bucket-0, powerdomain-dispatched layout produced the expected PCT behavior:
-
-| Active core count | Observed SSE / AVX2 behavior |
-| --- | --- |
-| 1–8 | ~4.6 GHz |
-| 9 | ~4.3 GHz |
-| 10 | ~4.1 GHz |
-| 11–16 | Gradual drop from ~4.0 GHz to ~3.5–3.6 GHz |
+Check Frequency section in HTML file.  
+This is the frequency diagram on Xeon 6776P with PCT on. 
+<img width="835" height="483" alt="image" src="https://github.com/user-attachments/assets/96f8855c-4b83-4c62-a0dd-fa2408f979fb" />
 
 This is the expected pattern: small active core counts hold the highest PCT turbo
 frequency, and frequency gradually steps down as more physical cores become active.
-
-For PCT validation, start with:
-
-```bash
-perfspect benchmark --speed --frequency --no-summary
-```
-
-Avoid `--all` unless you intentionally want storage, memory, power, and other
-platform-level tests included in the same run.
 
 ## 5. Debug / Manual Inspection (Optional)
 
