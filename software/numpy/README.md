@@ -1,6 +1,6 @@
 # Intel® Optimized NumPy with oneMKL
 
-This guide describes how to get optimal NumPy performance on Intel® Xeon® processors by using Intel® oneAPI Math Kernel Library (oneMKL) as the backend for linear algebra, FFT, random number generation, and vectorized math. It covers installation, how to activate each optimization with minimal code changes, thread and NUMA tuning, and how to verify that oneMKL is active, along with measured benchmark results.
+This guide describes how to get optimal NumPy performance on Intel® processors, from Xeon® servers to AVX-capable laptops, by using Intel® oneAPI Math Kernel Library (oneMKL) as the backend for linear algebra, FFT, random number generation, and vectorized math. It covers installation, how to activate each optimization with minimal code changes, thread and NUMA tuning, and how to verify that oneMKL is active, along with measured benchmark results.
 
 ## Table of contents
 
@@ -21,9 +21,9 @@ This guide describes how to get optimal NumPy performance on Intel® Xeon® proc
 
 ## Where NumPy performance comes from
 
-NumPy is a thin Python layer over compiled native libraries. The array object and the Python API are NumPy's own, but the arithmetic that dominates runtime is handed off: linear algebra goes to a BLAS/LAPACK library, FFTs to an FFT library, random sampling to a generator, and element-wise math (`sin`, `exp`, `log`) to vectorized loops. How fast NumPy runs is mostly decided by *which* native library each of those calls lands in, not by anything in the Python layer.
+NumPy runs much of its work in its own compiled code, but its heaviest numerical kernels are handed off to external libraries: linear algebra to a BLAS/LAPACK library, FFTs to an FFT library, and large element-wise transcendental math (`sin`, `exp`, `log`) to vectorized loops. For those kernels, performance is largely decided by *which* native library the call lands in.
 
-That backend is a choice made at install time. conda-forge NumPy ships with OpenBLAS, a solid general-purpose implementation. On Intel® Xeon® it leaves performance on the table, because it does not use the newest AVX-512 code paths that the hardware can run.
+That backend is a choice made at install time. PyPI and conda-forge NumPy ship with OpenBLAS, a strong general-purpose implementation that uses AVX-512 on recent Intel CPUs. oneMKL goes further in two ways: its kernels are tuned for Intel hardware, and it accelerates FFT, random number generation, and vectorized math, which a BLAS library does not cover. Both gains apply on Intel® Xeon® servers and on AVX-512-capable Intel client and laptop CPUs.
 
 ## Accelerating NumPy with oneMKL
 
@@ -32,22 +32,24 @@ Intel® oneAPI Math Kernel Library (oneMKL) supplies AVX-512 implementations for
 The speedup arrives in two parts that activate differently, and the distinction matters for the rest of this guide:
 
 - **Linear algebra (BLAS and LAPACK)** turns on automatically once oneMKL is the backend. `np.dot`, `np.matmul`, and `np.linalg.*` route to it with no code change.
-- **FFT, random, and vectorized math** come from three separate packages (`mkl_fft`, `mkl_random`, `mkl_umath`). These do not activate on import; you switch them on explicitly in code. NumPy itself stays the standard conda-forge build. As of the 2026.0 release, the Intel® Distribution for Python no longer builds its own NumPy: it installs conda-forge NumPy and layers oneMKL underneath, which is exactly why these three are opt-in rather than baked in.
+- **FFT, random, and vectorized math** come from three separate packages (`mkl_fft`, `mkl_random`, `mkl_umath`). These do not activate on import; you switch them on explicitly in code.
+
+> **Packaging note.** Explicit activation applies to the current packaging ([Intel® Distribution for Python](https://www.intel.com/content/www/us/en/developer/tools/oneapi/distribution-for-python.html) 2026.0 and later), which installs standard NumPy and layers oneMKL underneath. Releases up to 2025.3.0 shipped an Intel-built NumPy that activated `mkl_fft` and `mkl_umath` on import, and their older extensions lack the `patch_*` functions used below. On an older release, see [Key considerations](#key-considerations) before adding activation calls.
 
 ### Installation
 
 There are two practical ways to get a oneMKL-backed NumPy. conda is recommended because it also lets you control the OpenMP runtime (see [Threads and NUMA](#threads-and-numa)).
 
-**conda.** A single command installs NumPy, SciPy, the three extension packages (mkl_fft, mkl_random, mkl_umath), and the runtime libraries. The BLAS/LAPACK backend is wired to oneMKL automatically; the extensions are installed but still need explicit activation.
+**conda.** A single command installs NumPy, SciPy, the three extension packages (mkl_fft, mkl_random, mkl_umath), and the runtime libraries. The BLAS/LAPACK backend routes to oneMKL automatically; the extensions are installed but still need explicit activation.
 
 ```bash
-conda create -n idp_env -y python=3.13 intelpython3_full \
+conda create -n idp_env -y python intelpython3_full \
   -c https://software.repos.intel.com/python/conda \
   -c conda-forge --override-channels && \
   conda activate idp_env
 ```
 
-The `python=3.13` may be changed to match your project (3.9–3.14 is supported). NumPy is pulled from conda-forge; the Intel channel supplies oneMKL and the extensions. To add oneMKL to an *existing* conda-forge environment instead of creating a new one, install the MKL-variant BLAS and the extensions in place:
+Pin `python=<version>` to match your project if you need a specific interpreter. NumPy comes from conda-forge; the Intel channel supplies the `mkl_fft`/`mkl_random`/`mkl_umath` extensions and Intel's latest oneMKL builds. To add oneMKL to an *existing* environment that already has conda-forge NumPy installed, swap its BLAS to the MKL variant and add the extensions in place (this re-links the NumPy you already have, it does not reinstall NumPy):
 
 ```bash
 conda install -y \
@@ -57,21 +59,21 @@ conda install -y \
   mkl mkl_fft mkl_random mkl_umath mkl-service
 ```
 
-`--override-channels` resolves only from the two named channels, so conda does not mix in an OpenBLAS build from elsewhere.
+`--override-channels` resolves only from the two named channels, so conda does not mix in an OpenBLAS build from elsewhere. The `blas=*=*_intelmkl` selector requests the Intel channel's MKL-backed BLAS; conda-forge offers an equivalent under the build string `blas=*=*mkl`. Either gives an MKL BLAS backend. The Intel channel is required for the three extensions and Intel's latest oneMKL builds.
 
-**pip.** Intel publishes NumPy and SciPy wheels already linked against oneMKL, plus the three extensions, on its pip index. There is no symlink to swap; the wheels arrive pre-linked.
+**pip.** Intel publishes NumPy and SciPy wheels already linked against oneMKL, plus the three extensions, on a public wheel repository. The `--index-url` below points pip at that repository's PyPI-compatible index API. There is no symlink to swap; the wheels arrive pre-linked.
 
 ```bash
 pip install --index-url https://software.repos.intel.com/python/pypi \
   numpy scipy mkl_fft mkl_random mkl_umath mkl-service
 ```
 
-Use `--index-url`, not `--extra-index-url`: Intel's index is a partial mirror, and with `--extra-index-url` pip would see PyPI's higher-numbered OpenBLAS wheel and install that instead. Packages Intel does not mirror (for example `threadpoolctl`, used for [verification](#verifying-onemkl-is-active)) install normally from PyPI in a separate step. The Intel wheels cover Linux and Windows (CPython 3.9–3.14); there is no macOS build.
+Use `--index-url`, not `--extra-index-url`: Intel's index is a partial mirror, and with `--extra-index-url` pip would see PyPI's higher-numbered OpenBLAS wheel and install that instead. Packages Intel does not mirror (for example `threadpoolctl`, used for [verification](#verifying-onemkl-is-active)) install normally from PyPI in a separate step. The Intel wheels target Linux and Windows; if `pip` reports no matching distribution, check that your platform and Python version are covered on the index.
 
-Whichever path you take, set the threading layer before anything imports NumPy. This selects Intel's OpenMP runtime (`libiomp5`) for oneMKL; setting it early matters because mixing OpenMP runtimes in one process hurts performance, as explained under [Threads and NUMA](#threads-and-numa):
+Whichever path you take, choose the OpenMP threading layer and set it **before anything imports NumPy or MKL**. The variable is read once at MKL load time, so exporting it after the import has no effect. Which value to pick is explained under [Threads and NUMA](#threads-and-numa); the safe default for a typical pip or mixed environment is:
 
 ```bash
-export MKL_THREADING_LAYER=INTEL
+export MKL_THREADING_LAYER=GNU   # share one OpenMP runtime (libgomp) with other packages
 ```
 
 ---
@@ -80,7 +82,7 @@ export MKL_THREADING_LAYER=INTEL
 
 Each subsection below is one lever: what it accelerates, when it is worth using, and how to switch it on. The first is automatic; the rest are explicit.
 
-The three explicit extensions share an activation model, and the key point is how little code it takes. Activation is a single one-time call: a **context manager** around a block, best when you want oneMKL for one section and stock NumPy elsewhere, or a **patch/restore pair**, best when oneMKL should stay active for the life of the process. That one call is the only addition. It rewires NumPy's internals so your existing `np.fft.*`, `np.random.*`, and `np.sin`/`np.exp`/`np.log` call sites dispatch to oneMKL with their source unchanged.
+The three explicit extensions share an activation model, and the key point is how little code it takes. Activation is a single one-time call: a **context manager** around a block, best when you want oneMKL for one section and stock NumPy elsewhere, or a **patch/restore pair**, best when oneMKL should stay active for the life of the process. That one call is the only addition. It redirects NumPy's internals so your existing `np.fft.*`, `np.random.*`, and `np.sin`/`np.exp`/`np.log` call sites dispatch to oneMKL with their source unchanged.
 
 Concretely, given an existing function, the only edit is the import-and-activate block at the top. The function body is untouched:
 
@@ -104,7 +106,7 @@ After the two `patch_*` calls, `np.fft.fft` and the ufuncs inside `analyze` disp
 
 ### Linear algebra: BLAS and LAPACK
 
-This is the lever you get for free. Once oneMKL is the backend, `np.dot`, `np.matmul`, `np.linalg.*`, and everything built on them (covariances, distances, decompositions) run on oneMKL's AVX-512 BLAS and LAPACK with no code change and nothing to activate. It is the largest single contributor to the geomean in [Benchmark results](#benchmark-results).
+This is the lever you get for free. Once oneMKL is the backend, `np.dot`, `np.matmul`, `np.linalg.*`, and everything built on them (covariances, distances, decompositions) run on oneMKL's BLAS and LAPACK with no code change and nothing to activate. These kernels dispatch at runtime to an optimized code path for the CPU's instruction set (e.g.,  AVX-512 on current Xeons). This is the largest single contributor to the geomean in [Benchmark results](#benchmark-results).
 
 oneMKL parallelizes these calls across cores by default, so the main thing to manage is *how many* threads it uses, covered under [Threads and NUMA](#threads-and-numa).
 
@@ -139,7 +141,7 @@ mkl_fft         : 43.0 ms
 speedup         : 16.8x
 ```
 
-To keep oneMKL active for the whole process rather than a single block, use the patch/restore pair:
+To keep `mkl_fft` routing NumPy's FFT calls for the whole process rather than a single block, use the patch/restore pair (this affects the FFT functions only, not other NumPy operations):
 
 ```python
 mkl_fft.patch_numpy_fft()
@@ -163,9 +165,9 @@ Covered transforms: `fft`, `ifft`, `fft2`, `ifft2`, `fftn`, `ifftn`, `rfft`, `ir
 
 `mkl_random` is a Python interface to oneMKL's Vector Statistics Library (VSL). It samples from the same distributions as `numpy.random` but is not a fixed-seed drop-in: the same seed produces a different sequence. Use it when generating large volumes of random data is a bottleneck and you do not depend on reproducing specific values.
 
-It can be used two ways. The **context manager** is the zero-code-change path, like the other extensions: existing `np.random.*` call sites keep working and route through VSL (shown [below](#random-number-generation-mkl_random)). The **explicit `RandomState` API** is a small code change, but it lets you pick the generator and the sampling method, which is how you reach the fastest path. The benchmark below uses the explicit API for exactly that reason: `method='BoxMuller'` is the fast normal sampler.
+It can be used two ways. The **context manager** is the zero-code-change path, like the other extensions: existing `np.random.*` call sites keep working and route through VSL (shown [below](#random-number-generation-mkl_random)). The **explicit `RandomState` API** is a small code change that lets you pick the generator and the sampling method for the fastest path. The benchmark below uses it with `method='BoxMuller'`, oneMKL's fast normal sampler.
 
-The example below compares wall time for 100 million normal samples:
+The example below compares wall time for 100 million normal samples against `np.random.default_rng`, NumPy's modern `Generator` API:
 
 ```python
 import timeit
@@ -174,23 +176,23 @@ import mkl_random
 
 N = 100_000_000
 
-np.random.seed(0)
-stock_ms = timeit.timeit(lambda: np.random.standard_normal(N), number=3) / 3 * 1000
+rng_np = np.random.default_rng(0)
+stock_ms = timeit.timeit(lambda: rng_np.standard_normal(N), number=5) / 5 * 1000
 
 rng = mkl_random.RandomState(seed=0, brng='MT19937')
-mkl_ms = timeit.timeit(lambda: rng.standard_normal(N, method='BoxMuller'), number=3) / 3 * 1000
+mkl_ms = timeit.timeit(lambda: rng.standard_normal(N, method='BoxMuller'), number=5) / 5 * 1000
 
-print(f"stock numpy.random : {stock_ms:.1f} ms")
-print(f"mkl_random         : {mkl_ms:.1f} ms")
-print(f"speedup            : {stock_ms / mkl_ms:.1f}x")
+print(f"numpy Generator : {stock_ms:.1f} ms")
+print(f"mkl_random      : {mkl_ms:.1f} ms")
+print(f"speedup         : {stock_ms / mkl_ms:.1f}x")
 ```
 
 Measured on AWS, Intel® Xeon® 6975P-C, 16 cores / 32 threads (HT on), 1 socket, Ubuntu 26.04 LTS. Numbers vary by hardware.
 
 ```
-stock numpy.random : 1302.4 ms
-mkl_random         : 286.2 ms
-speedup            : 4.6x
+numpy Generator : 982.0 ms
+mkl_random      : 254.0 ms
+speedup         : 3.9x
 ```
 
 > **Reproducibility note:** `mkl_random` and `numpy.random` produce different sequences from the same seed. If your tests or simulations depend on specific random values, do not swap them.
@@ -220,7 +222,7 @@ samples_per_worker = [s.standard_normal(1_000_000) for s in streams]
 
 ### Vectorized math: mkl_umath
 
-`mkl_umath` swaps oneMKL's Vector Math Library (VML) loops in as the C-level inner loops of NumPy's ufuncs, so call sites using `np.sin`, `np.exp`, `np.log`, and similar get VML acceleration with no source change. It is the lever for transcendental-heavy element-wise math.
+`mkl_umath` swaps oneMKL's Vector Math Library (VML) loops in as the C-level inner loops of NumPy's ufuncs, so existing call sites get VML acceleration with no source change. It covers a broad set of element-wise functions, including the trigonometric and hyperbolic families, `exp`/`exp2`/`expm1`, `log`/`log2`/`log10`/`log1p`, `cbrt`, `sqrt`, and the basic arithmetic ufuncs. It is the lever for transcendental-heavy element-wise math.
 
 VML takes over only above a per-operation minimum array size: roughly 8,192 elements for transcendentals (`sin`, `cos`, `exp`, `log`), 8,000 for `divide`, and 100,000 for `add`/`subtract`/`multiply` in `mkl_umath` 0.4.x. Below those sizes NumPy's native loops continue to run. These cutoffs are `mkl_umath` implementation details and can change between versions; the takeaway for tuning is that the extension helps most on large arrays.
 
@@ -267,12 +269,12 @@ The levers above decide *which* code runs; this one decides how many cores it ru
 
 | Variable | Recommended value | Effect |
 |---|---|---|
-| `MKL_THREADING_LAYER` | `INTEL` | Use Intel OpenMP (`libiomp5`) |
+| `MKL_THREADING_LAYER` | `GNU` (mixed env) or `INTEL` (all-Intel) | Select MKL's OpenMP runtime; see note below |
 | `MKL_NUM_THREADS` | physical core count | Cap MKL thread count |
 | `MKL_DYNAMIC` | `FALSE` | Disable automatic thread scaling |
-| `KMP_AFFINITY` | `granularity=fine,compact,1,0` | Pin threads to physical cores |
+| `KMP_AFFINITY` | `granularity=fine,compact,1,0` | Pin threads to physical cores (Intel OpenMP only) |
 
-`KMP_AFFINITY=granularity=fine,compact,1,0` is appropriate for single-socket systems or when running one process per socket. On multi-socket systems without `numactl` it may bind threads across sockets; verify the actual binding with `KMP_AFFINITY=verbose`.
+`KMP_AFFINITY` is an Intel OpenMP setting, so it applies only when oneMKL is on the Intel runtime (`MKL_THREADING_LAYER=INTEL`); under the GNU layer use `GOMP_CPU_AFFINITY` or `numactl` instead. `KMP_AFFINITY=granularity=fine,compact,1,0` is appropriate for single-socket systems or when running one process per socket. On multi-socket systems without `numactl` it may bind threads across sockets; verify the actual binding with `KMP_AFFINITY=verbose`.
 
 For workloads that spawn multiple Python processes, reduce oneMKL to one thread per process to avoid over-subscription:
 
@@ -282,6 +284,8 @@ export MKL_THREADING_LAYER=SEQUENTIAL
 ```
 
 This applies to `multiprocessing.Pool`, `concurrent.futures.ProcessPoolExecutor`, and tools like Dask or Ray. Each worker initializes its own oneMKL instance; without capping, N workers × default thread count threads all compete for the same cores.
+
+With `joblib` (used by scikit-learn and similar libraries), the `loky` default backend divides the available MKL threads across workers automatically, so no manual capping is needed. The environment variables above are read at import time; for thread-based parallelism (Python threads or free-threaded builds), set them before importing NumPy, or use `mkl-service` below to change thread counts at runtime.
 
 **Runtime control with mkl-service.** When environment variables are too coarse, `mkl-service` adjusts thread counts at runtime, including per domain:
 
@@ -304,7 +308,7 @@ Single process, one socket:
 
 ```bash
 export MKL_NUM_THREADS=<cores_per_socket>
-export MKL_THREADING_LAYER=INTEL
+export MKL_THREADING_LAYER=GNU   # or INTEL in an all-Intel environment; see OpenMP runtime note
 numactl --cpunodebind=0 --membind=0 python your_script.py
 ```
 
@@ -315,13 +319,20 @@ numactl --cpunodebind=0 --membind=0 python worker.py &
 numactl --cpunodebind=1 --membind=1 python worker.py &
 ```
 
-**OpenMP runtime.** oneMKL's threaded paths run on an OpenMP runtime, and which one gets loaded depends on how NumPy was installed. The Intel pip wheels bundle Intel OpenMP (`libiomp5`), and `MKL_THREADING_LAYER=INTEL` keeps oneMKL on it. conda environments resolve the runtime through the `_openmp_mutex` metapackage, whose default may be GNU's `libgomp`, which is less performant on Intel hardware. To pin LLVM's LibOMP (the upstreamed continuation of Intel OpenMP):
+**OpenMP runtime: which threading layer to choose.** oneMKL's threaded paths run on an OpenMP runtime. Loading two OpenMP runtimes in one process, oneMKL's Intel OpenMP (`libiomp5`) alongside the GNU runtime (`libgomp`) that most non-Intel PyPI packages bundle, causes thread over-subscription and erratic performance. `MKL_THREADING_LAYER` selects oneMKL's runtime only; it does not prevent another package from loading its own. Set it to match the environment:
+
+- **Mixed runtimes (default `GNU`).** When other packages in the process pull in `libgomp` (common with pip-installed scientific packages), `MKL_THREADING_LAYER=GNU` puts oneMKL on `libgomp` too, so the process shares a single OpenMP runtime.
+- **Intel OpenMP only (`INTEL`).** When `libiomp5` is the sole OpenMP runtime in the process (for example, an environment built entirely from Intel-channel or Intel pip packages), `MKL_THREADING_LAYER=INTEL` is fastest.
+
+This dual-runtime concern is specific to Linux. Windows oneMKL ships no GNU threading backend, so `MKL_THREADING_LAYER=GNU` falls back to Intel OpenMP threading or the sequential based on availability; the layer is Intel-threaded either way and the default needs no change there.
+
+In conda, the runtime is selected through the `_openmp_mutex` metapackage. To pin LLVM's LibOMP (the upstreamed continuation of Intel OpenMP) on Linux:
 
 ```bash
 conda install -c conda-forge _openmp_mutex=*=*_llvm
 ```
 
-The failure to avoid is loading two OpenMP runtimes in one process (for example `libgomp` pulled in by another library alongside oneMKL's `libiomp5`), which causes thread over-subscription and erratic performance. Keeping `MKL_THREADING_LAYER=INTEL` and a single runtime in the environment avoids it. Switching the OpenMP backend in conda environments is not supported on Windows.
+On Windows, `_openmp_mutex` offers Intel and LLVM variants but no GNU one, consistent with there being no GNU threading on the platform.
 
 ---
 
@@ -340,9 +351,11 @@ Look for `"internal_api": "mkl"`:
 ```
 [{'internal_api': 'mkl',
   'num_threads': 288,
-  'threading_layer': 'intel',
+  'threading_layer': 'gnu',
   'user_api': 'blas', ...}]
 ```
+
+The `threading_layer` value matches `MKL_THREADING_LAYER` (`gnu`, `intel`, or `sequential`); the field that confirms the backend is `internal_api: mkl`.
 
 `np.show_config()` will show `name: blas, version: 3.9.0` even with oneMKL active. That is expected: it reflects the generic interface NumPy compiled against, not the runtime library. `threadpoolctl` is the reliable check.
 
@@ -417,7 +430,13 @@ Intel conda channel: `https://software.repos.intel.com/python/conda`
 
 ## Key considerations
 
-**The extension packages do not activate themselves.** `mkl_fft`, `mkl_random`, and `mkl_umath` do not replace NumPy functions on import. Use the patch function or context manager. Since the 2026.0 release installs the standard conda-forge NumPy rather than a bundled Intel build, there is no longer anything that wires them up at build time, so explicit activation is required even in the full Intel® Distribution for Python.
+**The extension packages do not activate themselves.** `mkl_fft`, `mkl_random`, and `mkl_umath` do not replace NumPy functions on import. Use the patch function or context manager. Since the 2026.0 release installs the standard conda-forge NumPy rather than a bundled Intel build, there is no longer anything that activates them at build time, so explicit activation is required even in the full Intel® Distribution for Python.
+
+**The activation model is release-specific; this guide targets 2026.0 and later.** The explicit `patch_*` workflow described here matches the package generation in [Benchmark results](#benchmark-results) (NumPy 2.4.3, mkl_fft 2.2.0, mkl_random 1.4.0, mkl_umath 0.4.0). Earlier releases behave differently, verified on `intelpython3_full=2025.3.0`:
+
+- That release installs Intel's own NumPy build (2.3.2 from the Intel channel, not conda-forge) bundled with mkl_fft 2.1.2, mkl_random 1.3.1, and mkl_umath 0.3.1.
+- FFT and vectorized math are activated **automatically at import**: `np.fft.fft` already dispatches to `mkl_fft`, and `mkl_umath.is_patched()` is `True` with no call. This automatic activation at import is exactly what the move to conda-forge NumPy in 2026.0 removed, making explicit activation necessary.
+- The older extensions do **not** expose the `patch_numpy_fft`/`patch_numpy_umath`/`patch_numpy_random` functions used below. If you are on 2025.3.0 or earlier, do not add these calls; FFT and math are already active, and `mkl_random` never replaced `np.random`. Upgrade to the 2026.0 generation to use the explicit-activation workflow in this guide.
 
 **`mkl_random` is not a drop-in for `numpy.random`.** The same seed produces a different sequence. Do not swap it into code that depends on reproducible random values.
 
