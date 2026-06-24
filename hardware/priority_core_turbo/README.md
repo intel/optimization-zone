@@ -2,12 +2,12 @@
 
 ## Overview
 
-**Intel® Priority Core Turbo (PCT)** is part of **Intel® Speed Select Technology – Turbo Frequency (SST-TF)**.
+**[Intel® Priority Core Turbo](https://www.intel.com/content/www/us/en/content-details/846906/priority-core-turbo-technology-pct-technology-technical-article.html) (PCT)** is part of **[Intel® Speed Select Technology](https://www.intel.com/content/www/us/en/content-details/682325/intel-speed-select-technology-intel-sst-performance-enhancements-for-3rd-gen-intel-xeon-scalable-processor-technology-guide.html) – [Turbo Frequency](https://builders.intel.com/solutionslibrary/intel-speed-select-technology-turbo-frequency-intel-sst-tf-overview-user-guide) (SST-TF)**.
 It allows a subset of CPU cores to operate at **higher turbo frequencies**, while remaining cores run closer to base frequency.
 
 This is particularly effective for **GPU-accelerated AI inference**, where a small number of CPU threads handle
 **latency-critical, mostly serial tasks** such as tokenization, scheduling, and feeding GPUs.
-Running these threads on **High-Priority (HP) cores** improves GPU utilization, TTFT, and tail latency.
+Running these threads on **High-Priority (HP) cores** improves GPU utilization, Time-to-first-token (TTFT), and tail latency.
 
 Validated platforms:
 
@@ -30,8 +30,11 @@ PCT relies on **two Intel Speed Select features**:
 
 ### PCT bucket-count interpretation
 
+intel-speed-select tool mentioned below is installed inside the docker image in the [environment build seciton](#1-build-the-environment)
+
 `intel-speed-select turbo-freq info -l <level>` may print the same `bucket-0`,
-`bucket-1`, and `bucket-2` SST-TF table under multiple `powerdomain-*` anchors.
+`bucket-1`, and `bucket-2` SST-TF table under multiple `powerdomain-*` anchors.  
+A powerdomain anchor is the representative CPU id where a packages's internal power domain starts.   
 
 For PCT **capacity**, this flow counts `bucket-0` **once per package/socket**:
 
@@ -56,7 +59,7 @@ There are two different concepts:
 | **PCT capacity** | Count `bucket-0` once per package/socket |
 | **HP CPU placement** | Dispatch the package-level PCT core budget across the package's PCT reporting powerdomain anchors |
 
-For Intel® Xeon® 6776P system, `bucket-0` reports:
+For Intel® Xeon® 6776P system with 2 sockets and 64 cores per socket, `bucket-0` reports using check_pct_status.sh in [check-pct-status session](#2-check-pct-status):
 
 ```text
 PCT_CORES_PER_PACKAGE=8
@@ -87,7 +90,6 @@ With Hyper-Threading included, this becomes:
 0-3,32-35,64-67,96-99,128-131,160-163,192-195,224-227
 ```
 
-This is the default strict bucket-0 PCT placement used by the updated set script.
 </details>
 
 ## 1. Build the Environment
@@ -115,7 +117,7 @@ docker compose run --rm intel-speed-select-shell 'which intel-speed-select && in
 
 </details>
 
-## 2. Check PCT Status (Read-Only)
+## 2. Check PCT Status
 
 <details>
 <summary> This step verifies: </summary>
@@ -227,7 +229,7 @@ The check script writes the current target-CLOS CPU list to:
 For the example above, `clos0_cpulist.txt` contains 32 logical CPUs. With
 Hyper-Threading enabled, that corresponds to 16 physical PCT cores.
 
-## 3. Set PCT (Dispatch Package-Level PCT Cores Across Powerdomain Anchors)
+## 3. Set PCT and Assigned HP CPUs
 
 This step **activates PCT in practice** by assigning selected HP CPUs to **CLOS0**.
 
@@ -364,7 +366,7 @@ Expected PCT logical CPU budget   : 32
 ✅ CLOS0 CPU count exactly matches the bucket-0 PCT logical budget.
 ```
 
-## 4. Benchmark CLOS0 CPUs with Host PerfSpect
+## 4. Benchmark CLOS0 CPUs with PerfSpect tool on the host
 
 Use Docker only to configure and verify PCT/CLOS. Run PerfSpect on the host so
 the frequency benchmark can access host CPU frequency interfaces directly.
@@ -401,8 +403,9 @@ perfspect --help | head
 </details>
 
 ### Run the benchmark
-
-Run the full flow:
+By using PerfSpect benchmark feature, it generates a diagram of CPU frequency among different number of active CPU cores.  
+The diagram helps us to understand whether PCT cores can reach the right CPU frequency.  
+Run the full flow with [run_host_perfspect_benchmark.sh](run_host_perfspect_benchmark.sh) :
 
 ```bash
 docker compose --progress=plain --profile set up --abort-on-container-exit
