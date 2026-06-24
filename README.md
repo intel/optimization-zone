@@ -42,6 +42,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
   - [Envoy](software/envoy/README.md)
   - [Kafka](software/kafka/README.md)
+  - [R (Rlang / Rstats)](software/R/README.md)
   - [TensorFlow](software/tensorflow/)
     - [ResNet50 – Computer Vision](software/tensorflow/computer-vision-resnet50/README.md)
     - [BERT – NLP](software/tensorflow/nlp-transformers-bert/README.md)
