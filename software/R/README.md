@@ -193,6 +193,7 @@ In addition to the flags for SIMD outlined in the previous section, when it come
     **Importantly:** if the `Makevars` file is modified like this with a system-level install of oneMKL, it will **only** work if R is executed **after** sourcing the MKL environment script:
     ```shell
     source /opt/intel/oneapi/setvars.sh
+    R -e "install.packages('glmnet')"
     ```
 
     If you are launching R without sourcing that script (e.g. through RStudio), then **do not add these modifications** to your `Makevars` file.
