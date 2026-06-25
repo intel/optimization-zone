@@ -184,12 +184,31 @@ Note that this might increase compilation times substantially. See subsequent se
 
 In addition to the flags for SIMD outlined in the previous section, when it comes to packages that use `RcppEigen` (such as `glmnet`), if oneMKL is set as the BLAS/LAPACK provider, one might want to configure those packages to use Eigen's oneMKL backend, which can be more performant than compiler-generated SIMD code even after adding additional flags. This can be achieved by adding the following additional lines in `Makevars`:
 
-```
-PKG_CPPFLAGS += -DEIGEN_USE_MKL_ALL
-PKG_LIBS += $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-```
+* For system installs of MKL (see notes below):
+    ```
+    PKG_CPPFLAGS += -DEIGEN_USE_MKL_ALL -I/opt/intel/oneapi/mkl/latest/include
+    PKG_LIBS += $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -lmkl_rt
+    ```
 
-Note again that this will only apply to packages that are installed by compiling them from source after these modifications.
+    **Importantly:** if the `Makevars` file is modified like this with a system-level install of oneMKL, it will **only** work if R is executed **after** sourcing the MKL environment script:
+    ```shell
+    source /opt/intel/oneapi/setvars.sh
+    ```
+
+    If you are launching R without sourcing that script (e.g. through RStudio), then **do not add these modifications** to your `Makevars` file.
+
+* For conda installs of MKL (**requires** conda package `mkl-devel`):
+    ```
+    PKG_CPPFLAGS += -DEIGEN_USE_MKL_ALL
+    PKG_LIBS += $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+    ```
+
+    Note again that this requires package `mkl-devel`, otherwise calls to `install.packages` will fail:
+    ```shell
+    conda install -c conda-forge mkl-devel
+    ```
+
+To remark again: this will only apply to packages that are installed by compiling them from source after these modifications.
 
 ### Building from source on Windows
 
