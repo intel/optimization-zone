@@ -184,7 +184,7 @@ Note that this might increase compilation times substantially. See subsequent se
 
 In addition to the flags for SIMD outlined in the previous section, when it comes to packages that use `RcppEigen` (such as `glmnet`), if oneMKL is set as the BLAS/LAPACK provider, one might want to configure those packages to use Eigen's oneMKL backend, which can be more performant than compiler-generated SIMD code even after adding additional flags. This can be achieved by adding the following additional lines in `Makevars`:
 
-* For system installs of MKL (see notes below):
+* For system installs of MKL, assuming a Linux system (see notes below):
     ```
     PKG_CPPFLAGS += -DEIGEN_USE_MKL_ALL -I/opt/intel/oneapi/mkl/latest/include
     PKG_LIBS += $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -lmkl_rt
