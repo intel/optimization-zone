@@ -201,7 +201,7 @@ In addition to the flags for SIMD outlined in the previous section, when it come
 * For conda installs of MKL (**requires** conda package `mkl-devel`):
     ```
     PKG_CPPFLAGS += -DEIGEN_USE_MKL_ALL
-    PKG_LIBS += $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+    PKG_LIBS += $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -lmkl_rt
     ```
 
     Note again that this requires package `mkl-devel`, otherwise calls to `install.packages` will fail:
