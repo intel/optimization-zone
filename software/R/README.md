@@ -89,7 +89,7 @@ conda install -c conda-forge rstudio-desktop
 rstudio
 ```
 
-On some of the commercial versions of RStudio Server / Posit Workbench, depending on the purchased features, the R interpreter may be selectable graphically from the top-right menu of RStudio.
+On some of the commercial versions of RStudio Server / Posit Workbench, depending on the purchased features, the R interpreter may be selectable graphically from the top-right menu of RStudio, but this will not activate the conda environment, which can potentially cause issues and make it mix incompatible libraries, hence it should not be used for conda-managed R installations.
 
 #### Verifying Backends
 
