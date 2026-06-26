@@ -39,6 +39,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
     - [Redis](software/similarity-search/redis/README.md)
   - [Spark](software/spark/README.md)
   - [scikit-learn](software/scikit-learn/README.md)
+  - [scikit-learn-intelex](software/scikit-learn-intelex/README.md)
   - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
   - [Envoy](software/envoy/README.md)
   - [Kafka](software/kafka/README.md)
