@@ -210,7 +210,7 @@ The following results were measured on an AWS r8i.12xlarge instance (Intel® Xeo
 | Santander | 940,160 | 24 | Classification (binary) | 11.07x | 17.22x | 7.42x |
 | Year Prediction MSD | 515,345 | 90 | Regression | 11.59x | 10.46x | 4.56x |
 
-**Software versions used for benchmarking:** XGBoost 2.1.4, LightGBM 4.6.0, CatBoost 1.2.10, scikit-learn-intelex 2024.7, Python 3.10.12, scikit-learn 1.5.2. For best results, use the latest available versions of these packages.
+**Software versions used for benchmarking:** XGBoost 3.2.0, LightGBM 4.6.0, CatBoost 1.2.10, scikit-learn-intelex 2026.0.0, Python 3.10.12, scikit-learn 1.7.2. For best results, use the latest available versions of these packages.
 
 **Hardware:** AWS r8i.12xlarge (Intel® Xeon® Scalable Processor, Granite Rapids, 48 vCPUs, 384 GB RAM)
 
