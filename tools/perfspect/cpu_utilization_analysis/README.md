@@ -33,21 +33,21 @@ pip install -r requirements.txt
 Set the PerfSpect JSON file path as an environment variable:
 
 ```bash
-export PERF_JSON=sys-822gs-nbrt-01_telem.json
+export PERF_RAW=sys-822gs-nbrt-01_telem.raw
 ```
 
 Run the tool:
 
 ```bash
-python3 perfspect_cpu_core_analysis.py "$PERF_JSON"
+python3 perfspect_cpu_core_analysis.py "$PERF_RAW"
 ```
 
 Recommended usage:
 
 ```bash
-export PERF_JSON=sys-822gs-nbrt-01_telem.json
+export PERF_RAW=sys-822gs-nbrt-01_telem.raw
 
-python3 perfspect_cpu_core_analysis.py "$PERF_JSON" \
+python3 perfspect_cpu_core_analysis.py "$PERF_RAW" \
   --out-dir perfspect_cpu_core_output \
   --top-n 40 \
   --active-threshold 10
@@ -57,7 +57,7 @@ Arguments:
 
 | Argument | Default | Description |
 |---|---:|---|
-| `json_file` | Required | PerfSpect JSON report file |
+| `raw_file` | Required | PerfSpect RAW report file |
 | `--out-dir` | `perfspect_cpu_core_output` | Output directory for charts and CSVs |
 | `--top-n` | `40` | Number of top CPUs/cores to show in top charts |
 | `--active-threshold` | `10.0` | CPU/core is active if average utilization is greater than this threshold |

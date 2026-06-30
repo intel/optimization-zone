@@ -1,31 +1,42 @@
 #!/usr/bin/env python3
 """
-Parse Intel PerfSpect JSON CPU utilization telemetry and generate logical-CPU
-and physical-core utilization summaries/charts.
+Parse Intel PerfSpect CPU telemetry from either:
+
+1. Processed PerfSpect JSON:
+      contains "CPU Utilization Telemetry"
+
+2. Raw PerfSpect JSON:
+      contains ScriptOutputs["mpstat telemetry"]["Stdout"]
+
+The tool generates logical-CPU and physical-core utilization summaries/charts.
 
 Physical core dedup rule:
-  PerfSpect provides CPU, CORE, SOCK, NODE in CPU Utilization Telemetry.
-  With Hyper-Threading enabled, multiple logical CPU IDs can map to the same
-  physical core.
-
-  This script counts one physical core per unique:
+  Count one physical core per unique:
       (SOCK, NODE, CORE)
 
-  Example:
-      CPU 0   -> SOCK=0, NODE=0, CORE=0
-      CPU 128 -> SOCK=0, NODE=0, CORE=0
+Example:
+  CPU 0   -> SOCK=0, NODE=0, CORE=0
+  CPU 128 -> SOCK=0, NODE=0, CORE=0
 
-  These two CPU IDs count as one physical CPU core.
+These two CPU IDs count as one physical CPU core.
 """
 
 import argparse
 import csv
 import json
 import math
+import re
 from collections import defaultdict
 from pathlib import Path
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+CPU_TELEMETRY_SECTION = "CPU Utilization Telemetry"
+RAW_MPSTAT_KEY = "mpstat telemetry"
 
 
 def to_float(value):
@@ -34,13 +45,166 @@ def to_float(value):
     return float(str(value).replace(",", ""))
 
 
-def load_perfspect_json(json_path):
-    with open(json_path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
 def avg(values):
     return sum(values) / len(values) if values else float("nan")
+
+
+def parse_lscpu_summary(stdout):
+    mapping = {}
+    for line in stdout.splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        mapping[key.strip()] = value.strip()
+
+    return {
+        "CPU Model": mapping.get("Model name"),
+        "CPUs": mapping.get("CPU(s)"),
+        "Cores per Socket": mapping.get("Core(s) per socket"),
+        "Sockets": mapping.get("Socket(s)"),
+        "NUMA Nodes": mapping.get("NUMA node(s)"),
+        "Hyperthreading": (
+            "Enabled"
+            if mapping.get("Thread(s) per core") and mapping.get("Thread(s) per core") != "1"
+            else "Disabled"
+        ),
+    }
+
+
+def parse_mpstat_stdout(stdout):
+    """
+    Parse raw PerfSpect mpstat telemetry.
+
+    Expected command in raw file:
+      mpstat -u -T -I SCPU -P ALL <interval> <count>
+
+    Expected columns:
+      Time CPU CORE SOCK NODE %usr %nice %sys %iowait %irq %soft %steal %guest %gnice %idle
+
+    The parser intentionally skips "Average:" rows to avoid double-counting
+    interval samples.
+    """
+    rows = []
+    header = None
+
+    for line in stdout.splitlines():
+        line = line.strip()
+
+        if not line or line.startswith("Linux "):
+            continue
+
+        parts = line.split()
+
+        if len(parts) >= 2 and parts[1] == "CPU" and "CORE" in parts and "%idle" in parts:
+            header = ["Time"] + parts[1:]
+            continue
+
+        if header is None:
+            continue
+
+        if parts[0] == "Average:":
+            continue
+
+        if not re.match(r"^\d{2}:\d{2}:\d{2}$", parts[0]):
+            continue
+
+        if len(parts) > 1 and parts[1] == "all":
+            continue
+
+        if len(parts) < len(header):
+            continue
+
+        try:
+            int(parts[1])
+            int(parts[2])
+            int(parts[3])
+            int(parts[4])
+        except ValueError:
+            continue
+
+        parsed = dict(zip(header, parts[: len(header)]))
+
+        rows.append(
+            {
+                "Time": parsed["Time"],
+                "CPU": parsed["CPU"],
+                "CORE": parsed["CORE"],
+                "SOCK": parsed["SOCK"],
+                "NODE": parsed["NODE"],
+                "%usr": parsed.get("%usr", "0"),
+                "%nice": parsed.get("%nice", "0"),
+                "%sys": parsed.get("%sys", "0"),
+                "%iowait": parsed.get("%iowait", "0"),
+                "%irq": parsed.get("%irq", "0"),
+                "%soft": parsed.get("%soft", "0"),
+                "%steal": parsed.get("%steal", "0"),
+                "%guest": parsed.get("%guest", "0"),
+                "%gnice": parsed.get("%gnice", "0"),
+                "%idle": parsed.get("%idle", "0"),
+            }
+        )
+
+    if not rows:
+        raise ValueError(
+            "Could not parse CPU rows from raw mpstat telemetry. "
+            "Expected mpstat output with CPU CORE SOCK NODE and %idle columns."
+        )
+
+    return rows
+
+
+def load_perfspect_cpu_report(input_path):
+    """
+    Return a normalized report dict with:
+      - Brief System Summary
+      - CPU Utilization Telemetry
+      - _Input_Format
+    """
+    with open(input_path, "r", encoding="utf-8") as f:
+        report = json.load(f)
+
+    if CPU_TELEMETRY_SECTION in report:
+        return {
+            "Brief System Summary": report.get("Brief System Summary", [{}]),
+            "CPU Utilization Telemetry": report[CPU_TELEMETRY_SECTION],
+            "_Input_Format": "processed_json",
+        }
+
+    if "ScriptOutputs" in report:
+        script_outputs = report["ScriptOutputs"]
+
+        if RAW_MPSTAT_KEY not in script_outputs:
+            available = ", ".join(sorted(script_outputs.keys()))
+            raise ValueError(
+                f"Raw PerfSpect JSON does not contain '{RAW_MPSTAT_KEY}'. "
+                f"Available ScriptOutputs: {available}"
+            )
+
+        mpstat_output = script_outputs[RAW_MPSTAT_KEY].get("Stdout", "")
+        cpu_rows = parse_mpstat_stdout(mpstat_output)
+
+        system = {
+            "Host Name": report.get("TargetName", ""),
+        }
+
+        if "date" in script_outputs:
+            system["Time"] = script_outputs["date"].get("Stdout", "").strip()
+
+        if "lscpu" in script_outputs:
+            system.update(parse_lscpu_summary(script_outputs["lscpu"].get("Stdout", "")))
+
+        return {
+            "Brief System Summary": [system],
+            "CPU Utilization Telemetry": cpu_rows,
+            "_Input_Format": "raw_json",
+        }
+
+    available = ", ".join(sorted(report.keys()))
+    raise ValueError(
+        "Unsupported input JSON. Expected either processed PerfSpect JSON with "
+        f"'{CPU_TELEMETRY_SECTION}' or raw PerfSpect JSON with ScriptOutputs. "
+        f"Available top-level keys: {available}"
+    )
 
 
 def aggregate_logical_cpus(report):
@@ -96,25 +260,6 @@ def aggregate_logical_cpus(report):
 
 
 def aggregate_physical_cores(cpu_rows):
-    """
-    Deduplicate logical CPUs into physical cores using:
-        (SOCK, NODE, CORE)
-
-    Utilization metrics:
-      - Max_Sibling_Avg_Util_%:
-          highest average utilization among sibling logical CPU IDs.
-          This is used to decide whether the physical core is active.
-
-      - Avg_Sibling_Util_%:
-          average utilization across sibling logical CPU IDs.
-
-      - Sum_Logical_Util_%:
-          sum of sibling logical CPU utilization.
-          On 2-way HT, this can range from 0 to 200.
-
-      - Effective_CPU_Equiv:
-          Sum_Logical_Util_% / 100.
-    """
     by_core = defaultdict(list)
 
     for row in cpu_rows:
@@ -147,30 +292,20 @@ def aggregate_physical_cores(cpu_rows):
 
 
 def summarize_counts(cpu_rows, core_rows, active_threshold):
-    """
-    Active CPU ID:
-      Avg_Util_% > active_threshold
-
-    Active physical core:
-      Max_Sibling_Avg_Util_% > active_threshold
-
-    The physical-core count is deduplicated by (SOCK, NODE, CORE), so if both
-    sibling CPU IDs are active on the same physical core, the core still counts
-    once.
-    """
     active_cpu_rows = [r for r in cpu_rows if r["Avg_Util_%"] > active_threshold]
     active_core_rows = [
-        r for r in core_rows
-        if r["Max_Sibling_Avg_Util_%"] > active_threshold
+        r for r in core_rows if r["Max_Sibling_Avg_Util_%"] > active_threshold
     ]
 
-    by_numa = defaultdict(lambda: {
-        "Logical_CPUs": 0,
-        "Physical_Cores": 0,
-        "Active_Logical_CPUs": 0,
-        "Active_Physical_Cores": 0,
-        "Effective_CPU_Equiv": 0.0,
-    })
+    by_numa = defaultdict(
+        lambda: {
+            "Logical_CPUs": 0,
+            "Physical_Cores": 0,
+            "Active_Logical_CPUs": 0,
+            "Active_Physical_Cores": 0,
+            "Effective_CPU_Equiv": 0.0,
+        }
+    )
 
     for r in cpu_rows:
         key = (r["SOCK"], r["NODE"])
@@ -206,10 +341,7 @@ def write_csv(rows, path):
 
         for row in rows:
             writer.writerow(
-                {
-                    k: round(v, 4) if isinstance(v, float) else v
-                    for k, v in row.items()
-                }
+                {k: round(v, 4) if isinstance(v, float) else v for k, v in row.items()}
             )
 
 
@@ -244,14 +376,7 @@ def add_active_core_note(summary):
 
 
 def add_chart_note(fig, text):
-    fig.text(
-        0.5,
-        0.01,
-        text,
-        ha="center",
-        va="bottom",
-        fontsize=11,
-    )
+    fig.text(0.5, 0.01, text, ha="center", va="bottom", fontsize=11)
 
 
 def plot_all_logical_cpus(cpu_rows, summary, path):
@@ -264,7 +389,8 @@ def plot_all_logical_cpus(cpu_rows, summary, path):
     plt.title("Logical CPU Utilization")
     plt.xlabel("Logical CPU ID")
     plt.ylabel("Average utilization (%)")
-    plt.xticks(range(0, max(cpus) + 1, 8), rotation=90)
+    xtick_step = max(1, math.ceil(len(cpus) / 32))
+    plt.xticks(cpus[::xtick_step], rotation=90)
     plt.ylim(0, max(100, math.ceil(max(vals) / 10) * 10))
     plt.grid(axis="y", alpha=0.3)
     add_chart_note(fig, add_active_core_note(summary))
@@ -276,8 +402,7 @@ def plot_all_logical_cpus(cpu_rows, summary, path):
 def plot_top_logical_cpus(cpu_rows, summary, path, top_n):
     rows = sorted(cpu_rows, key=lambda r: r["Avg_Util_%"], reverse=True)[:top_n]
     labels = [
-        f'CPU {r["CPU"]}\nS{r["SOCK"]}/N{r["NODE"]}/C{r["CORE"]}'
-        for r in rows
+        f'CPU {r["CPU"]}\nS{r["SOCK"]}/N{r["NODE"]}/C{r["CORE"]}' for r in rows
     ]
     vals = [r["Avg_Util_%"] for r in rows]
 
@@ -308,7 +433,7 @@ def plot_physical_cores_by_numa(core_rows, summary, path):
     plt.title("Physical Core Utilization by NUMA")
     plt.xlabel("Physical core: CORE / Socket / NUMA / sibling CPU IDs")
     plt.ylabel("Max sibling average utilization (%)")
-    step = 4 if len(rows) <= 128 else 8
+    step = max(1, math.ceil(len(rows) / 32))
     plt.xticks(range(0, len(rows), step), labels[::step], rotation=90)
     plt.ylim(0, 100)
     plt.grid(axis="y", alpha=0.3)
@@ -328,9 +453,7 @@ def plot_physical_cores_by_numa(core_rows, summary, path):
 
 def plot_top_physical_cores(core_rows, summary, path, top_n):
     rows = sorted(
-        core_rows,
-        key=lambda r: r["Max_Sibling_Avg_Util_%"],
-        reverse=True,
+        core_rows, key=lambda r: r["Max_Sibling_Avg_Util_%"], reverse=True
     )[:top_n]
     labels = [
         f'C{r["CORE"]}\nS{r["SOCK"]}/N{r["NODE"]}\nCPU {r["Sibling_CPU_IDs"]}'
@@ -352,7 +475,10 @@ def plot_top_physical_cores(core_rows, summary, path, top_n):
     plt.close()
 
 
-def print_summary(system, summary):
+def print_summary(system, summary, input_format):
+    print("\nInput:")
+    print(f"  Format: {input_format}")
+
     print("\nSystem:")
     for k in [
         "Host Name",
@@ -364,7 +490,7 @@ def print_summary(system, summary):
         "CPUs",
         "NUMA Nodes",
     ]:
-        if k in system:
+        if system.get(k):
             print(f"  {k}: {system[k]}")
 
     threshold = summary["Active_Threshold_%"]
@@ -399,9 +525,9 @@ def print_summary(system, summary):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate PerfSpect CPU/core utilization charts."
+        description="Generate PerfSpect CPU/core utilization charts from processed JSON or raw JSON."
     )
-    parser.add_argument("json_file")
+    parser.add_argument("raw_file")
     parser.add_argument("--out-dir", default="perfspect_cpu_core_output")
     parser.add_argument("--top-n", type=int, default=40)
     parser.add_argument(
@@ -412,44 +538,41 @@ def main():
     )
     args = parser.parse_args()
 
+    if args.top_n <= 0:
+        parser.error("--top-n must be greater than 0")
+
+    if args.active_threshold < 0 or args.active_threshold > 100:
+        parser.error("--active-threshold must be between 0 and 100")
+
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    report = load_perfspect_json(args.json_file)
+    report = load_perfspect_cpu_report(args.raw_file)
     system = report.get("Brief System Summary", [{}])[0]
+    input_format = report.get("_Input_Format", "unknown")
 
     cpu_rows = aggregate_logical_cpus(report)
     core_rows = aggregate_physical_cores(cpu_rows)
     summary = summarize_counts(cpu_rows, core_rows, args.active_threshold)
 
+    top_n = min(args.top_n, len(cpu_rows), len(core_rows))
+
     write_csv(cpu_rows, out_dir / "logical_cpu_utilization_summary.csv")
     write_csv(core_rows, out_dir / "physical_core_utilization_summary.csv")
     write_numa_summary(summary, out_dir / "numa_core_summary.csv")
 
-    plot_all_logical_cpus(
-        cpu_rows,
-        summary,
-        out_dir / "logical_cpu_utilization.png",
-    )
+    plot_all_logical_cpus(cpu_rows, summary, out_dir / "logical_cpu_utilization.png")
     plot_top_logical_cpus(
-        cpu_rows,
-        summary,
-        out_dir / f"top{args.top_n}_logical_cpus.png",
-        args.top_n,
+        cpu_rows, summary, out_dir / f"top{top_n}_logical_cpus.png", top_n
     )
     plot_physical_cores_by_numa(
-        core_rows,
-        summary,
-        out_dir / "physical_core_utilization_by_numa.png",
+        core_rows, summary, out_dir / "physical_core_utilization_by_numa.png"
     )
     plot_top_physical_cores(
-        core_rows,
-        summary,
-        out_dir / f"top{args.top_n}_physical_cores.png",
-        args.top_n,
+        core_rows, summary, out_dir / f"top{top_n}_physical_cores.png", top_n
     )
 
-    print_summary(system, summary)
+    print_summary(system, summary, input_format)
 
     print("\nGenerated files:")
     for p in sorted(out_dir.iterdir()):
