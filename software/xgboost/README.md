@@ -2,11 +2,11 @@
 
 ## Introduction
 
-[XGBoost](https://xgboost.readthedocs.io/), [LightGBM](https://lightgbm.readthedocs.io/), and [CatBoost](https://catboost.ai/) are among the most popular and efficient gradient boosting frameworks for classification and regression tasks on tabular data. This guide covers techniques to significantly accelerate inference for these frameworks on Intel® Xeon® processors using [oneDAL (oneAPI Data Analytics Library)](http://uxlfoundation.github.io/oneDAL/) via its Python interface, `daal4py`, provided through the [`scikit-learn-intelex`](https://github.com/intel/scikit-learn-intelex) package.
+[XGBoost](https://xgboost.readthedocs.io/), [LightGBM](https://lightgbm.readthedocs.io/), and [CatBoost](https://catboost.ai/) are among the most popular and efficient gradient boosting frameworks for classification and regression tasks on tabular data. This guide covers techniques to significantly accelerate inference for these frameworks on Intel® processors using [oneDAL (oneAPI Data Analytics Library)](http://uxlfoundation.github.io/oneDAL/) via its Python interface, `daal4py`, provided through the [`scikit-learn-intelex`](https://uxlfoundation.github.io/scikit-learn-intelex) package.
 
-By converting trained models to oneDAL, you can achieve **orders of magnitude faster inference** with no loss in prediction quality and minimal code changes. oneDAL leverages Intel® Advanced Vector Extensions 512 (AVX-512) and optimized memory access patterns to maximize performance on Intel hardware.
+By converting trained models to oneDAL, you can achieve **orders of magnitude faster inference** with no loss in prediction quality and minimal code changes. oneDAL leverages SIMD vectorization and optimized memory access patterns to maximize performance on Intel hardware.
 
-> **Note:** `daal4py` supports a specific subset of GBT model configurations (e.g., standard classification and regression trees). For model types not supported by daal4py, consider alternatives such as [ONNX Runtime](https://onnxruntime.ai/) for optimized inference.
+> **Note:** `daal4py` supports a specific subset of Gradient Boosted Tree (GBT) model configurations (e.g., standard classification and regression trees). For model types not supported by daal4py, consider alternatives such as [ONNX Runtime](https://onnx.ai/sklearn-onnx/auto_tutorial/plot_gexternal_xgboost.html) or [TreeLite/tl2cgen](https://tl2cgen.readthedocs.io/en/latest/) for optimized inference.
 
 ## Contents
 
@@ -32,12 +32,12 @@ By converting trained models to oneDAL, you can achieve **orders of magnitude fa
 - [scikit-learn-intelex Model Builders Documentation](https://uxlfoundation.github.io/scikit-learn-intelex/latest/model_builders.html)
 - [About daal4py](https://uxlfoundation.github.io/scikit-learn-intelex/latest/about_daal4py.html)
 - [oneDAL GitHub Repository](https://github.com/uxlfoundation/oneDAL)
-- [scikit-learn-intelex (sklearnex)](https://github.com/intel/scikit-learn-intelex)
+- [scikit-learn-intelex (sklearnex)](https://uxlfoundation.github.io/scikit-learn-intelex)
 
 ## Prerequisites
 
 - Intel® Xeon® Scalable Processor (2nd Generation or newer recommended for AVX-512 support)
-- Python version supported by [scikit-learn-intelex](https://github.com/intel/scikit-learn-intelex) (currently 3.10+)
+- Python version supported by [scikit-learn-intelex](https://uxlfoundation.github.io/scikit-learn-intelex) (currently 3.10+)
 - One or more gradient boosting libraries: [XGBoost](https://xgboost.readthedocs.io/) (`xgboost` from PyPI or `py-xgboost` from conda-forge), [LightGBM](https://lightgbm.readthedocs.io/) (`lightgbm`), [CatBoost](https://catboost.ai/) (`catboost`)
 
 ## Installation
@@ -48,7 +48,7 @@ The `daal4py` module is provided through the `scikit-learn-intelex` package. Ins
 pip install scikit-learn-intelex
 ```
 
-Or from conda-forge:
+If using a conda environment ([miniforge](https://github.com/conda-forge/miniforge) distribution is recommended):
 
 ```bash
 conda install -c conda-forge scikit-learn-intelex --override-channels
@@ -210,13 +210,15 @@ The following results were measured on an AWS r8i.12xlarge instance (Intel® Xeo
 | Santander | 940,160 | 24 | Classification (binary) | 11.07x | 17.22x | 7.42x |
 | Year Prediction MSD | 515,345 | 90 | Regression | 11.59x | 10.46x | 4.56x |
 
-**Software versions used for benchmarking:** XGBoost 3.2.0, LightGBM 4.6.0, CatBoost 1.2.10, scikit-learn-intelex 2026.0.0, Python 3.10.12, scikit-learn 1.7.2. For best results, use the latest available versions of these packages.
+**Software versions used for benchmarking:** XGBoost 3.2.0, LightGBM 4.6.0, CatBoost 1.2.10, scikit-learn-intelex 2026.0.0, Python 3.10.12. For best results, use the latest available versions of these packages.
 
 **Hardware:** AWS r8i.12xlarge (Intel® Xeon® Scalable Processor, Granite Rapids, 48 vCPUs, 384 GB RAM)
 
 Across all datasets, daal4py consistently accelerates inference for all three gradient boosting frameworks. LightGBM sees the largest gains (up to 51x on Airline-OHE), XGBoost achieves 5–16x speedup across all workloads, and CatBoost benefits most on high-dimensional binary classification tasks. 
 
-For multiclass classification, default XGBoost, LightGBM, and daal4py all use one tree per class. CatBoost, on the other hand, uses vectorized trees. This means all other approaches end up processing `num_classes x` more trees compared to CatBoost, e.g., 7,000 vs 1,000 for Covtype. For smaller `num_estimators` like `100`, `daal4py` outperforms CatBoost, but as `num_estimators` gets larger, CatBoost provides better inference latency. 
+For multiclass classification, XGBoost, LightGBM, and daal4py (with default settings as of the tested versions) use one tree per class, while CatBoost uses symmetric (oblivious) trees that handle all classes in a single tree. This means daal4py ends up processing `num_classes × num_estimators` trees compared to CatBoost's `num_estimators` trees (e.g., 7,000 vs 1,000 for Covtype with 7 classes). As a result, CatBoost can provide better inference latency for multiclass tasks with many classes and large ensembles.
+
+> **Note:** XGBoost is moving towards multi-output trees (via `multi_strategy="multi_output_tree"`) which would reduce this gap by handling all classes in a single tree, similar to CatBoost. Check the [XGBoost documentation](https://xgboost.readthedocs.io/en/latest/tutorials/multioutput.html) for the latest defaults. 
 
 ### Reproducing the Benchmark
 
@@ -233,28 +235,32 @@ import daal4py as d4p
 # Convert the model (works for XGBoost, LightGBM, and CatBoost)
 d4p_model = d4p.mb.convert_model(model)
 
+# Set batch size (1 = single-row / online inference)
+batch_size = 1
+X_batch = X_test[:batch_size]
+
 # Warmup
 for _ in range(5):
-    model.predict(X_test)
-    d4p_model.predict(X_test)
+    model.predict(X_batch)
+    d4p_model.predict(X_batch)
 
 # Measure native inference
-n_iter = 100
+n_iter = 1000
 native_times = []
 for _ in range(n_iter):
     t0 = time.perf_counter()
-    model.predict(X_test)
+    model.predict(X_batch)
     native_times.append(time.perf_counter() - t0)
 
 # Measure daal4py inference
 d4p_times = []
 for _ in range(n_iter):
     t0 = time.perf_counter()
-    d4p_model.predict(X_test)
+    d4p_model.predict(X_batch)
     d4p_times.append(time.perf_counter() - t0)
 
 speedup = np.mean(native_times) / np.mean(d4p_times)
-print(f"Speedup: {speedup:.2f}x")
+print(f"Batch size: {batch_size}, Speedup: {speedup:.2f}x")
 ```
 
 *Performance varies by use, configuration, and other factors.*
@@ -283,7 +289,7 @@ Native frameworks spend a notable portion of time in kernel space due to Python 
 |:--------|:---------------|
 | Data Format | Use NumPy contiguous arrays (`np.ascontiguousarray()`) as input for best performance |
 | Data Type | Use `float32` for maximum throughput; `float64` is also supported |
-| Batch Size | oneDAL performs well across batch sizes, with the largest advantage at batch size = 1 (online inference) |
+| Batch Size | oneDAL performs well across batch sizes; the speedup advantage is most pronounced at small batch sizes where native framework overhead dominates |
 | NUMA | For multi-socket systems, pin processes to a single NUMA node to minimize cross-socket memory access |
 | scikit-learn-intelex Version | Use the latest version of `scikit-learn-intelex` for best performance, newest model support, and bug fixes |
 
@@ -293,7 +299,7 @@ On multi-socket Intel Xeon systems, there are two key decisions that significant
 
 #### Thread Scaling vs. Process Scaling
 
-A single daal4py process uses internal threading (TBB/OpenMP) to parallelize across available cores. Alternatively, you can run multiple independent OS-level processes, each pinned to a separate NUMA node with its own copy of the model and data. These approaches offer different tradeoffs.
+A single daal4py process uses internal threading (TBB) to parallelize across available cores. Alternatively, you can run multiple independent OS-level processes, each pinned to a separate NUMA node with its own copy of the model and data. These approaches offer different tradeoffs.
 
 Testing on a 4-NUMA-node Intel Xeon Platinum 8592+ (`airline-ohe` dataset, 200K rows, 24 features, 100 trees, `numactl --localalloc`) showed:
 
