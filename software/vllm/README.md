@@ -1,10 +1,9 @@
-# vLLM on Intel Xeon Processors
+# vLLM on Intel Xeon Processors <!-- omit in toc -->
 
 This guide provides recommendations for running vLLM on Intel Xeon processors.
 
-## Table of Contents
+## Table of Contents <!-- omit in toc -->
 
-- [Upstream First](#upstream-first)
 - [Intel Xeon SLM/LLM Sizing Guidance](#intel-xeon-slmllm-sizing-guidance)
 - [vLLM Requirements Guidance](#vllm-requirements-guidance)
 - [Performance Guidance](#performance-guidance)
@@ -13,14 +12,10 @@ This guide provides recommendations for running vLLM on Intel Xeon processors.
 - [Fast Path: Docker](#fast-path-docker)
 - [Validate the OpenAI-compatible endpoint](#validate-the-openai-compatible-endpoint)
 - [Benchmarking Guidance](#benchmarking-guidance)
-  - [Benchmark](#benchmark)
-  - [Concurrency Sweep](#concurrency-sweep)
-  - [Testing & Tuning Methodology](#testing--tuning-methodology)
-  - [Using the vLLM Benchmark Suite](#using-the-vllm-benchmark-suite)
 - [Use with AI Coding Agents](#use-with-ai-coding-agents)
 - [References](#references)
 
-## Upstream First
+## Upstream First <!-- omit in toc -->
 
 Intel invests significant efforts upstreaming code optimizations and documentation directly to the official vLLM repositories. Those upstream contributions form the foundation of Intel Xeon CPU performance in vLLM. This guide is only a small extension of that work—collecting practical deployment tips in one place. Users should always consult the official documentation.
 
@@ -47,21 +42,33 @@ For guidance around SLM/LLM sizing on Intel Xeon CPUs, please see our Xeon Proce
 
 ## Performance Guidance
 
-The table below mixes two kinds of knobs: **environment variables** (the `VLLM_CPU_*` entries, set
-with a shell `export` or a Docker `-e` flag) and **server CLI flags** (the `--*` entries, passed to
-`vllm serve`). Set each one in the matching place shown in the Docker and benchmarking examples
-below.
+vLLM on CPU is tuned with two kinds of knobs, split into the two tables below.
+**Environment variables** (`VLLM_CPU_*`) are set with a shell `export` or a Docker `-e` flag.
+**Server CLI flags** (`--*`) are passed to `vllm serve` after the model name. Set each one in the
+matching place shown in the Docker and benchmarking examples below. The **Example** column mirrors
+the runnable Docker command in [Fast Path: Docker](#fast-path-docker).
 
-| Setting | Guidance | Why it matters |
-| --- | --- | --- |
-| `--dtype=bfloat16` | Use `bfloat16` on Intel Xeon with Intel AMX | Selects the preferred CPU dtype and enables Intel AMX BF16 acceleration. |
-| `VLLM_CPU_KVCACHE_SPACE` | `20` to `40` GiB or larger | Larger values allow more concurrency and context, but must fit into the memory capacity available per NUMA node. |
-| `VLLM_CPU_OMP_THREADS_BIND` | `auto` | Binds OpenMP worker threads to NUMA-local cores. Use ranges such as `0-31\|32-63` for manual control, `auto` preferred. |
-| `VLLM_CPU_NUM_OF_RESERVED_CPU` | `1` | Reserves one core for API serving, tokenization, networking, logging, and OS work. |
-| `--tensor-parallel-size` | Use the default for a single NUMA node, or set it to the NUMA node count | Keeps model shards close to local memory; current vLLM CPU releases do not support `--tensor-parallel-size=6`. |
-| `--max-num-batched-tokens` | Online: `2048`; offline: `4096` | Maximum number of batched tokens per iteration. Tune for prefill throughput and time to first token. |
-| `--max-num-seqs` | Online: `128`; offline: `256` | Maximum number of sequences per iteration. Tune for decode throughput and inter-token latency. |
-| `VLLM_CPU_SGL_KERNEL` | `0`, or try `1` for low-latency SLM serving | Experimental x86 small-batch kernels; requires AMX, BF16 weights, and compatible shapes. |
+### Environment variables <!-- omit in toc -->
+
+Set with `export VAR=value` on a native/venv install, or `-e VAR=value` with `docker run`.
+
+| Variable | Recommended value | Example | Why it matters |
+| --- | --- | --- | --- |
+| `VLLM_CPU_KVCACHE_SPACE` | `20` to `40` GiB or larger | `-e VLLM_CPU_KVCACHE_SPACE=20` | Larger values allow more concurrency and context, but must fit into the memory capacity available per NUMA node. |
+| `VLLM_CPU_OMP_THREADS_BIND` | `auto` | `-e VLLM_CPU_OMP_THREADS_BIND=auto` | Binds OpenMP worker threads to NUMA-local cores. Use ranges such as `0-31\|32-63` for manual control, `auto` preferred. |
+| `VLLM_CPU_NUM_OF_RESERVED_CPU` | `1` | `-e VLLM_CPU_NUM_OF_RESERVED_CPU=1` | Reserves one core for API serving, tokenization, networking, logging, and OS work. |
+| `VLLM_CPU_SGL_KERNEL` | `0`, or try `1` for low-latency SLM serving | `-e VLLM_CPU_SGL_KERNEL=1` | Experimental x86 small-batch kernels; requires AMX, BF16 weights, and compatible shapes. |
+
+### Server CLI flags <!-- omit in toc -->
+
+Passed to `vllm serve` (or appended after the model name in the `docker run` command).
+
+| Flag | Recommended value | Example | Why it matters |
+| --- | --- | --- | --- |
+| `--dtype` | `bfloat16` on Intel Xeon with Intel AMX | `--dtype=bfloat16` | Selects the preferred vLLM CPU dtype for Intel AMX. |
+| `--tensor-parallel-size` | Default for a single NUMA node, or the NUMA node count | `--tensor-parallel-size=2` | Keeps model shards close to local memory; current vLLM CPU releases do not support `--tensor-parallel-size=6`. |
+| `--max-num-batched-tokens` | Online: `2048`; offline: `4096` | `--max-num-batched-tokens 2048` | Maximum number of batched tokens per iteration. Tune for prefill throughput and time to first token. |
+| `--max-num-seqs` | Online: `128`; offline: `256` | `--max-num-seqs 128` | Maximum number of sequences per iteration. Tune for decode throughput and inter-token latency. |
 
 ## Utility Tools
 
@@ -158,7 +165,7 @@ SERVER_PID=$(pgrep -f 'vllm serve|api_server' | head -n 1)
 numastat -p "${SERVER_PID}"
 ```
 
-### Benchmark
+### Benchmark<!-- omit in toc -->
 
 `vllm bench serve` is vLLM's built-in load generator: it sends requests to an already-running
 server and reports latency and throughput. Use it to measure TTFT (time to first token), TPOT
@@ -207,7 +214,7 @@ vllm bench serve \
 >   "https://github.com/vllm-project/vllm/releases/download/v${VLLM_VERSION}/vllm-${VLLM_VERSION}+cpu-cp38-abi3-manylinux_2_35_x86_64.whl"
 > ```
 
-### Concurrency Sweep
+### Concurrency Sweep<!-- omit in toc -->
 
 With `--request-rate inf`, all prompts fire simultaneously so `--num-prompts` directly controls concurrency. Sweep to see how latency and throughput scale under increasing batch pressure. The example below runs on the host (native/virtualenv install); if you deployed via Docker, prefix `vllm bench serve` with `docker exec vllm-cpu`:
 
@@ -227,14 +234,14 @@ for N in 10 50 100 200 500; do
 done
 ```
 
-### Testing & Tuning Methodology
+### Testing & Tuning Methodology<!-- omit in toc -->
 
 - Test with different input/output lengths to understand how the model performs under different prompt and generation sizes. For example, try `--random-input-len` and `--random-output-len` values of `64`, `128`, `256`, and `512`.
 - Test with different user concurrency levels using `--num-prompts` values of `10`, `50`, `100`, `200`, and `500` with `--request-rate inf`.
 - Use one known-good model and change one knob at a time. Track TTFT, TPOT, output tokens per second, requests per second, peak RSS, NUMA locality, and OOM events.
 - Vary only one of `VLLM_CPU_KVCACHE_SPACE`, `VLLM_CPU_OMP_THREADS_BIND`, `--max-num-batched-tokens`, `--max-num-seqs`, or `--block-size` per run. Compare results across runs using the saved JSON files in `./bench-results`.
 
-### Using the vLLM Benchmark Suite
+### Using the vLLM Benchmark Suite<!-- omit in toc -->
 
 The vLLM source tree includes a full performance benchmark harness at `.buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh`. This is the same script used in vLLM's CI to gate regressions. It reads a JSON test definition, generates concrete benchmark commands, and (optionally) executes them.
 
@@ -309,7 +316,7 @@ Install the skill once per workspace or user profile. Pick the install path for 
 | GitHub Copilot (personal) | `~/.copilot/skills/vllm-xeon-cpu/` | Available across all your workspaces; not shared. |
 | Claude Code (workspace) | `.claude/skills/vllm-xeon-cpu/` | Shared via the repo. |
 
-### GitHub Copilot — Repo Workspace
+### GitHub Copilot — Repo Workspace<!-- omit in toc -->
 
 ```bash
 mkdir -p .github/skills/vllm-xeon-cpu
@@ -318,7 +325,7 @@ curl -L https://github.com/intel/optimization-zone/archive/refs/heads/main.tar.g
       optimization-zone-main/software/vllm/skill
 ```
 
-### GitHub Copilot — User profile
+### GitHub Copilot — User profile<!-- omit in toc -->
 
 ```bash
 mkdir -p ~/.copilot/skills/vllm-xeon-cpu
@@ -327,7 +334,7 @@ curl -L https://github.com/intel/optimization-zone/archive/refs/heads/main.tar.g
       optimization-zone-main/software/vllm/skill
 ```
 
-### Claude Code — Repo Workspace
+### Claude Code — Repo Workspace<!-- omit in toc -->
 
 ```bash
 mkdir -p .claude/skills/vllm-xeon-cpu
