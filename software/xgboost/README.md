@@ -36,27 +36,27 @@ By converting trained models to oneDAL, you can achieve **orders of magnitude fa
 
 ## Prerequisites
 
-- Intel® Xeon® Scalable Processor (2nd Generation or newer recommended for AVX-512 support)
-- Python version supported by [scikit-learn-intelex](https://uxlfoundation.github.io/scikit-learn-intelex) (currently 3.10+)
+- Any x86-64 processor (Intel® or AMD®)
+- Python version supported by [scikit-learn-intelex](https://uxlfoundation.github.io/scikit-learn-intelex)
 - One or more gradient boosting libraries: [XGBoost](https://xgboost.readthedocs.io/) (`xgboost` from PyPI or `py-xgboost` from conda-forge), [LightGBM](https://lightgbm.readthedocs.io/) (`lightgbm`), [CatBoost](https://catboost.ai/) (`catboost`)
 
 ## Installation
 
 The `daal4py` module is provided through the `scikit-learn-intelex` package. Install from PyPI:
 
-```bash
+```shell
 pip install scikit-learn-intelex
 ```
 
 If using a conda environment ([miniforge](https://github.com/conda-forge/miniforge) distribution is recommended):
 
-```bash
+```shell
 conda install -c conda-forge scikit-learn-intelex --override-channels
 ```
 
 Install the gradient boosting libraries you need:
 
-```bash
+```shell
 pip install xgboost lightgbm catboost
 ```
 
@@ -112,7 +112,6 @@ params = {
     "max_depth": 8,
     "learning_rate": 0.1,
     "objective": "binary:logistic",
-    "eval_metric": "logloss",
 }
 clf = xgb.XGBClassifier(**params)
 clf.fit(X_train, y_train)
@@ -216,7 +215,7 @@ The following results were measured on an AWS r8i.12xlarge instance (Intel® Xeo
 
 Across all datasets, daal4py consistently accelerates inference for all three gradient boosting frameworks. LightGBM sees the largest gains (up to 51x on Airline-OHE), XGBoost achieves 5–16x speedup across all workloads, and CatBoost benefits most on high-dimensional binary classification tasks. 
 
-For multiclass classification, XGBoost, LightGBM, and daal4py (with default settings as of the tested versions) use one tree per class, while CatBoost uses symmetric (oblivious) trees that handle all classes in a single tree. This means daal4py ends up processing `num_classes × num_estimators` trees compared to CatBoost's `num_estimators` trees (e.g., 7,000 vs 1,000 for Covtype with 7 classes). As a result, CatBoost can provide better inference latency for multiclass tasks with many classes and large ensembles.
+For multiclass classification, XGBoost, LightGBM, and daal4py use one tree per class, while CatBoost uses multi-output trees that handle all classes in a single tree. This means daal4py ends up processing `num_classes × num_estimators` trees compared to CatBoost's `num_estimators` trees (e.g., 7,000 vs 1,000 for Covtype with 7 classes). As a result, CatBoost can provide better inference latency for multiclass tasks with many classes and large ensembles.
 
 > **Note:** XGBoost is moving towards multi-output trees (via `multi_strategy="multi_output_tree"`) which would reduce this gap by handling all classes in a single tree, similar to CatBoost. Check the [XGBoost documentation](https://xgboost.readthedocs.io/en/latest/tutorials/multioutput.html) for the latest defaults. 
 
@@ -277,7 +276,7 @@ By converting the model to a native C++ representation, oneDAL eliminates this o
 
 ### 2. Vectorized Tree Traversal
 
-oneDAL uses SIMD instructions (AVX2/AVX-512) to traverse decision trees. Instead of scalar node-by-node comparisons, it processes multiple tree nodes or observations in parallel using vector gather and compare operations. This means the actual tree traversal computation is concentrated in a tight, optimized loop rather than being spread across many small framework functions.
+oneDAL uses SIMD instructions to traverse decision trees. Instead of scalar node-by-node comparisons, it processes multiple tree nodes or observations in parallel using vector gather and compare operations. This means the actual tree traversal computation is concentrated in a tight, optimized loop rather than being spread across many small framework functions.
 
 ### 3. Reduced Kernel and Synchronization Overhead
 
@@ -321,7 +320,7 @@ Key observations:
 
 #### Hyper-threading can Hurt Performance
 
-daal4py's AVX-512 vectorized tree traversal is [backend-bound](https://www.intel.com/content/www/us/en/docs/vtune-profiler/cookbook/2023-0/top-down-microarchitecture-analysis-method.html) — whether the bottleneck is core execution units or memory bandwidth, adding hyperthreads increases resource contention on the shared physical core, harming performance.
+daal4py's vectorized tree traversal is [backend-bound](https://www.intel.com/content/www/us/en/docs/vtune-profiler/cookbook/2023-0/top-down-microarchitecture-analysis-method.html) — whether the bottleneck is core execution units or memory bandwidth, adding hyperthreads increases resource contention on the shared physical core, harming performance.
 
 > **Cloud instance note:** On AWS and GCP, each vCPU does not necessarily map to a hyperthread. Smaller instance sizes use soft partitioning, so you may not know how many physical cores vs. hyperthreads you are getting. The guidance below applies most directly to bare-metal or dedicated-host instances where the physical topology is known. On shared instances, benchmark with your specific instance size to determine whether pinning provides a benefit.
 
@@ -330,20 +329,20 @@ daal4py's AVX-512 vectorized tree traversal is [backend-bound](https://www.intel
 | 32 physical cores only (`--physcpubind=0-31`) | ~18M | ~2,000 |
 | 64 threads with HT (`--physcpubind=0-31,128-159` or `--cpunodebind=0`) | ~8.5M | ~4,760 |
 
-Enabling hyperthreads **halves throughput and doubles latency**, regardless of whether you use `--cpunodebind` or `--physcpubind` to specify them. The penalty comes from HT siblings competing for the same AVX-512 execution units and cache lines that daal4py relies on.
+Enabling hyperthreads **halves throughput and doubles latency**, regardless of whether you use `--cpunodebind` or `--physcpubind` to specify them. The penalty comes from HT siblings competing for the same execution units and cache lines that daal4py relies on.
 
 #### Recommendations
 
 **For latency-sensitive inference** (single request at a time), use thread scaling with all physical cores:
 
-```bash
+```shell
 # Use all 128 physical cores across both sockets for lowest per-request latency
 numactl --localalloc --physcpubind=0-127 python my_inference.py
 ```
 
 **For throughput-oriented serving** (batch processing or concurrent clients), run one process per NUMA node, each pinned to physical cores only:
 
-```bash
+```shell
 # 4 NUMA-pinned workers for maximum aggregate throughput
 numactl --localalloc --physcpubind=0-31   python my_inference.py --shard=0 &
 numactl --localalloc --physcpubind=32-63  python my_inference.py --shard=1 &
