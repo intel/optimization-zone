@@ -61,7 +61,7 @@ There are two different concepts:
 | **PCT capacity** | Count `bucket-0` once per package/socket |
 | **HP CPU placement** | Dispatch the package-level PCT core budget across the package's PCT reporting powerdomain anchors |
 
-For Intel® Xeon® 6776P system with 2 sockets and 64 cores per socket, `bucket-0` reports using check_pct_status.sh in [check-pct-status session](#2-check-pct-status):
+The excerpts below are from execution of (check_pct_status.sh](./check_pct_status.sh) on an Intel® Xeon® 6776P system with 2 sockets and 64 cores per socket. Subsequent sections explain the outputs and how to interpret them.
 
 ```text
 PCT_CORES_PER_PACKAGE=8
