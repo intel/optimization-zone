@@ -6,15 +6,15 @@ This guide provides recommendations for running vLLM on Intel Xeon processors.
 
 Intel invests significant efforts upstreaming code optimizations and documentation directly to the official vLLM repositories. Those upstream contributions form the foundation of Intel Xeon CPU performance in vLLM. This guide is only a small extension of that work—collecting practical deployment tips in one place. Users should always consult the official documentation.
 
-- [vLLM CPU installation guide](https://docs.vllm.ai/en/stable/getting_started/installation/cpu/)
-- [vLLM SLM/LLM Recipes](https://recipes.vllm.ai/)
-- [vLLM Benchmarking](https://docs.vllm.ai/en/stable/benchmarking/cli/)
+1. [vLLM CPU installation guide](https://docs.vllm.ai/en/stable/getting_started/installation/cpu/)
+2. [vLLM SLM/LLM Recipes](https://recipes.vllm.ai/)
+3. [vLLM Benchmarking](https://docs.vllm.ai/en/stable/benchmarking/cli/)
 
 ## Table of Contents <!-- omit in toc -->
 
 - [Intel Xeon SLM/LLM Sizing Guidance](#intel-xeon-slmllm-sizing-guidance)
 - [vLLM Requirements Guidance](#vllm-requirements-guidance)
-- [Validation Fast Path with Docker](#validation-fast-path-with-docker)
+- [Running vLLM with Docker](#running-vllm-with-docker)
 - [Benchmarking Guidance](#benchmarking-guidance)
 - [Using the AI Coding Agents Skill](#using-the-ai-coding-agents-skill)
 - [References](#references)
@@ -85,7 +85,7 @@ Passed to `vllm serve` (or appended after the model name in the `docker run` com
 | `--max-num-batched-tokens` | Online: `2048`; offline: `4096` | `--max-num-batched-tokens 2048` | Maximum number of batched tokens per iteration. Tune for prefill throughput and time to first token. |
 | `--max-num-seqs` | Online: `128`; offline: `256` | `--max-num-seqs 128` | Maximum number of sequences per iteration. Tune for decode throughput and inter-token latency. |
 
-## Validation Fast Path with Docker
+## Running vLLM with Docker
 
 <details>
 <summary>(Optional) Install Docker on Ubuntu 24.04</summary>
@@ -161,7 +161,7 @@ SERVER_PID=$(pgrep -f 'vllm serve|api_server' | head -n 1)
 numastat -p "${SERVER_PID}"
 ```
 
-### Running the Benchmark<!-- omit in toc -->
+### Running a Benchmark<!-- omit in toc -->
 
 `vllm bench serve` is vLLM's built-in load generator: it sends requests to an already-running
 server and reports latency and throughput. Use it to measure TTFT (time to first token), TPOT
@@ -170,7 +170,7 @@ compilation overhead. It is a lightweight, single-command alternative to the ful
 [vLLM Benchmark Suite](#using-the-vllm-benchmark-suite) covered later, which drives this same
 underlying benchmark across a curated test matrix.
 
-If you started the server with Docker (as shown above), run the benchmark **inside the container**:
+If you started the container with Docker (as shown above), run the benchmark **inside the container**:
 
 ```bash
 docker exec vllm-cpu vllm bench serve \
