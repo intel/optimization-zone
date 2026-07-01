@@ -61,6 +61,13 @@ or
 taskset -c 0,2,4-13 python <workload.py>
 ```
 
+The required list of logical processors can be formed programmatically in Bash. In this case, the command sequence looks like:
+
+```bash
+cpus=$(lscpu -e=cpu,core | awk 'NR>1 && !seen[$2]++ {print $1}' | paste -sd,)
+numactl -C "$cpus" python <workload.py>
+```
+
 ## Low Power Efficient Cores (LPE cores)
 
 Low Power Efficient Cores (LPE cores) are a type of core available on modern Intel Core processors, designed to manage lightweight background processes independently. This allows the main compute tiles to be powered down, saving battery life on mobile devices.
