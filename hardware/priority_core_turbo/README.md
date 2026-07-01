@@ -472,9 +472,21 @@ docker compose run --rm intel-speed-select-shell
 Useful commands:
 
 ```bash
+# Show platform-level Intel Speed Select capability and CPU model information.
+# Use this first to confirm whether SST-PP, SST-TF, SST-BF, and SST-CP are supported.
 intel-speed-select --info
+
+# Show SST-TF / PCT turbo bucket information for TDP level 1.
+# This is where bucket-0 high-priority core count and max turbo frequency are reported.
+# Example: bucket-0 = 8 high-priority physical cores at 4600 MHz.
 intel-speed-select turbo-freq info -l 1
+
+# Show whether Core Power and CLOS are enabled.
+# PCT needs Core Power / CLOS enabled before CLOS0 CPU assignment is effective.
 intel-speed-select core-power info
+
+# Show the CLOS association for CPU 0.
+# This tells which CLOS class CPU 0 currently belongs to, for example clos:0 or clos:2.
 intel-speed-select -c 0 core-power get-assoc
 ```
 </details>
