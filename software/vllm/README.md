@@ -2,19 +2,6 @@
 
 This guide provides recommendations for running vLLM on Intel Xeon processors.
 
-## Table of Contents <!-- omit in toc -->
-
-- [Intel Xeon SLM/LLM Sizing Guidance](#intel-xeon-slmllm-sizing-guidance)
-- [vLLM Requirements Guidance](#vllm-requirements-guidance)
-- [Performance Guidance](#performance-guidance)
-- [Utility Tools](#utility-tools)
-- [Hardware Validation](#hardware-validation)
-- [Fast Path: Docker](#fast-path-docker)
-- [Validate the OpenAI-compatible endpoint](#validate-the-openai-compatible-endpoint)
-- [Benchmarking Guidance](#benchmarking-guidance)
-- [Use with AI Coding Agents](#use-with-ai-coding-agents)
-- [References](#references)
-
 ## Upstream First <!-- omit in toc -->
 
 Intel invests significant efforts upstreaming code optimizations and documentation directly to the official vLLM repositories. Those upstream contributions form the foundation of Intel Xeon CPU performance in vLLM. This guide is only a small extension of that work—collecting practical deployment tips in one place. Users should always consult the official documentation.
@@ -22,6 +9,15 @@ Intel invests significant efforts upstreaming code optimizations and documentati
 - [vLLM CPU installation guide](https://docs.vllm.ai/en/stable/getting_started/installation/cpu/)
 - [vLLM SLM/LLM Recipes](https://recipes.vllm.ai/)
 - [vLLM Benchmarking](https://docs.vllm.ai/en/stable/benchmarking/cli/)
+
+## Table of Contents <!-- omit in toc -->
+
+- [Intel Xeon SLM/LLM Sizing Guidance](#intel-xeon-slmllm-sizing-guidance)
+- [vLLM Requirements Guidance](#vllm-requirements-guidance)
+- [Validation Fast Path with Docker](#validation-fast-path-with-docker)
+- [Benchmarking Guidance](#benchmarking-guidance)
+- [Using the AI Coding Agents Skill](#using-the-ai-coding-agents-skill)
+- [References](#references)
 
 ## Intel Xeon SLM/LLM Sizing Guidance
 
@@ -40,13 +36,32 @@ For guidance around SLM/LLM sizing on Intel Xeon CPUs, please see our Xeon Proce
 | vLLM | `v0.17.0` or newer |
 | Intel AMX related Xeon CPU Flags | 4th Gen Intel Xeon or newer with `amx_tile`, `amx_bf16`, and `amx_int8` for best BF16/INT8 performance |
 
-## Performance Guidance
+### Utility Tools <!-- omit in toc -->
+
+Use the OS package manager to install the tools used by the commands below:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends curl git jq numactl htop python3-venv python3-full g++ python3-dev
+```
+
+### Hardware Validation <!-- omit in toc -->
+
+Validate the CPU model, core count, thread count, NUMA topology, and important flags such as `avx512f`, `avx2`, `amx_tile`, `amx_bf16`, `amx_int8`, and `avx512_bf16`.
+
+```bash
+lscpu | grep -E "Model name|Socket|Core|Thread|NUMA node|Flags"
+lscpu | grep -E "avx512f|avx2|amx_(tile|bf16|int8)|avx512_bf16"
+numactl --hardware
+```
+
+### Performance Guidance <!-- omit in toc -->
 
 vLLM on CPU is tuned with two kinds of knobs, split into the two tables below.
 **Environment variables** (`VLLM_CPU_*`) are set with a shell `export` or a Docker `-e` flag.
 **Server CLI flags** (`--*`) are passed to `vllm serve` after the model name. Set each one in the
 matching place shown in the Docker and benchmarking examples below. The **Example** column mirrors
-the runnable Docker command in [Fast Path: Docker](#fast-path-docker).
+the runnable Docker command in [Validation Fast Path: Docker](#validation-fast-path-docker).
 
 ### Environment variables <!-- omit in toc -->
 
@@ -70,26 +85,7 @@ Passed to `vllm serve` (or appended after the model name in the `docker run` com
 | `--max-num-batched-tokens` | Online: `2048`; offline: `4096` | `--max-num-batched-tokens 2048` | Maximum number of batched tokens per iteration. Tune for prefill throughput and time to first token. |
 | `--max-num-seqs` | Online: `128`; offline: `256` | `--max-num-seqs 128` | Maximum number of sequences per iteration. Tune for decode throughput and inter-token latency. |
 
-## Utility Tools
-
-Use the OS package manager to install the tools used by the commands below:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y --no-install-recommends curl git jq numactl htop python3-venv python3-full g++ python3-dev
-```
-
-## Hardware Validation
-
-Validate the CPU model, core count, thread count, NUMA topology, and important flags such as `avx512f`, `avx2`, `amx_tile`, `amx_bf16`, `amx_int8`, and `avx512_bf16`.
-
-```bash
-lscpu | grep -E "Model name|Socket|Core|Thread|NUMA node|Flags"
-lscpu | grep -E "avx512f|avx2|amx_(tile|bf16|int8)|avx512_bf16"
-numactl --hardware
-```
-
-## Fast Path: Docker
+## Validation Fast Path with Docker
 
 <details>
 <summary>(Optional) Install Docker on Ubuntu 24.04</summary>
@@ -128,7 +124,7 @@ docker run --rm \
 
 `SYS_NICE` and `seccomp=unconfined` allow vLLM's NUMA memory policy calls inside Docker. Without them, serving can still work, but NUMA placement may be weaker and logs can show `get_mempolicy: Operation not permitted`.
 
-## Validate the OpenAI-compatible endpoint
+### Validate the OpenAI-compatible endpoint<!-- omit in toc -->
 
 **Open a new terminal and use the below command to test that the endpoint is available. Alternatively, you can connect from a remote system but make sure to substitute `localhost` for the server's address.**
 
@@ -165,7 +161,7 @@ SERVER_PID=$(pgrep -f 'vllm serve|api_server' | head -n 1)
 numastat -p "${SERVER_PID}"
 ```
 
-### Benchmark<!-- omit in toc -->
+### Running the Benchmark<!-- omit in toc -->
 
 `vllm bench serve` is vLLM's built-in load generator: it sends requests to an already-running
 server and reports latency and throughput. Use it to measure TTFT (time to first token), TPOT
@@ -214,7 +210,7 @@ vllm bench serve \
 >   "https://github.com/vllm-project/vllm/releases/download/v${VLLM_VERSION}/vllm-${VLLM_VERSION}+cpu-cp38-abi3-manylinux_2_35_x86_64.whl"
 > ```
 
-### Concurrency Sweep<!-- omit in toc -->
+### Running a Benchmark Concurrency Sweep<!-- omit in toc -->
 
 With `--request-rate inf`, all prompts fire simultaneously so `--num-prompts` directly controls concurrency. Sweep to see how latency and throughput scale under increasing batch pressure. The example below runs on the host (native/virtualenv install); if you deployed via Docker, prefix `vllm bench serve` with `docker exec vllm-cpu`:
 
@@ -234,14 +230,14 @@ for N in 10 50 100 200 500; do
 done
 ```
 
-### Testing & Tuning Methodology<!-- omit in toc -->
+### Additional Testing & Tuning Methodology<!-- omit in toc -->
 
 - Test with different input/output lengths to understand how the model performs under different prompt and generation sizes. For example, try `--random-input-len` and `--random-output-len` values of `64`, `128`, `256`, and `512`.
 - Test with different user concurrency levels using `--num-prompts` values of `10`, `50`, `100`, `200`, and `500` with `--request-rate inf`.
 - Use one known-good model and change one knob at a time. Track TTFT, TPOT, output tokens per second, requests per second, peak RSS, NUMA locality, and OOM events.
 - Vary only one of `VLLM_CPU_KVCACHE_SPACE`, `VLLM_CPU_OMP_THREADS_BIND`, `--max-num-batched-tokens`, `--max-num-seqs`, or `--block-size` per run. Compare results across runs using the saved JSON files in `./bench-results`.
 
-### Using the vLLM Benchmark Suite<!-- omit in toc -->
+### OPTIONAL: Using the vLLM Benchmark Suite<!-- omit in toc -->
 
 The vLLM source tree includes a full performance benchmark harness at `.buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh`. This is the same script used in vLLM's CI to gate regressions. It reads a JSON test definition, generates concrete benchmark commands, and (optionally) executes them.
 
@@ -302,7 +298,7 @@ Key environment variables:
 
 > **Note:** The `MODEL_FILTER` value must match an entry in the JSON test definition. If the model is not pre-curated in the CPU test JSON, you can add an entry or use the `vllm bench serve` approach above instead.
 
-## Use with AI Coding Agents
+## Using the AI Coding Agents Skill
 
 This recipe ships a companion [Agent Skill](./skill/SKILL.md) (`vllm-xeon-cpu`) that lets AI coding agents — GitHub Copilot, Claude Code, and other `AGENTS.md`-aware tools — deploy, tune, validate, and benchmark vLLM on Intel Xeon CPUs on a customer's behalf. The skill is a self-contained, markdown-only payload under [`skill/`](./skill/) that you copy into your own workspace or user profile.
 
