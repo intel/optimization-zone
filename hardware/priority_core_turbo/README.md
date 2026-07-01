@@ -7,7 +7,9 @@ It allows a subset of CPU cores to operate at **higher turbo frequencies**, whil
 
 This is particularly effective for **GPU-accelerated AI inference**, where a small number of CPU threads handle
 **latency-critical, mostly serial tasks** such as tokenization, scheduling, and feeding GPUs.
-Running these threads on **High-Priority (HP) cores** improves GPU utilization, Time-to-first-token (TTFT), and tail latency.
+Running these threads on **High-Priority (HP) cores** improves GPU utilization, Time-to-first-token (TTFT), and tail latency.  
+
+This guide provides a Docker-based workflow and supporting scripts to check PCT support, configure CLOS assignments, and validate the selected high-priority CPU list. The PCT setup and verification steps run from the container, so users do not need to install `intel-speed-select` or other extra host-side dependencies beyond Docker.  
 
 Validated platforms:
 
