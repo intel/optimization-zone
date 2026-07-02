@@ -282,7 +282,7 @@ Workflows in R typically involve data frame objects, which are two-dimensional t
 
 R provides a base class `data.frame` and functions / methods to operate on them, but better performance might be achieved by using other frameworks that built atop of them, especially on systems with many cores where these libraries might be able to use multi-threading to parallelize operations.
 
-The most popular data frame libraries in this regards are [dplyr](https://github.com/tidyverse/dplyr) (together with its [tidyverse](https://tidyverse.org) ecosystem) and [data.table](https://r-datatable.com), both of which offer their own data frame subclasses with additional features, additional methods, and a different syntax for operations.
+The most popular data frame libraries in this regard are [dplyr](https://github.com/tidyverse/dplyr) (together with its [tidyverse](https://tidyverse.org) ecosystem) and [data.table](https://r-datatable.com), both of which offer their own data frame subclasses with additional features, additional methods, and a different syntax for operations.
 
 | Operations                      | Recommended library |
 | ------------------------------- |:-------------------:|
@@ -297,7 +297,7 @@ When it comes to small data and short operations (e.g. reordering columns, summi
 ```r
 library(data.table)
 df <- data.frame(a=c(1,2), b=c(3,4))
-# to convert from base R to data.table:
+# to convert from base R to data.tbale:
 setDT(df)
 # can also do it by copying: dt <- as.data.table(df)
 # whereas 'setDT' modifies the object in-place
