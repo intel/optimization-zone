@@ -64,7 +64,7 @@ taskset -c 0,2,4-13 python <workload.py>
 The required list of logical processors can be formed programmatically in Bash. In this case, the command sequence looks like:
 
 ```bash
-cpus=$(lscpu -e=cpu,core | awk 'NR>1 && !seen[$2]++ {print $1}' | paste -sd,)
+cpus=$(lscpu -e=cpu,core | tail -n +2 | awk '!seen[$2]++ {printf sep $1; sep=","}')
 numactl -C "$cpus" python <workload.py>
 ```
 
@@ -124,3 +124,10 @@ Run the following command to disable HT and LPE cores on Linux:
 numactl -C 0,2,4-11 python <workload.py>
 ```
 
+Or use the following Bash command sequence to disable HT and filter out the cores with the maximal frequency lower than 3000 MHz:
+
+```bash
+export MIN_MHZ=3000
+cpus=$(lscpu -e=cpu,core,maxmhz | tail -n +2 | awk -v min="$MIN_MHZ" '$3 >= min && !seen[$2]++ {printf sep $1; sep=","}')
+numactl -C "$cpus" python <workload.py>
+```
