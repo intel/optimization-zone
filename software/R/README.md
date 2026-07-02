@@ -284,6 +284,15 @@ R provides a base class `data.frame` and functions / methods to operate on them,
 
 The most popular data frame libraries in this regards are [dplyr](https://github.com/tidyverse/dplyr) (together with its [tidyverse](https://tidyverse.org) ecosystem) and [data.table](https://r-datatable.com), both of which offer their own data frame subclasses with additional features, additional methods, and a different syntax for operations.
 
+| Operations                      | Recommended library |
+| ------------------------------- |:-------------------:|
+| Vectorized operations           | data.table          |
+| General functions from packages | data.table          |
+| Joins / merges / filters        | duckdplyr           |
+| String and datetime operations  | duckdplyr / polars  |
+| Multi-step chained operations   | duckdplyr / polars  |
+
+
 When it comes to small data and short operations (e.g. reordering columns, summing two columns), `data.table` is usually a good choice. Compared to base R which follows copy-on-write semantics, `data.table` also offers in-place operations which avoid making unnecessary copies of data, and should be preferred for performance-sensitive scenarios. For example:
 ```r
 library(data.table)
