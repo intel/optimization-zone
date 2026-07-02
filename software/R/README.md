@@ -83,7 +83,7 @@ conda install -c conda-forge libblas=*=*mkl* liblapack=*=*mkl*
 
 **It's highly recommended to install these from the conda-forge channel**, where uploads are performed directly by Intel and the most recent versions are always available, compared to the Anaconda channel. The miniforge distribution by default installs packages exclusively from the conda-forge channel, and as such might be a more desirable choice than others.
 
-Note that if a system has multiple R versions (e.g. system-managed and conda-managed), the R version to use in RStudio Desktop can be managed through environmnet variable `RSTUDIO_WHICH_R`, but this is **not recommended for conda-managed R setups** as it will not pre-activate the conda environment. For desktop usage, one might consider installing RStudio Desktop in the same conda environment and launching it from the command line instead:
+Note that if a system has multiple R versions (e.g. system-managed and conda-managed), the R version to use in RStudio Desktop can be managed through environment variable `RSTUDIO_WHICH_R`, but this is **not recommended for conda-managed R setups** as it will not pre-activate the conda environment. For desktop usage, one might consider installing RStudio Desktop in the same conda environment and launching it from the command line instead:
 ```shell
 conda install -c conda-forge rstudio-desktop
 rstudio
@@ -115,11 +115,11 @@ conda install _openmp_mutex=*=*_llvm
 
 On system-wide installs, when packages from CRAN are compiled from source, if they use OpenMP, they will get compilation flags from R through macros `$SHLIB_OPENMP_CFLAGS` (in C code), `$SHLIB_OPENMP_CXXFLAGS` (in C++ code) and `$SHLIB_OPENMP_FFLAGS` (in Fortran code). These are defined in file `/etc/R/Makeconf`, and can be edited to link to a different OpenMP backend, but note that **this is not recommended** (conda environments are a safer option) as they are prone towards creating incompatibilities with other options there using flag `-fopenmp`. When Clang is used as compiler (which is **not** the default in most Linux distributions) - controlled by other macros in that file such as `$CC` and `$CXX` - replacing `-fopenmp` with `-fopenmp=libomp` in the OpenMP macros should make them link to LibOMP (system packages like `libomp-dev` and `libomp5` are required).
 
-Note again that it is not recommended to manually edit such flags at the sytem level, unless one is entirely sure that it will not create further incompatibilities.
+Note again that it is not recommended to manually edit such flags at the system level, unless one is entirely sure that it will not create further incompatibilities.
 
 ### oneMKL configurations
 
-By default, most R setups will use GNU's LibGOMP as default OpenMP provider. However, onMKL by default might load Intel's OpenMP runtime to parallelize operations, which can cause incompatibilities with packages that load LibGOMP.
+By default, most R setups will use GNU's LibGOMP as default OpenMP provider. However, oneMKL by default might load Intel's OpenMP runtime to parallelize operations, which can cause incompatibilities with packages that load LibGOMP.
 
 If not using LLVM's LibOMP as OpenMP backend (see section above), oneMKL needs to be configured to use LibGOMP as its backend instead to avoid incompatibilities, which can be done by setting the following environment variable:
 ```shell
@@ -156,7 +156,7 @@ PKG_FCFLAGS += -march=native
 
 **Importantly:** adding `-march=native` will make the compiler consider all the possible CPU instructions available in the machine where this is being compiled, which is recommended in scenarios such as baremetal systems. If one wishes to create a Docker image or virtual machine, where the hardware that executes the result might not be the same hardware that created the images/containers, usage of `-march=native` might be suboptimal and/or might lead to creating binaries that use instructions that others machines will not support, so one might want to set flags for a specific instruction set instead.
 
-If it is known apriori that the target machine will support a given instruction set such as AVX512, one may use the following:
+If it is known a priori that the target machine will support a given instruction set such as AVX512, one may use the following:
 ```
 PKG_CPPFLAGS += -mavx512
 PKG_CXXFLAGS += -mavx512
@@ -238,7 +238,7 @@ For example, to set the number of OpenMP threads to the number of **virtual thre
 RhpcBLASctl::blas_set_num_threads(RhpcBLASctl::get_num_procs())
 ```
 
-Note that some packages see better performance when restricted to the number of physical cores, while others see better performance when using all available threads - this is highly specific to each invidivual package, and is not possible to determine apriori unless documented by the package authors.
+Note that some packages see better performance when restricted to the number of physical cores, while others see better performance when using all available threads - this is highly specific to each invidivual package, and is not possible to determine a priori unless documented by the package authors.
 
 Some widely-used packages such as `data.table` and `duckdb` might not follow those variables, and instead use their own configuration. For example, `data.table` by default will use a number of threads that is smaller than the number of physical cores, and their recommendation is not to use hyperthreading - for more optimal performance, can be configured to use all physical cores as follows:
 ```r
@@ -267,7 +267,7 @@ Oftentimes, models and routines in R are deployed as microservices with a REST i
 
 The most popular framework for building REST applications in R is [PlumbeR](https://www.rplumber.io), but this framework is not concurrent - i.e. requests are processed one at a time, oftentimes not being able to exploit all of the CPU cores in the machine, unless every request involves a very compute-heavy workload (e.g. fitting a model, as opposed to making predictions from a fitted model).
 
-For better performance, assuming requests constitude relatively small tasks, one might want to use [RestRServe](https://restrserve.org) instead, which is able to process requests in parallel through process forking.
+For better performance, assuming requests constitute relatively small tasks, one might want to use [RestRServe](https://restrserve.org) instead, which is able to process requests in parallel through process forking.
 
 Note however that forking-based parallelism brings additional challenges:
 * If using LibGOMP as OpenMP runtime, parallelized operations inside a forked process will hang indefinitely. Thus, if LibGOMP (default OpenMP backend) is used, one needs to be careful to disable OpenMP parallelism in all packages that use it - for example through a combination of `RhpcBLASctl::omp_set_num_threads(1)` (can be set globally, no need to do it on a per-request basis) or environment variable `OMP_NUM_THREADS=1`, `data.table::setDTthreads(1)`, and passing arguments like `nthreads=1` to all functions / methods that might trigger parallelism. This is not strictly required if using LibOMP, but if requests are already parallelized at a higher-level through process forking, one will likely observe better performance when disabling nested parallelism.
