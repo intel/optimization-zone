@@ -1,6 +1,13 @@
+# Introduction
+
 This chapter contains information about the practices that lead to better performance of scikit-learn-intelex on Intel CPUs.
 
 Before you read the information below, it is recommended to read the [common recommendations](../common/README.md) about the system configuration.
+
+# Contents
+
+- [Hyper-threading](#hyper-threading-ht)
+- [Low Power Efficient Cores](#low-power-efficient-cores-lpe-cores)
 
 ## Hyper-threading (HT)
 

@@ -1,4 +1,11 @@
+# Introduction
+
 Here are the common recommendations about your system configuration that are beneficial for getting maximum performance from the workloads.
+
+# Contents
+
+- [Energy Performance Bias](#energy-performance-bias-epb)
+- [CPU Frequency Scaling](#cpu-frequency-scaling)
 
 ## Energy Performance Bias (EPB)
 
