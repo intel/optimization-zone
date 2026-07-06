@@ -404,7 +404,7 @@ perfspect --help | head
 
 </details>
 
-### Run the benchmark
+### Run The Benchmark
 By using PerfSpect benchmark feature, it generates a diagram of CPU frequency among different number of active CPU cores.  
 The diagram helps us to understand whether PCT cores can reach the right CPU frequency.  
 Run the full flow with [run_host_perfspect_benchmark.sh](run_host_perfspect_benchmark.sh) :
