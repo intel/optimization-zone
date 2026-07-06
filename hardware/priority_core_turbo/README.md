@@ -231,7 +231,7 @@ The check script writes the current target-CLOS CPU list to:
 For the example above, `clos0_cpulist.txt` contains 32 logical CPUs. With
 Hyper-Threading enabled, that corresponds to 16 physical PCT cores.
 
-## 3. Set PCT and Assigned HP CPUs
+## 3. Set PCT And Assigned HP CPUs
 
 This step **activates PCT in practice** by assigning selected HP CPUs to **CLOS0**.
 
