@@ -433,7 +433,7 @@ PERFSPECT_ARGS="--speed --frequency --memory --no-summary" \
 ```
 </details>
 
-### Analyze results
+### Analyze Results
 
 Benchmark output is written under:
 
