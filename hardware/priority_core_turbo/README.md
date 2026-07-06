@@ -52,7 +52,7 @@ On a two-socket Intel® Xeon® 6776P system with Hyper-Threading enabled:
 16 physical PCT cores × 2 threads/core    = 32 logical PCT CPUs total
 ```
 
-### Capacity versus placement
+### Capacity Versus Placement
 
 There are two different concepts:
 
