@@ -94,7 +94,7 @@ With Hyper-Threading included, this becomes:
 
 </details>
 
-## 1. Build the Environment
+## 1. Build The Environment
 
 <details>
 <summary> Build Details </summary>
