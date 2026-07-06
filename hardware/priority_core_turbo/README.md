@@ -244,7 +244,7 @@ The setup script intentionally **overwrites existing BIOS/runtime CLOS settings*
 This prevents stale BIOS or previous runtime CLOS assignments from leaving unexpected
 CPUs in CLOS0.
 
-### Set-script behavior
+### Set-Script Behavior
 
 <details>
 <summary> The setup script performs the following actions: </summary>
