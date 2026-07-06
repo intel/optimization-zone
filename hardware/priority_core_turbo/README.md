@@ -30,7 +30,7 @@ PCT relies on **two Intel Speed Select features**:
 
 > **Important:** PCT is only effective when CPUs are explicitly assigned to **CLOS0** and Core Power / CLOS is enabled.
 
-### PCT bucket-count interpretation
+### PCT Bucket-Count Interpretation
 
 intel-speed-select tool mentioned below is installed inside the docker image in the [environment build seciton](#1-build-the-environment)
 
