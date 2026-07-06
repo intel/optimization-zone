@@ -368,7 +368,7 @@ Expected PCT logical CPU budget   : 32
 ✅ CLOS0 CPU count exactly matches the bucket-0 PCT logical budget.
 ```
 
-## 4. Benchmark CLOS0 CPUs with PerfSpect tool on the host
+## 4. Benchmark CLOS0 CPUs With PerfSpect Tool On The Host
 
 Use Docker only to configure and verify PCT/CLOS. Run PerfSpect on the host so
 the frequency benchmark can access host CPU frequency interfaces directly.
