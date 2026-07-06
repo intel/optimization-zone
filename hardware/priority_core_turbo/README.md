@@ -280,7 +280,7 @@ Or test the selection without changing the system:
 DRY_RUN=1 docker compose --progress=plain --profile set up --abort-on-container-exit
 ```
 
-### Example: package capacity dispatched across reporting powerdomain anchors
+### Example: Package Capacity Dispatched Across Reporting Powerdomain Anchors
 
 <details>
 <summary> Example results </summary>
