@@ -6,7 +6,7 @@ Full reference for environment variables and CLI flags relevant to vLLM CPU serv
 
 | Variable | Recommended | Guidance | Why it matters |
 | --- | --- | --- | --- |
-| `VLLM_CPU_KVCACHE_SPACE` | `40` (GiB) | Per **NUMA node**. Increase for more concurrency / longer context; must fit in node-local memory. Halve if the server OOMs or pages. | KV cache is the dominant CPU memory consumer; under-sizing throttles batching, over-sizing causes paging or OOM. |
+| `VLLM_CPU_KVCACHE_SPACE` | `20`–`40` (GiB) | Per **NUMA node**. Increase for more concurrency / longer context; must fit in node-local memory. Halve if the server OOMs or pages. | KV cache is the dominant CPU memory consumer; under-sizing throttles batching, over-sizing causes paging or OOM. |
 | `VLLM_CPU_OMP_THREADS_BIND` | `auto` | Binds OpenMP workers to NUMA-local cores. Manual ranges look like `0-31\|32-63` (one range per NUMA node). Verify with `numastat -p <server_pid>`. | Cross-NUMA memory traffic kills decode throughput. |
 | `VLLM_CPU_NUM_OF_RESERVED_CPU` | `1` | Reserves cores for the API server, tokenization, networking, logging, and OS work. Raise on noisy hosts. | Prevents OS / serving overhead from preempting OMP workers. |
 | `VLLM_CPU_SGL_KERNEL` | `0` (try `1` for low-latency SLM) | Experimental x86 small-batch kernels. Requires AMX, BF16 weights, and compatible shapes. | Can reduce latency for small-batch serving, but is shape-sensitive. |

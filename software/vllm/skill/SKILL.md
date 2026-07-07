@@ -5,7 +5,7 @@ description: "Deploy, tune, validate, and benchmark vLLM on Intel Xeon CPUs (CPU
 
 # vLLM on Intel Xeon CPUs
 
-- **Skill version**: 1.0
+- **Skill version**: 1.1
 - **Tested against vLLM**: `v0.20.2`
 - **Minimum vLLM**: `v0.17.0`
 
@@ -35,7 +35,7 @@ Invoke this skill when the user wants to:
 | OS | Linux |
 | Python | 3.10–3.13 (only if not using Docker) |
 | CPU | 4th Gen Intel Xeon or newer; must expose `amx_tile`, `amx_bf16`, `amx_int8` for best BF16/INT8 performance |
-| Tools | `curl`, `numactl`, `jq`, `g++`, `python3-dev` (`sudo apt-get install -y --no-install-recommends curl git jq numactl htop g++ python3-dev`). `g++` and Python headers are required by PyTorch inductor to JIT-compile CPU kernels. |
+| Tools | `curl`, `numactl`, `jq`, `g++`, `python3-dev`, `python3-venv` (`sudo apt-get install -y --no-install-recommends curl git jq numactl htop python3-venv python3-full g++ python3-dev`). `g++` and Python headers are required by PyTorch inductor to JIT-compile CPU kernels. |
 | Docker | Recent Docker with `--cap-add SYS_NICE` and `--security-opt seccomp=unconfined` permitted |
 
 ## Procedure 1 — Validate Hardware
@@ -84,7 +84,7 @@ Goal: serve a model via the official `vllm/vllm-openai-cpu` image with Xeon-tune
      --shm-size=8g \
      -p 8000:8000 \
      -e HF_TOKEN="${HF_TOKEN}" \
-     -e VLLM_CPU_KVCACHE_SPACE=40 \
+     -e VLLM_CPU_KVCACHE_SPACE=20 \
      -e VLLM_CPU_OMP_THREADS_BIND=auto \
      -e VLLM_CPU_NUM_OF_RESERVED_CPU=1 \
      vllm/vllm-openai-cpu:v${VLLM_VERSION}-x86_64 \
@@ -94,7 +94,7 @@ Goal: serve a model via the official `vllm/vllm-openai-cpu` image with Xeon-tune
      --max-num-seqs 128
    ```
    - `SYS_NICE` + `seccomp=unconfined` enable vLLM's NUMA memory-policy calls. Without them serving still works but logs may show `get_mempolicy: Operation not permitted` and NUMA placement weakens.
-   - `VLLM_CPU_KVCACHE_SPACE` is in GiB **per NUMA node** — must fit in node-local memory.
+   - `VLLM_CPU_KVCACHE_SPACE` is in GiB **per NUMA node** (start `20`–`40`) — must fit in node-local memory.
    - `VLLM_CPU_OMP_THREADS_BIND=auto` binds OpenMP workers to NUMA-local cores. For manual control use ranges like `0-31|32-63`.
    - `VLLM_CPU_NUM_OF_RESERVED_CPU=1` keeps a core free for API serving, tokenization, networking, and OS work.
 3. Validate the OpenAI-compatible endpoint:
@@ -120,7 +120,7 @@ Goal: improve TTFT / TPOT / throughput methodically. **Change one knob per run**
    - Multi NUMA → set to the NUMA node count `N` from Procedure 1.
    - **`--tensor-parallel-size=6` is currently unsupported on CPU; avoid it.**
 3. Size `VLLM_CPU_KVCACHE_SPACE` (GiB per NUMA node):
-   - Larger value → more concurrency / longer context, but must fit in node-local RAM.
+   - Start at `20`–`40`. Larger value → more concurrency / longer context, but must fit in node-local RAM.
    - If the server OOMs or pages, halve and retry.
 4. Bind OpenMP threads with `VLLM_CPU_OMP_THREADS_BIND`:
    - Prefer `auto`. Use manual ranges (`0-31|32-63`) only when `auto` mis-pins (verify with `numastat -p $(pgrep -f 'vllm serve|api_server' | head -n1)`).
@@ -156,9 +156,10 @@ Goal: measure TTFT, TPOT, and throughput against the running server with a repro
      --result-dir ./bench-results \
      --percentile-metrics ttft,tpot,itl
    ```
+   > **Execution context:** prefix `vllm bench serve` with `docker exec vllm-cpu` if you deployed via Procedure 2 (Docker), or run it directly on a native/venv install. A native `Failed to infer device type` error means the generic CUDA wheel is installed instead of the CPU wheel — reinstall the wheel whose version ends in `+cpu` (e.g. `0.20.2+cpu`) from `https://download.pytorch.org/whl/cpu`.
 3. Sweep methodically — **one variable per run**:
    - Vary input/output lengths: `64`, `128`, `256`, `512`.
-   - Vary concurrency via `--num-prompts`: `10`, `100`, `1000`.
+   - Vary concurrency via `--num-prompts`: `10`, `50`, `100`, `200`, `500`.
    - Track TTFT, TPOT, output tokens/sec, requests/sec, peak RSS, NUMA locality, and any OOM events.
    - When tuning, change only one of `VLLM_CPU_KVCACHE_SPACE`, `VLLM_CPU_OMP_THREADS_BIND`, `--max-num-batched-tokens`, `--max-num-seqs`, or `--block-size` per run. Compare results across runs using the saved JSON files in `./bench-results`.
 4. For the full CI-grade harness (`run-performance-benchmarks.sh` with `ON_CPU=1`, `SERVING_JSON`, `DRY_RUN`, `MODEL_FILTER`, `DTYPE_FILTER`), see the upstream [vLLM benchmarking docs](https://docs.vllm.ai/en/latest/benchmarking/cli/).
