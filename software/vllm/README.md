@@ -47,7 +47,7 @@ sudo apt-get install -y --no-install-recommends curl git jq numactl htop python3
 
 ### Hardware Validation <!-- omit in toc -->
 
-Validate the CPU model, core count, thread count, NUMA topology, and important flags such as `avx512f`, `avx2`, `amx_tile`, `amx_bf16`, `amx_int8`, and `avx512_bf16`.
+Validate the CPU, NUMA topology, and important flags such as `avx512f`, `avx2`, `amx_tile`, `amx_bf16`, `amx_int8`, and `avx512_bf16`.
 
 ```bash
 lscpu | grep -E "Model name|Socket|Core|Thread|NUMA node|Flags"
@@ -58,10 +58,11 @@ numactl --hardware
 ### Performance Guidance <!-- omit in toc -->
 
 vLLM on CPU is tuned with two kinds of knobs, split into the two tables below.
-**Environment variables** (`VLLM_CPU_*`) are set with a shell `export` or a Docker `-e` flag.
-**Server CLI flags** (`--*`) are passed to `vllm serve` after the model name. Set each one in the
-matching place shown in the Docker and benchmarking examples below. The **Example** column mirrors
-the runnable Docker command in [Validation Fast Path: Docker](#validation-fast-path-docker).
+
+**1.Environment variables** (`VLLM_CPU_*`) are set with a shell `export` or a Docker `-e` flag.
+
+**2.Server CLI flags** (`--*`) are passed to `vllm serve` after the model name. Set each one in the
+matching place shown in the Docker and benchmarking examples below.
 
 ### Environment variables <!-- omit in toc -->
 
@@ -124,7 +125,7 @@ docker run --rm \
 
 `SYS_NICE` and `seccomp=unconfined` allow vLLM's NUMA memory policy calls inside Docker. Without them, serving can still work, but NUMA placement may be weaker and logs can show `get_mempolicy: Operation not permitted`.
 
-### Validate the OpenAI-compatible endpoint<!-- omit in toc -->
+### Validate the endpoint<!-- omit in toc -->
 
 **Open a new terminal and use the below command to test that the endpoint is available. Alternatively, you can connect from a remote system but make sure to substitute `localhost` for the server's address.**
 
@@ -146,9 +147,7 @@ This summarizes the official benchmarking and tuning guidance from the vLLM docu
 > the **Docker container** (prefix with `docker exec vllm-cpu ...`), in a **native/host install**
 > (`pip install vllm`, run directly), or inside a **Python virtualenv**. Run each command in the
 > same environment where vLLM is installed — do not run a host command inside the container or a
-> container command on the host. The [Utility Tools](#utility-tools) and
-> [Hardware Validation](#hardware-validation) steps are host-level checks: run them once on the
-> host before any benchmarking path.
+> container command on the host.
 
 Start the Docker container. If it is running in the foreground, open another terminal for these checks:
 
@@ -166,11 +165,9 @@ numastat -p "${SERVER_PID}"
 `vllm bench serve` is vLLM's built-in load generator: it sends requests to an already-running
 server and reports latency and throughput. Use it to measure TTFT (time to first token), TPOT
 (time per output token), and throughput. Warm up with `--num-warmups` to avoid measuring JIT
-compilation overhead. It is a lightweight, single-command alternative to the full
-[vLLM Benchmark Suite](#using-the-vllm-benchmark-suite) covered later, which drives this same
-underlying benchmark across a curated test matrix.
+compilation overhead.
 
-If you started the container with Docker (as shown above), run the benchmark **inside the container**:
+If you started the container with Docker (as shown above), run the benchmark using this command:
 
 ```bash
 docker exec vllm-cpu vllm bench serve \
@@ -235,7 +232,8 @@ done
 - Test with different input/output lengths to understand how the model performs under different prompt and generation sizes. For example, try `--random-input-len` and `--random-output-len` values of `64`, `128`, `256`, and `512`.
 - Test with different user concurrency levels using `--num-prompts` values of `10`, `50`, `100`, `200`, and `500` with `--request-rate inf`.
 - Use one known-good model and change one knob at a time. Track TTFT, TPOT, output tokens per second, requests per second, peak RSS, NUMA locality, and OOM events.
-- Vary only one of `VLLM_CPU_KVCACHE_SPACE`, `VLLM_CPU_OMP_THREADS_BIND`, `--max-num-batched-tokens`, `--max-num-seqs`, or `--block-size` per run. Compare results across runs using the saved JSON files in `./bench-results`.
+- Compare results across runs using the saved JSON files in `./bench-results`.
+- For more advanced options, see the [vLLM optimization and tuning guide](https://docs.vllm.ai/en/stable/configuration/optimization/).
 
 ### OPTIONAL: Using the vLLM Benchmark Suite<!-- omit in toc -->
 
