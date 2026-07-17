@@ -98,10 +98,10 @@ The L2 prefetch block is shared for all cores in the module and contains several
 
 Prefetches can be scrubbed by throttlers prior to being accepted. These throttlers are designed to reduce a combined high prefetch level within the module as well as reducing the prefetch requests when the Uncore memory subsystem is at a high load.
 
-<div id="figure-1" style="display:flex; flex-direction: column;justify-content: center; align-items: center; margin: 20px auto">
+<figure>
 	<img src="images/computemodule.png" alt="image" width="500" height="auto">
 	<figcaption>Figure 1: Intel® E-Core Module and Interface to Uncore</figcaption>
-</div>
+</figure>
 
 The overall target is to prefetch data that will be used relatively soon, decreasing the latency to access the data. Fetching data as close to the core as possible is preferred to minimize latency, i.e., L1, then L2, and L3. In the worst case, one must wait for the DDR, which has the longest latency and a more limited bandwidth. However, prefetching data too soon risks evicting data from the cache still in use, which is counterproductive. The prefetcher will lock on access patterns that are only repeated for some time, typically a loop in the software or a block of loaded new data. Hence, the access pattern will stop sooner or later, and the prefetchers will have requested data that won’t be used. Some wasteful data fetches are generally an acceptable tradeoff to reduce latency. However, the degree of wasteful fetches is highly application-dependent, for example, many small loops with random data accesses vs. a few lengthy loops of highly repetitive fetches. The tolerance for such waste is also very system dependent. A system with bottlenecks in DDR bandwidth has nothing to gain from prefetches that add further load on DDR. However, the latency to DDR is a function of the DDR bandwidth used with a knee towards the end. Systems that operate with a low or medium level of DDR load can benefit significantly from more aggressive prefetching if the amount of DDR bandwidth from these loads stay below the latency knee.
 
