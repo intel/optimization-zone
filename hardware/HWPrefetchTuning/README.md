@@ -1,7 +1,6 @@
 # Whitepaper: Hardware Prefetch Controls for Intel® E-Cores
 
-Document No: 357930-001US  
-April 2026
+July 2026
 
 ## Notices & Disclaimers
 
@@ -17,10 +16,10 @@ Copyright © 2026 Intel Corporation. All rights reserved.
 
 ## Revision History
 
-|   Revision   |      Description       |     Date      |
-| :----------: | :--------------------: | :-----------: |
-| 357930-001US |    Initial Release     | November 2023 |
-|              | CMT, SKT and DKT added |  April 2026   |
+|   Revision         |      Description       |     Date      |
+| :----------:       | :--------------------: | :-----------: |
+| 357930-001US       |    Initial Release     | November 2023 |
+| Opt.Zone-July 2026 | CMT, SKT and DKT added |  July 2026   |
 
 # Contents
 
@@ -36,7 +35,7 @@ Copyright © 2026 Intel Corporation. All rights reserved.
     1.3.1. [MLC Streamer](#131-mlc-streamer)  
     1.3.2. [LLC Streamer](#132-llc-streamer)  
     1.3.3. [Adaptive Multi-Path (AMP)](#133-adaptive-multi-path-amp)  
-    1.3.4 [L2 Next Line Prefetch (L2 NLP)](#134-l2-next-line-prefetch-l2-nlp)  
+    1.3.4. [L2 Next Line Prefetch (L2 NLP)](#134-l2-next-line-prefetch-l2-nlp)  
    1.4. [Prefetch Throttlers](#14-prefetch-throttlers)  
     1.4.1. [Demand Throttling of Prefetches (DTP)](#141-demand-throttling-of-prefetches-dtp)  
     1.4.2. [Dynamic Performance Throttling (DPT)](#142-dynamic-performance-throttling-dpt)  
@@ -45,7 +44,7 @@ Copyright © 2026 Intel Corporation. All rights reserved.
 
 2. [Tunable parameters](#2-tunable-parameters)  
    2.1. [Enable / Disable](#21-enable--disable)  
-   2.2. [Amp and MLC/LLC Streamer Source Selection](#22-amp-and-mlcllc-streamer-source-selection)  
+   2.2. [AMP and MLC/LLC Streamer Source Selection](#22-amp-and-mlcllc-streamer-source-selection)  
    2.3. [Streamer Configuration](#23-streamer-configuration)  
    2.4. [AMP Configuration](#24-amp-configuration)  
    2.5. [Dynamic prefetch logic](#25-dynamic-prefetch-logic)
@@ -100,8 +99,8 @@ The L2 prefetch block is shared for all cores in the module and contains several
 Prefetches can be scrubbed by throttlers prior to being accepted. These throttlers are designed to reduce a combined high prefetch level within the module as well as reducing the prefetch requests when the Uncore memory subsystem is at a high load.
 
 <div id="figure-1" style="display:flex; flex-direction: column;justify-content: center; align-items: center; margin: 20px auto">
-	<img src="https://github.com/intel/optimization-zone/tree/main/hardware/HWPrefetchTuning/computemodule.png" alt="Figure 1: Intel® E-Core Module and Interface to Uncore" width="500" height="auto">
-	Figure 1: Intel® E-Core Module and Interface to Uncore
+	<img src="images/computemodule.png" alt="image" width="500" height="auto">
+	<figcaption>Figure 1: Intel® E-Core Module and Interface to Uncore</figcaption>
 </div>
 
 The overall target is to prefetch data that will be used relatively soon, decreasing the latency to access the data. Fetching data as close to the core as possible is preferred to minimize latency, i.e., L1, then L2, and L3. In the worst case, one must wait for the DDR, which has the longest latency and a more limited bandwidth. However, prefetching data too soon risks evicting data from the cache still in use, which is counterproductive. The prefetcher will lock on access patterns that are only repeated for some time, typically a loop in the software or a block of loaded new data. Hence, the access pattern will stop sooner or later, and the prefetchers will have requested data that won’t be used. Some wasteful data fetches are generally an acceptable tradeoff to reduce latency. However, the degree of wasteful fetches is highly application-dependent, for example, many small loops with random data accesses vs. a few lengthy loops of highly repetitive fetches. The tolerance for such waste is also very system dependent. A system with bottlenecks in DDR bandwidth has nothing to gain from prefetches that add further load on DDR. However, the latency to DDR is a function of the DDR bandwidth used with a knee towards the end. Systems that operate with a low or medium level of DDR load can benefit significantly from more aggressive prefetching if the amount of DDR bandwidth from these loads stay below the latency knee.
@@ -117,8 +116,8 @@ Note that the different caches and their respective stages have multiple names w
 | LLC or L3 cache  | Platform cache, located outside of core module                                 |
 |                  |                                                                                |
 
-This document covers multiple E-core microarchitectures. Unless otherwise stated features are forward to later generations.
-The core microarchitecture can be determined through CPUID leaf 0x1a. The CORE_TYPE set to 0x20 (Atom core) and then
+This document covers multiple E-core microarchitectures. Unless otherwise stated, features are carried forward to later generations.
+The core microarchitecture can be determined through CPUID leaf 0x1a. The CORE_TYPE is set to 0x20 (Atom core) and then
 CORE_NATIVE_MODEL_ID gives the core name as per the table below.
 
 | Core Name | Short Name | Product                                       | Core Native Model ID |
@@ -142,7 +141,7 @@ The IPP keeps track of individual load instructions. When a load instruction is 
 
 ### 1.2.2 NEXT LINE PREFETCHER (L1 NLP)
 
-The NLP is commonly referred to as the DCU Stream Prefetecher.
+The NLP is commonly referred to as the DCU Stream Prefetcher.
 
 The NLP prefetches the next line of any given access, applicable to data. The same functionality is also built into the front-end for instruction fetches. The NLP is one of the earliest types of prefetchers introduced at a time well before multi-core was the norm. It was a blunt approach: simple to implement, worked well for single-core systems, but drove much bandwidth. This impacted both DDR bandwidth and L1/L2 caches and queues. Use of the NLP should be done with care, and a general recommendation is to run with the NLP disabled unless you can observe a benefit to your system.
 
@@ -156,9 +155,9 @@ Tracks access during streaming and prefetches the next TLB page. The NPP is ligh
 
 ### 1.2.4 ARRAY OF POINTERS PREFETCHER (L1 AOPP)
 
-The AOPP tries to detect and prefetch pointer chasing in programs. It is built upon the IP based prefetcher. When the DCU notices that load data feeds address generation for other loads, it tries to do generate the 2nd load address itself and prefetch the data for the second load.
+The AOPP tries to detect and prefetch pointer chasing in programs. It is built upon the IP based prefetcher. When the DCU notices that load data feeds address generation for other loads, it tries to generate the 2nd load address itself and prefetch the data for the second load.
 
-This prefetcher was introduced with the Darkmont microarchitecture.
+This prefetcher was introduced with the Crestmont microarchitecture.
 
 ### 1.2.5 LAST LEVEL CACHE PAGE PREFETCHER (LLCPP)
 
@@ -176,7 +175,7 @@ A central feedback parameter is the depth of the XQ. The XQ threshold level for 
 
 ### 1.3.1 MLC STREAMER
 
-MLC Streamer is commonly referred to as the MLC Stream Prefetcher. or simply the Stream Prefetcher or L2 Streamer.
+MLC Streamer is commonly referred to as the MLC Stream Prefetcher or simply the Stream Prefetcher or L2 Streamer.
 
 The MLC Streamer works on both instructions and data; it tracks access patterns such as A+0, A+1, A+2, … where A is the physical address of a cache line. Patterns can be either incremental or decremental. Once a pattern is locked, it will fetch subsequent accesses into the L2 cache. The number of requests ahead of demand reads issued is configurable; see Section [4.1](#41-msr-0x1a4).
 
@@ -184,13 +183,13 @@ The MLC Streamer works on both instructions and data; it tracks access patterns 
 
 The LLC Streamer is sometimes called the LLC Prefetcher or L3 Prefetcher.
 
-The LCC Streamer behaves like the MLC Streamer but fetches into the LLC. The intention is that the LLC Streamer should issue requests further ahead, i.e., further out in time. The larger LLC size can be leveraged to be more speculative and balance the risk of miss-fetches vs. potential benefits. The MLC prefetcher carries the data closer to the core once we have more certainty that the data will be used, i.e., when the distance to current demand reads is closer.
+The LLC Streamer behaves like the MLC Streamer but fetches into the LLC. The intention is that the LLC Streamer should issue requests further ahead, i.e., further out in time. The larger LLC size can be leveraged to be more speculative and balance the risk of miss-fetches vs. potential benefits. The MLC prefetcher carries the data closer to the core once we have more certainty that the data will be used, i.e., when the distance to current demand reads is closer.
 
 ### 1.3.3 ADAPTIVE MULTI-PATH (AMP)
 
 The AMP prefetcher builds on top of the MLC Streamer but can fetch more complex patterns such as A+0, A+8, A+0+N, A+8+N, A+0+2N, … where N is a distance ahead/behind. The AMP prefetcher generally has more precision and, therefore, higher priority than the Streamers. In a scenario where prefetching should be limited, it can be valuable to disable or limit the streamers and let the AMP stay on.
 The confidence level of AMP can be set for different throttling levels, where the latter is a feedback parameter taken from the
-uncore, see Section [0](#44-msr-0x1322).
+uncore, see Section [4.2](#44-msr-0x1322).
 
 ### 1.3.4 L2 NEXT LINE PREFETCH (L2 NLP)
 
@@ -198,7 +197,7 @@ The L2 Next Line Prefetcher (L2 NLP) is part of the MLC Streamer block and behav
 
 ## 1.4 PREFETCH THROTTLERS
 
-Over aggressive prefetching or prefetching during high system load can cause performance degradation. A system at high load is generally more sensitive to cache trashing and care should be taken to not flood in unnecessary data. Similarly, the load on the DDR interfaces is typically high and as bandwidth usage increases toward the peak bandwidth the latency to DDR memory increases exponentially. It is therefore desirable to stay below this latency knee and limit the prefetches to ensure this.
+Overly aggressive prefetching or prefetching during high system load can cause performance degradation. A system at high load is generally more sensitive to cache trashing and care should be taken to not flood in unnecessary data. Similarly, the load on the DDR interfaces is typically high and as bandwidth usage increases toward the peak bandwidth the latency to DDR memory increases exponentially. It is therefore desirable to stay below this latency knee and limit the prefetches to ensure this.
 
 The task of the prefetch throttlers is to monitor the efficiency of the prefetches as well as the system load, and when needed reduce the number of prefetches issued. The DTP, DPT and DBP prefetch throttlers were added to the Crestmont microarchitecture. The DPC was added to the Darkmont microarchitecture.
 
@@ -232,12 +231,11 @@ Each prefetcher's “big hammer” is the enable/disable bit; they are spread ou
 | CMT     | Adjacent cache line prefetch disable   | 0x1A4  |  1  |
 | GRT     | DCU Streamer (L1 NLP)                  | 0x1A4  |  2  |
 | GRT     | DCU IP Prefetcher (L1 IPP)             | 0x1A4  |  3  |
-| GRT     | DCU Next Page Prefetcher (L1 NLP)      | 0x1A4  |  4  |
+| GRT     | DCU Next Page Prefetcher (L1 NPP)      | 0x1A4  |  4  |
 | GRT     | AMP                                    | 0x1A4  |  5  |
 | CMT     | LLC Page Prefetch Disable              | 0x1A4  |  6  |
-| DKT     | Array Of Pointer Prefetch Disable      | 0x1A4  |  7  |
 | CMT     | Stream prefetch code fetch disable     | 0x1A4  |  8  |
-| DKT     | Dynamic prefetch control logic disable | 0x1A4  | 12  |
+| DKT     | Dynamic prefetch control logic disable | 0x1A4  |  2  |
 | GRT     | LLC Streamer                           | 0x1320 | 43  |
 | GRT     | L2 NLP                                 | 0x1321 | 40  |
 
@@ -248,7 +246,7 @@ Each prefetcher's “big hammer” is the enable/disable bit; they are spread ou
 
 ## 2.2 AMP AND MLC/LLC STREAMER SOURCE SELECTION
 
-The source selection for AMP and the MLC/LLC Streamer can be found in MSR 0x1323; see Section [4.5](#45-msr-0x1323). There are two types if enable bits for each specific request type. The first one allows you to open a tracker and the second type allows you to train a tracker. Both should be enabled for the respective source that is of interest.
+The source selection for AMP and the MLC/LLC Streamer can be found in MSR 0x1323; see Section [4.5](#45-msr-0x1323). There are two types of enable bits for each specific request type. The first one allows you to open a tracker and the second type allows you to train a tracker. Both should be enabled for the respective source that is of interest.
 
 The types of requests that can be selected include the various hardware L1 prefetches, different software prefetches generated by the code, and different types of reads. Reads, also known as demand reads, are normal load operations and can co-exist in multiple caches. Read for Ownership (RFO) are reads where the core intends to write a value and request exclusive ownership of the cache line.
 
@@ -261,11 +259,11 @@ There are three key parameters for the MLC and LLC Streamer, respectively.
 
 2. The XQ threshold; see Section [4.2](#42-msr-0x1320) for MLC Streamer.
 
-   a. Note that this setting is also shared with AMP. For more information about LLC Streamer, see Section 0. The XQqueue handles all requests that are missed in the L2 cache.
+   a. Note that this setting is also shared with AMP. For more information about LLC Streamer, see Section [4.4](#44-msr-0x1322). The external queue XQ handles all requests that are missed in the L2 cache.
 
    b. The value set specifies how many empty entries the XQ must have to accept new prefetch requests. A high threshold value will generally lower the prefetch aggressiveness.
 
-3. The third is the demand density parameters; see Section [4.3](#43-msr-0x1321) for the MLC Streamer and Section [0](#44-msr-0x1322) for the LLC Streamer. The name refers to demand reads (and the number of prefetches upgraded to demand reads) from the core.
+3. The third is the demand density parameters; see Section [4.3](#43-msr-0x1321) for the MLC Streamer and Section [4.4](#44-msr-0x1322) for the LLC Streamer. The name refers to demand reads (and the number of prefetches upgraded to demand reads) from the core.
 
    a. A high-demand density indicates that the core is using the prefetches.
 
@@ -275,13 +273,13 @@ There are three key parameters for the MLC and LLC Streamer, respectively.
 
    c. The trackers will continue to follow the data flows and update the demand density. However, individual trackers that reach a higher level of demand density, specified by the demand density override, are deemed accurate enough and will, therefore, generate prefetch requests.
 
-Finally, two configurations connect the demand density and XQ Threshold. If the demand density is lower than the L2_LLC_STREAM_DEMAND_DENSITY_XQ setting, then the XQ Thresholds are set per the L2_LLC_STREAM_AMP_XQ_THRESHOLD. See Sections [4.3](#) and [0](#44-msr-0x1322).
+Finally, two configurations connect the demand density and XQ Threshold. If the demand density is lower than the L2_LLC_STREAM_DEMAND_DENSITY_XQ setting, then the XQ Thresholds are set per the L2_LLC_STREAM_AMP_XQ_THRESHOLD. See Sections [4.3](#43-msr-0x1321) and [4.4](#44-msr-0x1322).
 
 ## 2.4 AMP CONFIGURATION
 
 The AMP prefetcher shares the XQ threshold with the MLC Prefetcher but has no maximum distance setting. However, it has two additional settings:
 
-1. AMP has a tunable confidence level required to trigger a request; see Section [0](#44-msr-0x1322).
+1. AMP has a tunable confidence level required to trigger a request; see Section [4.4](#44-msr-0x1322).
 
    a. This parameter is set for different DPT throttling levels. Setting a higher confidence level will make AMP more selective in making requests, lowering the overall number of requests generated.
 
@@ -293,11 +291,11 @@ The AMP prefetcher shares the XQ threshold with the MLC Prefetcher but has no ma
 
 The Dynamic prefetch logic was added in the Darkmont microarchitecture which heuristically adjusts L2 prefetcher configuration during runtime.
 
-The dynamic prefetch logic can be disabled by setting the “Disable the dynamic prefetcher logic” bit in MSR 0x1A4. Setting the disable freezes current L2 prefetcher settings. Default prefetcher settings can be restored using the “Restore L2Prefetcher Default” bit in MSR 0x1321. The disable bit should be set before any Prefetcher Configuration MSRs or the Restore bit are written. The dynamic prefetcher configuration logic may otherwise continue to update the Prefetcher Configuration MSRs.
+The dynamic prefetch logic can be disabled by setting the “Disable the dynamic prefetcher logic” bit in MSR 0x1A4. Setting the disable bit freezes current L2 prefetcher settings. Default prefetcher settings can be restored using the “Restore L2Prefetcher Default” bit in MSR 0x1321. The disable bit should be set before any Prefetcher Configuration MSRs or the Restore bit are written. The dynamic prefetcher configuration logic may otherwise continue to update the Prefetcher Configuration MSRs.
 
 # 3 PERFORMANCE MONITORS
 
-Performance monitoring events in the Intel® E-core are relevant to hardware prefetch tuning as they allow for tracking of increased and decrease in performance as well as execution behavior changes. See the respective device manual for details. Performance events are also available at [perfmon-events.intel.com](perfmon-events.intel.com). Core events can either be specified through the event/umask combination or by using PMU tools such as Intel® vTune™ or Perf in Linux. For example, the following Linux command can be used to measure cycles, instructions and cycles spent on the oldest load for core 0 during 1 seconds:
+Performance monitoring events in the Intel® E-core are relevant to hardware prefetch tuning as they allow for tracking of increase and decreases in performance as well as execution behavior changes. See the respective device manual for details. Performance events are also available at [https://perfmon-events.intel.com](https://perfmon-events.intel.com). Core events can either be specified through the event/umask combination or by using PMU tools such as Intel® vTune™ or Perf in Linux. For example, the following Linux command can be used to measure cycles, instructions and cycles spent on the oldest load for core 0 during 1 seconds:
 
 `perf stat -C 0 -e cycles,instructions,cpu/event=0x05,umask=0x7f,name=LDheadAny/ sleep 1`
 
@@ -343,13 +341,13 @@ Alternatively, event OCR.READS_TO_CORE.L3_MISS also counts cacheable reads inclu
 
 #### XQ_PROMOTION.ALL
 
-This even counts the number of XQ entries initiated as hardware prefetches, but where a normal request was made that upgraded the entry. This indicates that the prefetch was correct and reduced access latency. However, prefetches that completed and brought the data into the respective cache and then were used are not counted.
+This event counts the number of XQ entries initiated as hardware prefetches, but where a normal request was made that upgraded the entry. This indicates that the prefetch was correct and reduced access latency. However, prefetches that completed and brought the data into the respective cache and then were used are not counted.
 
 The promotions relative to L2 misses and respective such ratio per core can be an estimate of how successful the prefetching is. This must also account for respective core prefetch-settings.
 
 #### LOAD_HIT_PREFETCH.HWPF
 
-This event counts the number of demand loads that hit an outstanding L1 prefetch in the request buffers that could result in an L2 cache hit or miss. This is a good indicator that the prefetch request was initiated too closely to the demand and was not completed in time to get the full benefit of prefetching. Similar indications as the XQ_PROMOTION events for L2 cache misses.
+This event counts the number of demand loads that hit an outstanding L1 prefetch in the request buffers that could result in an L2 cache hit or miss. This is a good indicator that the prefetch request was initiated too close to the demand and was not completed in time to get the full benefit of prefetching. Similar indications as the XQ_PROMOTION events for L2 cache misses.
 
 #### L2_REQUEST.HWPF
 
@@ -385,12 +383,11 @@ The DYNAMIC_PREFETCH_THROTTLER events will count the number of cycles in which t
 
 #### IMC RD/WR CAS
 
-The Integrated Memory Controller (IMC) on client platforms typically has two static counters tracking the number of read and write requests. On server platforms, there are generally on figurable performance monitoring counters instead. These counters measure requests per cache line, so the value should be multiplied by 64 to get the number of bytes transferred. The static counters start counting on power-on, and the configurable counters start counting when the start signal is provided. In either case, the amount of DDR requests generated is derived by taking the delta values between two points in time.
+The Integrated Memory Controller (IMC) on client platforms typically has two static counters tracking the number of read and write requests. On server platforms, there are generally configurable performance monitoring counters instead. These counters measure requests per cache line, so the value should be multiplied by 64 to get the number of bytes transferred. The static counters start counting on power-on, and the configurable counters start counting when the start signal is provided. In either case, the amount of DDR requests generated is derived by taking the delta values between two points in time.
 
 The read counter is of primary interest for hardware prefetch tuning as hardware prefetchers drive additional reads, although dirty cache lines can also be pushed out as writes. These counters are shared resources at the platform level, not tied to individual cores or modules. Note that there are generally multiple IMCs per device. The usage of DDR interleaving, which is the default configuration, gives a near-equal load on the interfaces.
 
-Considering DDR load when tuning prefetch aggressiveness. A high utilization of the DDR interface will increase access
-latency.
+Considering DDR load when tuning prefetch aggressiveness. A high utilization of the DDR interface will increase access latency.
 
 # 4 PREFETCH MSR
 
@@ -399,7 +396,7 @@ MSRs are shared within a module, and changes from one core will be seen by the o
 The MSRs described below are only applicable to the Intel® Atom® cores. Use the CPUID feature to identify core types, and if a hybrid platform is in use, see [1] for more details. Bits outside of the ones described may be reserved or have other functions, including having other functions on other cores; see the respective device documentation and ensure that values
 outside these listed are preserved.
 
-## 4.1 MSR 0X1A4
+## 4.1 MSR 0x1A4
 
 | Support | Width | Bits  | Descriptor                                                                              |
 | :-----: | :---: | :---: | :-------------------------------------------------------------------------------------- |
@@ -410,11 +407,11 @@ outside these listed are preserved.
 |   CMT   |   1   |  4:4  | DCU next page prefetcher; when set to 1, the prefetcher is disabled.                    |
 |   GRT   |   1   |  5:5  | L2 AMP disabled; when set to 1, the L2 AMP is disabled.                                 |
 |   CMT   |   1   |  6:6  | LLC page prefetch; when set to 1, the prefetcher is disabled.                           |
-|   DKT   |   1   |  7:7  | AOPP disabled; when set to 1, the AOPP is disabled.                                     |
+|   CMT   |   1   |  7:7  | AOP disabled; when set to 1, the AOP is disabled.                                       |
 |   CMT   |   1   |  8:8  | Stream prefetch code fetch; when set to 1, the prefetcher is disabled.                  |
 |   DKT   |   1   | 12:12 | Disable the dynamic prefetcher logic.                                                   |
 
-## 4.2 MSR 0X1320
+## 4.2 MSR 0x1320
 
 | Support | Width | Bits  | Descriptor                                                                                                                                                  |
 | :-----: | :---: | :---: | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -432,7 +429,7 @@ outside these listed are preserved.
 |   CMT   |   1   | 43:43 | LLC Stream disabled; when set to 1, the LLC Streamer is disabled.                                                                                           |
 |   CMT   |   3   | 46:44 | Sets the number of LLC Streamer prefetches to be sent when a prefetch stream is established.                                                                |
 |   CMT   |   5   | 51:47 | Sets the maximum number of LLC Streamer prefetches that can be queued.                                                                                      |
-|   CMT   |   5   | 57:53 | LLC Stream LQ threshold. Specifies the minimum number of empty LQ entries required to emit prefetches. Higher values result in fewer LLC Stream prefetches. |
+|   CMT   |   5   | 57:53 | LLC Stream L2Q threshold. Specifies the minimum number of empty L2Q entries required to emit prefetches. Higher values result in fewer LLC Stream prefetches. |
 |   GRT   |   5   | 62:58 | LLC Stream XQ threshold. Specifies the number of empty XQ entries required to emit prefetches. Higher values result in fewer LLC Stream prefetches.         |
 
 ```c
@@ -459,14 +456,14 @@ struct msr1320_s {
 };
 ```
 
-## 4.3 MSR 0X1321
+## 4.3 MSR 0x1321
 
 | Support | Width | Bits  | Descriptor                                                                                                                                               |
 | :-----: | :---: | :---: | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
 |   GRT   |   1   |  0:0  | MLC Streamer and AMP enabled tracking of instruction flows                                                                                               |
 |   CMT   |   1   | 11:11 | Enable alternate L2 prefetch algorithm for code reads                                                                                                    |
-|   CMT   |   4   | 15:12 | Sets the number of AMP (?) prefetches to be sent when such a prefetch stream is established                                                              |
-|   CMT   |   4   | 19:16 | Sets the number of new AMP (?) prefetches added to the number of pending prefetches for each successful training                                         |
+|   CMT   |   4   | 15:12 | Sets the number of AMP prefetches to be sent when such a prefetch stream is established                                                              |
+|   CMT   |   4   | 19:16 | Sets the number of new AMP prefetches added to the number of pending prefetches for each successful training                                         |
 |   CMT   |   1   | 20:20 | Set to 1 to turn on the demand based L2 prefetch throttler                                                                                               |
 |   GRT   |   8   | 28:21 | MLC Streamer demand density.                                                                                                                             |
 |   GRT   |   4   | 32:29 | MLC Streamer demand density override.                                                                                                                    |
@@ -495,7 +492,7 @@ typedef struct msr1321_s {
 } msr1321_s;
 ```
 
-## 4.4 MSR 0X1322
+## 4.4 MSR 0x1322
 
 | Support | Width | Bits  | Descriptor                                                                                                                                                                              |
 | :-----: | :---: | :---: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -529,13 +526,13 @@ typedef struct msr1322_s {
 } msr1322_s;
 ```
 
-# 4.5 MSR 0x1323
+## 4.5 MSR 0x1323
 
 | Support | Width | Bits  | Descriptor                                                                                               |
 | :-----: | :---: | :---: | :------------------------------------------------------------------------------------------------------- |
 |   GRT   |   1   | 34:34 | Begin tracking software data prefetches with the intent to write. Affects both the MLC Streamer and AMP. |
 |   GRT   |   1   | 35:35 | Begin tracking software data prefetches. Affects both the MLC Stream and AMP.                            |
-|   GR    |   1   | 37:37 | Begin tracking requests coming from the L1 NLP prefetcher. Affects both the MLC Stream and AMP.          |
+|   GRT   |   1   | 37:37 | Begin tracking requests coming from the L1 NLP prefetcher. Affects both the MLC Stream and AMP.          |
 |   GRT   |   1   | 38:38 | Begin tracking demand requests with intent to write. Affects both the MLC Stream and AMP.                |
 |   GRT   |   1   | 39:39 | Allow SW prefetch read for ownership to train a prefetch streamer entry.                                 |
 |   GRT   |   1   | 40:40 | Allow SW prefetch reads to train a prefetch streamer entry.                                              |
@@ -567,7 +564,7 @@ struct msr1323_s{
 };
 ```
 
-## 4.6 MSR 0X1324
+## 4.6 MSR 0x1324
 
 | Support | Width | Bits  | Descriptor                                     |
 | :-----: | :---: | :---: | :--------------------------------------------- |
@@ -585,12 +582,12 @@ struct msr1324_s{
 | Support | Width | Bits  | Descriptor                                                                                                                                           |
 | :-----: | :---: | :---: | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
 |   CMT   |   5   |  4:0  | Maximum size of L2 Stream prefetcher window that a demand can hit and keep the prefetcher going. A larger window gives more aggressive prefetching   |
-|   CMT   |   1   |  5:5  | Enabled kick-start for L2 Stream prefetcher. This is used when an access is detected at the beginning or end of a 4K page                            |
-|   CMT   |   5   | 10:6  | MLC Stream and AMP LQ threshold. The value specifies the minimum number of empty LQ entries to emit prefetches. Higher value drives fewer prefetches |
+|   CMT   |   1   |  5:5  | Enables kick-start for L2 Stream prefetcher. This is used when an access is detected at the beginning or end of a 4K page                            |
+|   CMT   |   5   | 10:6  | MLC Stream and AMP L2Q threshold. The value specifies the minimum number of empty L2Q entries to emit prefetches. Higher value drives fewer prefetches |
 |   CMT   |   3   | 16:14 | Maximum number of successive lines that can be prefetched by AMP                                                                                     |
 |   CMT   |   3   | 19:17 | AMP confident increment counter value. Higher value makes AMP more aggressive                                                                        |
 |   CMT   |   8   | 39:32 | Counter threshold to enable acceleration. A lower value gives more aggressive prefetching                                                            |
-|   CMT   |   5   | 44:40 | LQ threshold to enable prefetch acceleration. Lower value gives more aggressive prefetching                                                          |
+|   CMT   |   5   | 44:40 | L2Q threshold to enable prefetch acceleration. Lower value gives more aggressive prefetching                                                          |
 |   CMT   |   5   | 49:45 | XQ threshold to enable prefetch acceleration. Lower value gives more aggressive prefetching                                                          |
 |   CMT   |   6   | 55:50 | Acceleration counter increment value. Higher value will enable acceleration more easily                                                              |
 |   CMT   |   3   | 58:56 | Number of additional MLC/LLC Stream prefetches triggered when in acceleration mode                                                                   |
@@ -606,7 +603,7 @@ struct msr1325_s{
 	uint64_t AMP_DELTA_CNT_INC_VAL: 3;
 	uint64_t pad1 : 12;
 	uint64_t PREFACC_COUNTER_THRESHOLD : 8;
-	uint64_t PREFACC_DISABLE_LQ2_THRESHOLD : 5;
+	uint64_t PREFACC_DISABLE_L2Q_THRESHOLD : 5;
 	uint64_t PREFACC_DISABLE_XQ_THRESHOLD : 5;
 	uint64_t PREFACC_COUNTER_INCR : 6;
 	uint64_t PREFACC_COUNT : 3;
@@ -614,7 +611,7 @@ struct msr1325_s{
 };
 ```
 
-## 4.8 MSR 0X1326
+## 4.8 MSR 0x1326
 
 | Support | Width | Bits  | Descriptor                                                                                       |
 | :-----: | :---: | :---: | :----------------------------------------------------------------------------------------------- |
@@ -627,7 +624,7 @@ struct msr1326_s{
 };
 ```
 
-## 4.9 MSR 0X1327
+## 4.9 MSR 0x1327
 
 | Support | Width | Bits  | Descriptor                                                                                                                                                     |
 | :-----: | :---: | :---: | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
