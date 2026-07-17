@@ -43,10 +43,12 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [Envoy](software/envoy/README.md)
   - [Kafka](software/kafka/README.md)
   - [NumPy](software/numpy/README.md)
+  - [R (Rlang / Rstats)](software/R/README.md)
   - [TensorFlow](software/tensorflow/)
     - [ResNet50 – Computer Vision](software/tensorflow/computer-vision-resnet50/README.md)
     - [BERT – NLP](software/tensorflow/nlp-transformers-bert/README.md)
     - [RGAT – Graph Neural Networks](software/tensorflow/graph-neural-networks-rgat/README.md)
+  - [vLLM](software/vllm/README.md)
   - [zlib-accel](software/zlib-accel/README.md)
 - Workloads
   - [Cassandra Stress](workloads/cassandra-stress/README.md)
@@ -60,6 +62,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [VTune Profiler](tools/vtune/README.md)
 - Hardware
   - [PMU](hardware/PMU/README.md)
+  - [Priority Core Turbo](hardware/priority_core_turbo/README.md)
   - [Scaling](hardware/scaling/README.md)
 
 ## Contributing
