@@ -4,18 +4,18 @@ Here are the common recommendations about your system configuration that are ben
 
 # Contents
 
-- [Energy Performance Bias](#energy-performance-bias-epb)
+- [Energy Performance Bias](#energy-performance-bias-epb-and-energy-performance-preference-epp)
 - [CPU Frequency Scaling](#cpu-frequency-scaling)
 - [Hyper-threading](#hyper-threading-ht)
 - [Low Power Efficient Cores](#low-power-efficient-cores-lpe-cores)
 
-## Energy Performance Bias (EPB)
+## Energy Performance Bias (EPB) and Energy Performance Preference (EPP)
 
-Energy Performance Bias (EPB) is an Intel Xeon hardware setting that controls the trade-off between power consumption and processing performance. For the best performance, it is recommended to set it to `0` (Performance mode).
+Energy Performance Bias (EPB) is a CPU power and performance control available on many Intel processors; lower values generally favor performance. On Windows, a closely related knob is exposed as Energy Performance Preference (EPP) via `powercfg`.
 
 ### On Windows
 
-Run the following command in `cmd`:
+Run the following command in `cmd` to set EPP to `0` (best performance):
 
 ```
 powercfg -setacvalueindex scheme_current sub_processor PERFEPP 0
@@ -62,7 +62,7 @@ Hyper-threading (HT) is Intel's simultaneous multithreading implementation that 
 
 ### On Windows
 
-Hyper-threading can be deteched by running **Task Manager**. Then navigate to **Performance** > **CPU** tab.
+Hyper-threading can be detected by running **Task Manager**. Then navigate to **Performance** > **CPU** tab.
 
 The number of physical and logical cores is listed in the bottom right corner of the tab. In case the number of logical cores is greater, HT is enabled:
 
@@ -76,7 +76,7 @@ To disable hyper-threading for a process, the affinity mask in binary format sho
 
 <img src="images/cpu-affinity-ht.png" alt="drawing" style="width:600px;"/>
 
-Which is equivalent to `2BFF` in hexadecimal format. Run following command to disable HT on Windows:
+Which is equivalent to `2BFF` in hexadecimal format for the example system above. Replace `2BFF` with the mask computed for your CPU topology, then run the following command to disable HT on Windows:
 
 ```
 start /affinity 2BFF cmd /c <workload.exe>
@@ -105,7 +105,7 @@ CPU  CORE
 ```
 
 From the output we can see that 4 logical processors (0, 1, 2, 3) are running on two physical cores (0, 1).
-To run the process on physical cores only, use one of the following commands:
+Replace `0,2,4-13` with the mask computed for your CPU topology, then use one of the following commands to run the process on physical cores only:
 
 ```
 numactl -C 0,2,4-13 <workload>
@@ -138,7 +138,7 @@ The location of the LPE cores in the system affinity mask in this case would be:
 
 <img src="images/cpu-lpe-cores-indices.png" alt="drawing" style="width:600px;"/>
 
-The recommended affinity mask that disables both hyper-threading and LPE cores would be `2BFC`:
+For the example system above, the recommended affinity mask that disables both hyper-threading and LPE cores is `2BFC`:
 
 <img src="images/cpu-affinity-lpe-cores.png" alt="drawing" style="width:600px;"/>
 
@@ -172,6 +172,7 @@ CPU  CORE  MAXMHZ
 
 The logical processors with the lowest maximum frequency (12, 13) are running on LPE cores.
 
+For the example system above, the recommended processor list that does not contain both hyper-threaded and LPE cores is `0,2,4-11`.
 Run the following command to disable HT and LPE cores on Linux:
 
 ```
