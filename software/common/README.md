@@ -105,7 +105,7 @@ CPU  CORE
 ```
 
 From the output we can see that 4 logical processors (0, 1, 2, 3) are running on two physical cores (0, 1).
-Replace `0,2,4-13` with the mask computed for your CPU topology, then use one of the following commands to run the process on physical cores only:
+Replace `0,2,4-13` with the CPU list computed for your CPU topology, then use one of the following commands to run the process on physical cores only:
 
 ```
 numactl -C 0,2,4-13 <workload>
