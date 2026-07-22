@@ -49,7 +49,7 @@ conda create -n idp_env -y python intelpython3_full \
   conda activate idp_env
 ```
 
-Pin python version to match your project if you need a specific interpreter. NumPy comes from conda-forge; the Intel channel supplies the `mkl_fft`/`mkl_random`/`mkl_umath` extensions and Intel's latest oneMKL builds. To add oneMKL to an *existing* environment that already has conda-forge NumPy installed, swap its BLAS to the MKL variant and add the extensions in place (this re-links the NumPy you already have, it does not reinstall NumPy). Intel-channel packages are built to be compatible with conda-forge but not with the Anaconda defaults channel:
+Pin python version to match your project if you need a specific interpreter. NumPy comes from conda-forge; the Intel channel supplies Intel's latest oneMKL builds. The `mkl_fft`/`mkl_random`/`mkl_umath` extensions are available from both conda-forge and the Intel channel, so either channel works for them; the command below keeps both channels enabled. To add oneMKL to an *existing* environment that already has conda-forge NumPy installed, swap its BLAS to the MKL variant and add the extensions in place (this re-links the NumPy you already have, it does not reinstall NumPy). Intel-channel packages are built to be compatible with conda-forge but not with the Anaconda defaults channel:
 
 ```bash
 conda install -y \
@@ -59,7 +59,7 @@ conda install -y \
   mkl mkl_fft mkl_random mkl_umath mkl-service
 ```
 
-`--override-channels` flag limits package resolution to Intel + conda-forge and avoids the higher-priority Anaconda defaults channel and other user-defined channels in the condarc file. The `blas=*=*_intelmkl` selector requests the Intel channel's MKL-backed runtimes `libblas`, `libcblas`, `liblapack`, and `liblapacke`; conda-forge offers an equivalent under the build string `blas=*=*mkl*`. Either gives an MKL BLAS backend. The Intel channel is required for the three extensions and Intel's latest oneMKL builds.
+`--override-channels` flag limits package resolution to Intel + conda-forge and avoids the higher-priority Anaconda defaults channel and other user-defined channels in the condarc file. The `blas=*=*_intelmkl` selector requests the Intel channel's MKL-backed runtimes `libblas`, `libcblas`, `liblapack`, and `liblapacke`; conda-forge offers an equivalent under the build string `blas=*=*mkl*`. Either gives an MKL BLAS backend. The extensions (`mkl_fft`/`mkl_random`/`mkl_umath`) are published on both channels. Because the Intel channel is listed first, conda prefers it for these packages (set `channel_priority: strict` if you want that ordering enforced rather than just preferred), which is what you want for Intel's latest oneMKL builds; conda-forge also carries them if you prefer that source.
 
 **pip.** Intel publishes NumPy and SciPy wheels already linked against oneMKL, plus the three extensions, on a public wheel repository. The `--index-url` below points pip at that repository's PyPI-compatible index API. There is no symlink to swap; the wheels arrive pre-linked.
 
@@ -70,10 +70,10 @@ pip install --index-url https://software.repos.intel.com/python/pypi \
 
 Use `--index-url`, not `--extra-index-url`: Intel's index is a partial mirror, and with `--extra-index-url` pip would see PyPI's higher-numbered OpenBLAS wheel and install that instead. Packages Intel does not mirror (for example `threadpoolctl`, used for [verification](#verifying-onemkl-is-active)) install normally from PyPI in a separate step. The Intel wheels target Linux and Windows; if `pip` reports no matching distribution, check that your platform and Python version are covered on the index.
 
-Whichever path you take, choose the OpenMP threading layer and set it **before anything imports NumPy, SciPy or MKL**. The variable is read once at MKL load time, so exporting it after the import has no effect. Intel OpenMP gives the best oneMKL performance on Intel hardware and is the recommended starting point; the environment-specific cases are covered under [Threads and NUMA](#threads-and-numa):
+Whichever path you take, choose the OpenMP threading layer and set it **before anything imports NumPy, SciPy or MKL**. The variable is read once at MKL load time, so exporting it after the import has no effect. Intel OpenMP is the fastest on Intel hardware and is oneMKL's default, so setting the variable explicitly documents intent and guarantees the choice rather than changing behavior, especially useful in an all-Intel environment where Intel OpenMP is the only runtime present. In a mixed environment where other packages bring GNU's `libgomp`, you may instead set `MKL_THREADING_LAYER=GNU` so the process shares one runtime; that tradeoff and the other layer values are detailed under [Threads and NUMA](#threads-and-numa):
 
 ```bash
-export MKL_THREADING_LAYER=INTEL   # Intel OpenMP (libiomp5): best oneMKL performance
+export MKL_THREADING_LAYER=INTEL   # Intel OpenMP (libiomp5): oneMKL's default; set explicitly to lock it in
 ```
 
 ---
@@ -199,7 +199,7 @@ speedup         : 3.9x
 
 > **Reproducibility note:** `mkl_random` and `numpy.random` produce different sequences from the same seed. If your tests or simulations depend on specific random values, do not swap them.
 
-`brng='MT19937'` selects the Mersenne Twister generator, matching `numpy.random`'s default algorithm. For normal sampling, [`'BoxMuller'`](https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform) is the faster method and the reason it is used here; the alternative [`'ICDF'`](https://en.wikipedia.org/wiki/Inverse_transform_sampling) (inverse-CDF sampling) is slower but maps each uniform to a normal one-to-one, which some workloads prefer for tail fidelity. For raw generation speed, keep `'BoxMuller'`.
+`brng='MT19937'` selects the Mersenne Twister generator, matching `numpy.random`'s default algorithm. `mkl_random` offers two methods for normal sampling: [`'BoxMuller'`](https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform) (the faster one, used here) and [`'ICDF'`](https://en.wikipedia.org/wiki/Inverse_transform_sampling) (inverse-CDF, slower, maps each uniform to a normal one-to-one). Note that neither matches NumPy's own method: NumPy's `Generator` uses the [ziggurat algorithm](https://en.wikipedia.org/wiki/Ziggurat_algorithm), which draws a variable number of random bits per sample, so the generated values differ from `mkl_random` regardless of method. For raw generation speed on `mkl_random`, keep `'BoxMuller'`.
 
 If you do not need to choose the sampling method, the context manager is the zero-code-change path: existing `np.random.*` calls route through oneMKL VSL with their source untouched, exactly like `mkl_fft` and `mkl_umath`.
 
@@ -222,14 +222,16 @@ streams = [
 samples_per_worker = [s.standard_normal(1_000_000) for s in streams]
 ```
 
-Alternatively, to partition a single generator instead of using the `MT2203` family, `skipahead(n)` advances a stream by `n` steps so each worker starts at a non-overlapping offset:
+Alternatively, to partition a single generator instead of using the `MT2203` family, `skipahead(n)` advances a stream by `n` steps so each worker starts at a non-overlapping offset. The per-worker `block` must be at least the number of values each worker will draw, otherwise the blocks overlap; size it to your workload:
 
 ```python
-block = 1_000_000
+block = 10_000_000
 streams = [mkl_random.RandomState(seed=42) for _ in range(n_workers)]
 for worker_id, stream in enumerate(streams):
     stream.skipahead(worker_id * block)  # each worker skips to its own block
 ```
+
+`skipahead` takes a 64-bit offset, so keep `worker_id * block` within `int64` range (`worker_id * block <= np.iinfo(np.int64).max`); very large strides multiplied by the worker index will overflow.
 
 ### Vectorized Math: mkl_umath
 
@@ -280,12 +282,12 @@ The levers above decide *which* code runs; this one decides how many cores it ru
 |---|---|---|
 | [`MKL_THREADING_LAYER`](https://www.intel.com/content/www/us/en/docs/onemkl/developer-guide-linux/2026-0/dynamic-select-the-interface-and-threading-layer.html) | `INTEL` (recommended); ecosystem runtime otherwise | Select MKL's OpenMP runtime; see note below |
 | [`MKL_NUM_THREADS`](https://www.intel.com/content/www/us/en/docs/onemkl/developer-guide-linux/2026-0/onemkl-specific-env-vars-for-openmp-thread-ctrl.html) | physical core count | Cap MKL thread count |
-| [`MKL_DYNAMIC`](https://www.intel.com/content/www/us/en/docs/onemkl/developer-guide-linux/2026-0/mkl-dynamic.html) | `FALSE` (pair with `OMP_PLACES=cores`; see note) | Disable automatic thread scaling |
+| [`MKL_DYNAMIC`](https://www.intel.com/content/www/us/en/docs/onemkl/developer-guide-linux/2026-0/mkl-dynamic.html) | `FALSE` (pair with `MKL_NUM_THREADS`; see note) | Disable automatic thread scaling |
 | [`KMP_AFFINITY`](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2025-0/thread-affinity-interface.html) | `granularity=fine,compact,1,0` | Pin threads to physical cores (Intel OpenMP only) |
 
 `KMP_AFFINITY` is an Intel OpenMP setting, so it applies only when oneMKL is on the Intel runtime (`MKL_THREADING_LAYER=INTEL`). For a runtime-agnostic alternative that also works under LLVM and GNU, use the standard OpenMP controls `OMP_PROC_BIND=close` and `OMP_PLACES=cores`; `OMP_PLACES=cores` is what keeps threads off hyperthread siblings, which core-count alone does not guarantee. In `KMP_AFFINITY=granularity=fine,compact,1,0`, `granularity=fine` pins each thread to a single logical CPU, `compact` places threads on adjacent cores, and the trailing `1,0` are the permute and offset ([Intel reference](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2025-0/thread-affinity-interface.html)). This is appropriate for single-socket systems or when running one process per socket; on multi-socket systems without `numactl` it may bind threads across sockets. To see the actual binding at startup, prepend `verbose`: `KMP_AFFINITY=verbose,granularity=fine,compact,1,0`.
 
-`MKL_DYNAMIC` [defaults to `TRUE`](https://www.intel.com/content/www/us/en/docs/onemkl/developer-guide-linux/2026-0/mkl-dynamic.html), and while it is on, oneMKL scales the thread count down to the number of physical cores when a higher count is requested, which keeps work off hyperthread siblings automatically. Setting `MKL_DYNAMIC=FALSE` fixes the thread count and honors your binding as-is, so pair it with `OMP_PLACES=cores` (or `numactl`) to ensure threads land on distinct physical cores rather than hyperthreads.
+`MKL_DYNAMIC` [defaults to `TRUE`](https://www.intel.com/content/www/us/en/docs/onemkl/developer-guide-linux/2026-0/mkl-dynamic.html), and while it is on, oneMKL scales the thread count down to the number of physical cores when a higher count is requested, which keeps work off hyperthread siblings automatically. Setting `MKL_DYNAMIC=FALSE` disables that scaling: with no explicit `MKL_NUM_THREADS`, oneMKL then defaults to *all logical processors*, including hyperthread siblings (on a 64-physical-core/128-thread machine, `mkl.get_max_threads()` reports 64 with `MKL_DYNAMIC=TRUE` but 128 with `FALSE`). So if you set `MKL_DYNAMIC=FALSE`, also set `MKL_NUM_THREADS` to the physical core count, and pin with `OMP_PLACES=cores` (or `numactl`) so threads land on distinct physical cores.
 
 For workloads that spawn multiple Python processes, reduce oneMKL to one thread per process to avoid over-subscription:
 
@@ -331,18 +333,27 @@ numactl --cpunodebind=0 --membind=0 python worker.py &
 numactl --cpunodebind=1 --membind=1 python worker.py &
 ```
 
-**OpenMP runtime: which threading layer to choose.** oneMKL's threaded paths run on an OpenMP runtime, and `MKL_THREADING_LAYER` selects which one oneMKL uses. The recommendation for best performance on Intel hardware is Intel OpenMP:
+**OpenMP runtime: which threading layer to choose.** oneMKL's threaded paths run on a threading layer selected by `MKL_THREADING_LAYER`. **For best performance on Intel hardware, use Intel OpenMP**, which is also oneMKL's default, so setting it explicitly guarantees it rather than changing behavior:
 
 ```bash
 export MKL_THREADING_LAYER=INTEL
 ```
 
-The one situation that hurts performance is loading two OpenMP runtimes in the same process, for example oneMKL on Intel OpenMP (`libiomp5`) alongside a package that bundles GNU's `libgomp`. Two runtimes over-subscribe the cores. `MKL_THREADING_LAYER` controls oneMKL's runtime only; it does not stop another package from loading its own. When your environment already standardizes on one OpenMP runtime, match oneMKL to it:
+The variable accepts four values; pick by your environment:
+
+| Value | Threading | Use when |
+|---|---|---|
+| `INTEL` | Intel OpenMP (`libiomp5`) | Best oneMKL performance on Intel hardware. |
+| `GNU` | GNU OpenMP (`libgomp`) | Your process already loads `libgomp` from other packages (common in mixed pip environments); |
+| `TBB` | Intel TBB (no OpenMP) | Your stack is TBB-based. |
+| `SEQUENTIAL` | single-threaded | You parallelize outside oneMKL (for example one worker process per core) and want each oneMKL instance to use one thread. |
+
+Intel OpenMP is the fastest on Intel hardware; the others exist for compatibility with how the rest of your environment is threaded. The one situation to avoid is loading two OpenMP runtimes in the same process, for example oneMKL on Intel OpenMP (`libiomp5`) alongside a package that bundles GNU's `libgomp`. Two runtimes over-subscribe the cores. `MKL_THREADING_LAYER` controls oneMKL's runtime only; it does not stop another package from loading its own. When your environment already standardizes on one OpenMP runtime, match oneMKL to it:
 
 - With LLVM's LibOMP present, use `MKL_THREADING_LAYER=INTEL`: oneMKL runs its Intel threading layer on LibOMP and the `KMP_*` controls apply.
 - If other packages in the process pull in `libgomp` (some pip-installed scientific packages do), `MKL_THREADING_LAYER=GNU` selects oneMKL's GNU threading layer so the process shares a single runtime.
 
-Platform defaults differ. Linux pip stacks often bundle `libgomp`; conda environments select the runtime through the `_openmp_mutex` metapackage (default LLVM LibOMP on recent conda-forge). On Windows conda, NumPy/SciPy/MKL resolve `llvm-openmp`, and oneMKL there reports the `intel` threading layer. To pin LLVM's LibOMP on Linux:
+Platform defaults differ. On Linux, `_openmp_mutex` defaults to the GNU variant, so an environment with `mkl` from the **Intel channel** (including `intelpython3_full`) pulls in `libgomp` even though `intel-openmp` is also installed; both runtimes are then present on disk. (Installing `mkl` from **conda-forge** instead pins `_openmp_mutex` to the LLVM variant, so that stack resolves `llvm-openmp` rather than `libgomp`.) The two-runtime case is expected and not broken: with `MKL_THREADING_LAYER=INTEL` (or unset), oneMKL still loads Intel OpenMP (`libiomp5`) and reports the `intel` threading layer, and `libgomp` stays inert unless another GNU-linked library invokes it. On Windows conda, NumPy/SciPy/MKL resolve `llvm-openmp`. To switch the conda OpenMP runtime to LLVM's LibOMP on Linux:
 
 ```bash
 conda install -c conda-forge _openmp_mutex=*=*_llvm
