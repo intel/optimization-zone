@@ -21,6 +21,8 @@ Run the following command in `cmd` to set EPP to `0` (best performance):
 powercfg -setacvalueindex scheme_current sub_processor PERFEPP 0
 ```
 
+The changes to Energy Performance Preference apply system-wide and are premanent. The changes will persist even after the system restart until the next EPP update.
+
 [More info about `powercfg`](https://learn.microsoft.com/en-us/windows-hardware/customize/power-settings/options-for-perf-state-engine-perfenergypreference).
 
 ### On Linux
@@ -34,6 +36,8 @@ To set EPB to Performance mode:
 ```
 sudo cpupower set -b 0
 ```
+
+The changes to Energy Performance Bias apply system-wide and remain until the next system reboot or the next EPB update.
 
 ## CPU Frequency Scaling
 
@@ -58,7 +62,7 @@ sudo x86_energy_perf_policy -c all performance
 
 ## Hyper-threading (HT)
 
-Hyper-threading (HT) is Intel's simultaneous multithreading implementation that can improve the parallelization of computations. When HT is enabled, for each processor core that is physically present, the operating system addresses two logical cores and shares the workload between them when possible. In this case, the logical cores located on a single physical core share the same resources. For resource-demanding workloads it is recommended to disable HT either in BIOS settings or by modifying the affinity settings of the process.
+Hyper-threading (HT) is Intel's simultaneous multithreading implementation that can improve the parallelization of computations. When HT is enabled, for each processor core that is physically present, the operating system addresses two logical cores and shares the workload between them when possible. In this case, the logical cores located on a single physical core share the same resources. For resource-demanding workloads, it is recommended to disable HT either in BIOS settings or by modifying the affinity settings of the process.
 
 ### On Windows
 
