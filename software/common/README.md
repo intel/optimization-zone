@@ -42,7 +42,7 @@ Or use [PerfSpect](https://github.com/intel/PerfSpect) tool which provides a con
 perfspect config --epp 0 --epb 0 --gov 0
 ```
 
-The changes to Energy Performance Bias or Energy Performance Preference on Linux apply system-wide and remain until the next system reboot or the next EPB/EPB update.
+The changes to Energy Performance Bias or Energy Performance Preference on Linux apply system-wide and remain until the next system reboot or the next EPB/EPP update.
 
 ## CPU Frequency Scaling
 
