@@ -25,9 +25,9 @@ Two Java server-side MultiJVM configurations were tested on the same Intel Xeon 
 
 | Metric | Performance Improvement |
 |--------|------------------------|
-| **server-side-java with SLA requirements** | **+30.0%** |
+| **Server-side Java SLA** | **+30.0%** |
 
-**Key Finding:** Aligning the JVM group count with the system's 3-NUMA-node topology (changing from 2 to 3 JVM groups) resulted in a **30% improvement in server-side-java with SLA requirements**, the primary performance metric for response time under service level agreements (SLAs).
+**Key Finding:** Aligning the JVM group count with the system's 3-NUMA-node topology (changing from 2 to 3 JVM groups) resulted in a **30% improvement in Server-side Java SLA**, the primary performance metric for response time under service level agreements (SLAs).
 
 ---
 
@@ -100,14 +100,14 @@ Fork and join threads: Tier 1 = 128, Tier 2 = 64, Tier 3 = 64
 
 ### Overall Throughput
 
-| Configuration | server-side-java with SLA requirements Improvement |
+| Configuration | Server-side Java SLA Improvement |
 |---------------|---------------------------|
 | **2-JVM (Suboptimal)** | Baseline |
 | **3-JVM (NUMA-Optimized)** | **+30.0%** |
 
-### Server-Side-Java with SLA Requirements by SLA (99th Percentile)
+### Server-side Java SLA by SLA (99th Percentile)
 
-The server-side-java with SLA requirements metric is calculated as the geometric mean of throughput at various SLA response time targets:
+The Server-side Java SLA metric is calculated as the geometric mean of throughput at various SLA response time targets:
 
 | SLA Target | Performance Improvement |
 |------------|------------------------|
@@ -116,7 +116,7 @@ The server-side-java with SLA requirements metric is calculated as the geometric
 | **50 ms** | **+26.4%** |
 | **75 ms** | **+24.0%** |
 | **100 ms** | **+15.6%** |
-| **Overall (server-side-java with SLA requirements)** | **+30.0%** |
+| **Overall (Server-side Java SLA)** | **+30.0%** |
 
 **Key Insight:** The performance advantage is **most pronounced at stricter SLA targets** (10ms), where the 3-JVM configuration achieves over **50% higher throughput**. This demonstrates that NUMA optimization significantly reduces tail latencies.
 
@@ -142,7 +142,7 @@ The server-side-java with SLA requirements metric is calculated as the geometric
 ### 4. **Lower Tail Latencies**
 - NUMA-local memory access results in more predictable response times
 - Critical for meeting aggressive SLA targets (e.g., 99th percentile < 10ms)
-- Explains why server-side java with SLA requirements improved by 30% while server-side java throughput only improved by 1.7%
+- Explains why Server-side Java SLA improved by 30% while Server-side Java Throughput only improved by 1.7%
 
 ---
 
@@ -218,15 +218,17 @@ Performance monitoring data collected using Intel's performance counter monitori
 
 These latency reductions in the cache and memory hierarchy directly contribute to the overall performance improvement. When memory requests can be satisfied more quickly—whether from local NUMA memory or with fewer cross-node accesses—the compute cores spend less time stalled waiting for data, leading to higher effective throughput.
 
+Suggested tools for collecting performance counters are [Intel PerfSpect](https://github.com/intel/optimization-zone/tree/main/tools/perfspect) and [Intel VTune](https://github.com/intel/optimization-zone/tree/main/tools/vtune).
+
 ### Impact on Server-Side Java with SLA Requirements Performance
 
-The memory latency improvements are particularly significant for the server-side java with SLA requirements metric, which measures throughput under strict response time SLAs. Lower memory access latencies translate directly to:
+The memory latency improvements are particularly significant for the Server-side Java SLA metric, which measures throughput under strict response time SLAs. Lower memory access latencies translate directly to:
 
 1. **Reduced tail latencies** in transaction processing
 2. **More consistent response times** across the 99th percentile measurements
 3. **Better sustained performance** when operating near SLA boundaries
 
-This explains why the 3-JVM configuration shows a 30% improvement in server-side java with SLA requirements despite only a 1.7% improvement in server-side java throughput numbers. NUMA optimization primarily benefits latency-sensitive operations rather than raw peak throughput.
+This explains why the 3-JVM configuration shows a 30% improvement in Server-side Java SLA despite only a 1.7% improvement in Server-side Java Throughput numbers. NUMA optimization primarily benefits latency-sensitive operations rather than raw peak throughput.
 
 ### Bandwidth Utilization and Contention
 
@@ -255,7 +257,7 @@ These substantial bandwidth increases demonstrate that matching the JVM group co
 
 The 41% increase in total bandwidth is particularly significant—it shows that the 2-JVM configuration was leaving substantial memory bandwidth untapped due to poor NUMA alignment. The NUMA-optimized 3-JVM configuration unlocks this dormant capacity, allowing the benchmark to achieve higher throughput while simultaneously reducing latencies.
 
-**Key Insight:** The combination of reduced latencies (10-15% improvement) and increased bandwidth (41% improvement) creates a multiplier effect, explaining the dramatic 30% gain in server-side java with SLA requirements performance. The system is both faster per-access and capable of handling more concurrent accesses.
+**Key Insight:** The combination of reduced latencies (10-15% improvement) and increased bandwidth (41% improvement) creates a multiplier effect, explaining the dramatic 30% gain in Server-side Java SLA performance. The system is both faster per-access and capable of handling more concurrent accesses.
 
 ### Microarchitectural Efficiency: Top-Down Analysis
 
@@ -273,6 +275,8 @@ This shift indicates that the NUMA-optimized configuration allows the CPU to spe
 
 The fact that nearly all of the Front-End reduction flows directly into Retiring operations demonstrates that the NUMA optimization removes bottlenecks without introducing new ones. The CPU cores are doing more useful work per cycle, translating directly to higher application-level throughput.
 
+For more information about Top-Down Analysis, refer to this article: [Top-down Microarchitecture Analysis Method](https://www.intel.com/content/www/us/en/docs/vtune-profiler/cookbook/2023-0/top-down-microarchitecture-analysis-method.html)
+
 ### CPU Utilization: Unlocking Available Capacity
 
 Beyond per-cycle efficiency, the NUMA optimization also dramatically improves overall CPU utilization:
@@ -282,18 +286,18 @@ Beyond per-cycle efficiency, the NUMA optimization also dramatically improves ov
 - **3-JVM configuration:** 90% average CPU utilization
 - **Improvement:** +14 percentage points
 
-This increase reveals that the 2-JVM configuration was leaving significant compute capacity untapped. The 76% utilization indicates cores were frequently idle—not because the workload was light, but because threads were **blocked waiting** for memory operations, likely due to:
+This increase reveals that the 2-JVM configuration was leaving significant compute capacity untapped. The 76% CPU utilization indicates cores were frequently idle—not because the workload was light, but because threads were **blocked waiting** for memory operations, likely due to:
 
 - Remote NUMA memory access latencies
 - Contention for memory controllers on oversubscribed NUMA nodes
 - Cache coherency traffic across NUMA boundaries
 
-The NUMA-optimized 3-JVM configuration removes these barriers, allowing cores to remain active and productive. The 90% utilization demonstrates that the system is now able to keep cores busy doing useful work rather than stalling in wait states.
+The NUMA-optimized 3-JVM configuration removes these barriers, allowing cores to remain active and productive. The 90% CPU utilization demonstrates that the system is now able to keep cores busy doing useful work rather than stalling in wait states.
 
 **Efficiency Multiplier:** The combination of improved per-cycle efficiency (Top-Down metrics) and improved CPU utilization creates a compounding effect:
 - Cores spend more time doing useful work per cycle (Retiring +2%)
 - More cores are actively engaged (utilization 76% → 90%)
-- Result: 30% improvement in server-side java with SLA requirements with better resource utilization
+- Result: 30% improvement in Server-side Java SLA with better resource utilization
 
 **Combined Impact:** The microarchitectural improvements (more Retiring, less Front-End bound) complement the memory subsystem gains (lower latency, higher bandwidth) to create a holistically optimized system where all components—cache, memory, and execution units—work in harmony.
 
@@ -301,7 +305,7 @@ The NUMA-optimized 3-JVM configuration removes these barriers, allowing cores to
 
 ## Conclusion
 
-The **30% improvement in server-side java with SLA requirements** demonstrates that proper NUMA configuration is critical for Java workload performance on modern multi-NUMA-node systems. The 3-JVM configuration's alignment with the system's 3-NUMA-node topology:
+The **30% improvement in Server-side Java SLA** demonstrates that proper NUMA configuration is critical for Java workload performance on modern multi-NUMA-node systems. The 3-JVM configuration's alignment with the system's 3-NUMA-node topology:
 
 - Minimizes remote memory access penalties
 - Reduces tail latencies (improving 99th percentile response times)
@@ -334,7 +338,7 @@ For production deployments on Intel Xeon 6972P or similar NUMA-aware architectur
 
 - **Peak Bandwidth:** 572.8 GB/s
 - **Minimum Latency:** 116.95 ns (local NUMA access)
-- **Remote Latency:** 135-163 ns (40% penalty for cross-NUMA access)
+- **Remote Latency:** 135-163 ns (15-40% penalty for cross-NUMA access)
 
 ---
 
@@ -348,4 +352,4 @@ Other names and brands may be claimed as the property of others.
 
 ---
 
-*Generated from server-side java workload test results dated March 29 and March 31, 2026*
+*Generated from Server-side Java workload test results dated March 29 and March 31, 2026*
