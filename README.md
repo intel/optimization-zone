@@ -31,6 +31,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
 ## Table of Contents
 
 - Software
+  - [Common Recommendations](software/common/README.md)
   - [Cassandra](software/cassandra/README.md)
       - [Cassandra QAT](software/cassandra/QAT/README.md)
   - [Gluten](software/gluten/README.md)
