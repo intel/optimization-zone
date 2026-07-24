@@ -21,7 +21,7 @@ Run the following command in `cmd` to set EPP to `0` (best performance):
 powercfg -setacvalueindex scheme_current sub_processor PERFEPP 0
 ```
 
-The changes to Energy Performance Preference apply system-wide and are premanent. The changes will persist even after the system restart until the next EPP update.
+The changes to Energy Performance Preference apply system-wide and are permanent. The changes will persist even after the system restart until the next EPP update.
 
 [More info about `powercfg`](https://learn.microsoft.com/en-us/windows-hardware/customize/power-settings/options-for-perf-state-engine-perfenergypreference).
 
