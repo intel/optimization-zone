@@ -27,7 +27,7 @@ The changes to Energy Performance Preference apply system-wide and are premanent
 
 ### On Linux
 
-To check the current value of EPB, run:
+To check the current value of EPB and EPP, run:
 ```
 sudo cpupower info
 ```
@@ -37,7 +37,12 @@ To set EPB to Performance mode:
 sudo cpupower set -b 0
 ```
 
-The changes to Energy Performance Bias apply system-wide and remain until the next system reboot or the next EPB update.
+Or use [PerfSpect](https://github.com/intel/PerfSpect) tool which provides a consolidated way to set EPB, EPP, and the scaling governor in one shot for Intel® Xeon™ processors:
+```
+perfspect config --epp 0 --epb 0 --gov 0
+```
+
+The changes to Energy Performance Bias or Energy Performance Preference on Linux apply system-wide and remain until the next system reboot or the next EPB/EPB update.
 
 ## CPU Frequency Scaling
 
@@ -62,7 +67,9 @@ sudo x86_energy_perf_policy -c all performance
 
 ## Hyper-threading (HT)
 
-Hyper-threading (HT) is Intel's simultaneous multithreading implementation that can improve the parallelization of computations. When HT is enabled, for each processor core that is physically present, the operating system addresses two logical cores and shares the workload between them when possible. In this case, the logical cores located on a single physical core share the same resources. For resource-demanding workloads, it is recommended to disable HT either in BIOS settings or by modifying the affinity settings of the process.
+Hyper-threading (HT) is Intel's simultaneous multithreading implementation that can improve the parallelization of computations. When HT is enabled, for each processor core that is physically present, the operating system addresses two logical cores and shares the workload between them when possible. In this case, the logical cores located on a single physical core share the same resources.
+
+Disabling Hyper-threading can help a workload run faster in situations where each physical core is already kept fully busy by a single thread, and adding a second logical thread on the same core only ends up competing for the same cache space and execution resources, rather than contributing any useful work. This is commonly seen in scenarios like real-time audio processing, certain games, or in some types of parallel applications where threads frequently share and depend on the same data.
 
 ### On Windows
 
@@ -130,7 +137,7 @@ numactl -C "$cpus" <workload>
 
 Low Power Efficient Cores (LPE cores) are a type of core available on modern Intel Core processors, designed to manage lightweight background processes independently. This allows the main compute tiles to be powered down, saving battery life on mobile devices.
 
-For the best performance, it is recommended to exclude LPE cores from the list of CPU cores on which the workload is running. The affinity settings of the process have to be modified to achieve this.
+Disabling the LPE cores can be beneficial when running parallel workloads that distribute work evenly across all available cores. Because the significant performance gap between LPE cores and other types of cores can cause the faster cores to sit idle waiting for the slower ones to finish their part of the work, making the slowest cores the bottleneck that holds back the entire computation.
 
 ### On Windows
 
