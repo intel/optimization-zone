@@ -5,4 +5,4 @@ This directory collects case studies of performance opportunities for running wo
 ## What's Inside
 
 - **Case Studies**: Real-world, data-driven examples demonstrating the performance impact of NUMA-aware configuration.
-  - [Java Server-Side Workload Performance](case_studies/java_server-side_workload.md): Demonstrates how aligning JVM group count with a 3-NUMA-node Intel Xeon 6972P topology delivered up to a 30% improvement in server-side Java performance under SLA requirements.
+  - [Java Server-Side Workload Performance](java_server_side_workload.md): Demonstrates how aligning JVM group count with a 3-NUMA-node Intel Xeon 6972P topology delivered up to a 30% improvement in server-side Java performance under SLA requirements.
