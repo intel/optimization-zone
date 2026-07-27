@@ -62,6 +62,9 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [VTune Profiler](tools/vtune/README.md)
 - Hardware
   - [Hardware Prefetch Controls for Intel(R) E-Cores](hardware/HWPrefetchTuning/README.md)
+  - [NUMA](hardware/NUMA/README.md)
+    - [Case Studies](hardware/NUMA/case_studies/README.md)
+      - [Java Server-Side Workload Performance](hardware/NUMA/case_studies/java_server_side_workload.md)
   - [PMU](hardware/PMU/README.md)
   - [Priority Core Turbo](hardware/priority_core_turbo/README.md)
   - [Scaling](hardware/scaling/README.md)
