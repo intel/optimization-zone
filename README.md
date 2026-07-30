@@ -31,22 +31,25 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
 ## Table of Contents
 
 - Software
+  - [Common Recommendations](software/common/README.md)
   - [Cassandra](software/cassandra/README.md)
       - [Cassandra QAT](software/cassandra/QAT/README.md)
+  - [Envoy](software/envoy/README.md)
   - [Gluten](software/gluten/README.md)
   - [Java](software/java/README.md)
+  - [Kafka](software/kafka/README.md)
+  - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
+  - [R (Rlang / Rstats)](software/R/README.md)
+  - [scikit-learn](software/scikit-learn/README.md)
+  - [XGBoost](software/xgboost/README.ms)
   - [Similarity Search](software/similarity-search/README.md)
     - [Redis](software/similarity-search/redis/README.md)
   - [Spark](software/spark/README.md)
-  - [XGBoost](software/xgboost/README.md)
-  - [scikit-learn](software/scikit-learn/README.md)
-  - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
-  - [Envoy](software/envoy/README.md)
-  - [Kafka](software/kafka/README.md)
   - [TensorFlow](software/tensorflow/)
-    - [ResNet50 – Computer Vision](software/tensorflow/computer-vision-resnet50/README.md)
     - [BERT – NLP](software/tensorflow/nlp-transformers-bert/README.md)
+    - [ResNet50 – Computer Vision](software/tensorflow/computer-vision-resnet50/README.md)
     - [RGAT – Graph Neural Networks](software/tensorflow/graph-neural-networks-rgat/README.md)
+  - [vLLM](software/vllm/README.md)
   - [zlib-accel](software/zlib-accel/README.md)
 - Workloads
   - [Cassandra Stress](workloads/cassandra-stress/README.md)
@@ -59,7 +62,12 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [PerfSpect](tools/perfspect/README.md)
   - [VTune Profiler](tools/vtune/README.md)
 - Hardware
+  - [Hardware Prefetch Controls for Intel(R) E-Cores](hardware/HWPrefetchTuning/README.md)
+  - [NUMA](hardware/NUMA/README.md)
+    - [Case Studies](hardware/NUMA/case_studies/README.md)
+      - [Java Server-Side Workload Performance](hardware/NUMA/case_studies/java_server_side_workload.md)
   - [PMU](hardware/PMU/README.md)
+  - [Priority Core Turbo](hardware/priority_core_turbo/README.md)
   - [Scaling](hardware/scaling/README.md)
 
 ## Contributing
