@@ -318,11 +318,11 @@ Key observations:
 - **Thread scaling is sub-linear** — using 4x the cores in a single process yields only **2.1x** throughput, because cross-socket memory coherency traffic limits scaling.
 - **The tradeoff is latency**: thread scaling achieves **lower per-request latency** (1,230 us at 128 cores) because all cores collaborate on each prediction. Process scaling maintains a fixed latency (~2,000 us per worker, 32 cores each) but delivers **higher aggregate throughput**.
 
-#### Hyper-threading can Hurt Performance
+#### Hyper-threading (HT) Can Hurt Performance
 
 daal4py's vectorized tree traversal is [backend-bound](https://www.intel.com/content/www/us/en/docs/vtune-profiler/cookbook/2023-0/top-down-microarchitecture-analysis-method.html) — whether the bottleneck is core execution units or memory bandwidth, adding hyperthreads increases resource contention on the shared physical core, harming performance.
 
-> **Cloud instance note:** On AWS and GCP, each vCPU does not necessarily map to a hyperthread. Smaller instance sizes use soft partitioning, so you may not know how many physical cores vs. hyperthreads you are getting. The guidance below applies most directly to bare-metal or dedicated-host instances where the physical topology is known. On shared instances, benchmark with your specific instance size to determine whether pinning provides a benefit.
+> **Cloud instance note:** Depending on CSP deployment choices, smaller instance sizes may not expose how many physical cores vs. hyperthreads are provided. The guidance below applies most directly to bare-metal or dedicated-host instances where the physical topology is known. On shared instances, benchmark with your specific instance size to determine whether pinning provides a benefit.
 
 | Configuration (1 NUMA node) | Throughput (rows/s) | p50 Latency (us) |
 |:-----------------------------|--------------------:|------------------:|
