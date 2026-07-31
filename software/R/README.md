@@ -55,8 +55,8 @@ source /opt/intel/oneapi/setvars.sh
 
 ##### Windows
 
-By default, on Windows, R will ship with its own unoptimized reference implementation of BLAS and LAPACK. These can be switched to oneMKL by either copying all oneMKL DLL files to R's binary folder, or by building custom DLLs - see this guide for full instructions:
-https://www.intel.com/content/www/us/en/developer/articles/technical/using-onemkl-with-r.html
+By default, on Windows, R will ship with its own unoptimized reference implementation of BLAS and LAPACK. These can be switched to oneMKL by either copying all oneMKL DLL files to R's binary folder, or by building custom DLLs - see [this guide](https://www.intel.com/content/www/us/en/developer/articles/technical/using-onemkl-with-r.html) for full instructions.
+
 
 Alternatively, for an easier way of using R with oneMKL on Windows, one might prefer to install R in a conda environment instead ([miniforge](https://github.com/conda-forge/miniforge) distribution is recommended).
 
