@@ -344,7 +344,7 @@ The variable accepts four values; pick by your environment:
 | Value | Threading | Use when |
 |---|---|---|
 | `INTEL` | Intel OpenMP (`libiomp5`) | Best oneMKL performance on Intel hardware. |
-| `GNU` | GNU OpenMP (`libgomp`) | Your process already loads `libgomp` from other packages (common in mixed pip environments); |
+| `GNU` | GNU OpenMP (`libgomp`) | Your process already loads `libgomp` from other packages (for example scikit-learn, or other pip-installed scientific packages) |
 | `TBB` | Intel TBB (no OpenMP) | Your stack is TBB-based. |
 | `SEQUENTIAL` | single-threaded | You parallelize outside oneMKL (for example one worker process per core) and want each oneMKL instance to use one thread. |
 
@@ -353,7 +353,11 @@ Intel OpenMP is the fastest on Intel hardware; the others exist for compatibilit
 - With LLVM's LibOMP present, use `MKL_THREADING_LAYER=INTEL`: oneMKL runs its Intel threading layer on LibOMP and the `KMP_*` controls apply.
 - If other packages in the process pull in `libgomp` (some pip-installed scientific packages do), `MKL_THREADING_LAYER=GNU` selects oneMKL's GNU threading layer so the process shares a single runtime.
 
-Platform defaults differ. On Linux, `_openmp_mutex` defaults to the GNU variant, so an environment with `mkl` from the **Intel channel** (including `intelpython3_full`) pulls in `libgomp` even though `intel-openmp` is also installed; both runtimes are then present on disk. (Installing `mkl` from **conda-forge** instead pins `_openmp_mutex` to the LLVM variant, so that stack resolves `llvm-openmp` rather than `libgomp`.) The two-runtime case is expected and not broken: with `MKL_THREADING_LAYER=INTEL` (or unset), oneMKL still loads Intel OpenMP (`libiomp5`) and reports the `intel` threading layer, and `libgomp` stays inert unless another GNU-linked library invokes it. On Windows conda, NumPy/SciPy/MKL resolve `llvm-openmp`. To switch the conda OpenMP runtime to LLVM's LibOMP on Linux:
+Platform defaults differ. On Linux, `_openmp_mutex` defaults to the GNU variant (pulled in by `libgcc`), so an environment with `mkl` from the **Intel channel** installs `libgomp` alongside `intel-openmp` regardless of which packages you add; both are then present on disk. (Installing `mkl` from **conda-forge** instead pins `_openmp_mutex` to the LLVM variant, so that stack resolves `llvm-openmp` rather than `libgomp`.) By itself this is harmless: with `MKL_THREADING_LAYER=INTEL` (or unset), oneMKL loads only Intel OpenMP (`libiomp5`), and `libgomp` sits unused.
+
+It stops being harmless once something in the process actually loads `libgomp`. `intelpython3_full` bundles `scikit-learn`, which is built against GNU OpenMP: importing it alongside oneMKL loads both `libiomp5` and `libgomp` into the same process. If your environment imports `scikit-learn` or another GNU-OpenMP-linked package, set `MKL_THREADING_LAYER=GNU` so the process shares one runtime instead of running two. If you don't need those packages, install just `mkl`, the three extensions, and the BLAS selector (the [existing-environment command](#installation) above) instead of `intelpython3_full`; that avoids pulling in a GNU-OpenMP-linked package in the first place, keeping `INTEL` single-runtime with no tradeoff.
+
+On Windows conda, NumPy/SciPy/MKL resolve `llvm-openmp`. To switch the conda OpenMP runtime to LLVM's LibOMP on Linux:
 
 ```bash
 conda install -c conda-forge _openmp_mutex=*=*_llvm
