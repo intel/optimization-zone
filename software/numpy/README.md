@@ -49,6 +49,8 @@ conda create -n idp_env -y python intelpython3_full \
   conda activate idp_env
 ```
 
+> **Threading layer for this environment.** `intelpython3_full` is a metapackage that also brings in `scikit-learn`, which is built against GNU OpenMP. In this mixed environment set `MKL_THREADING_LAYER=GNU` so oneMKL and those packages share one OpenMP runtime (see [Threads and NUMA](#threads-and-numa)). If you only need oneMKL-backed NumPy, prefer the targeted install below, which stays on Intel OpenMP (`MKL_THREADING_LAYER=INTEL`) with no such tradeoff.
+
 Pin python version to match your project if you need a specific interpreter. NumPy comes from conda-forge; the Intel channel supplies Intel's latest oneMKL builds. The `mkl_fft`/`mkl_random`/`mkl_umath` extensions are available from both conda-forge and the Intel channel, so either channel works for them; the command below keeps both channels enabled. To add oneMKL to an *existing* environment that already has conda-forge NumPy installed, swap its BLAS to the MKL variant and add the extensions in place (this re-links the NumPy you already have, it does not reinstall NumPy). Intel-channel packages are built to be compatible with conda-forge but not with the Anaconda defaults channel:
 
 ```bash
@@ -98,7 +100,7 @@ mkl_umath.patch_numpy_umath()
 
 def analyze(signal):
     spectrum = np.fft.fft(signal)    # -> numpy.fft, then mkl_fft after activation
-    power = np.abs(spectrum) ** 2    # -> oneMKL Vector Math Library (VML) after activation (large arrays)
+    power = np.abs(spectrum) ** 2    # -> oneMKL Vector Math (VM) after activation (large arrays)
     return np.log(power + 1.0)       # -> oneMKL Vector Math Library (VML) after activation (large arrays)
 
 result = analyze(np.random.randn(1_000_000))  # same call, now backed by oneMKL
@@ -133,14 +135,6 @@ with mkl_fft.mkl_fft():
 print(f"stock numpy.fft : {stock_ms:.1f} ms")
 print(f"mkl_fft         : {mkl_ms:.1f} ms")
 print(f"speedup         : {stock_ms / mkl_ms:.1f}x")
-```
-
-Measured on AWS, Intel® Xeon® 6975P-C, 16 cores / 32 threads (HT on), 1 socket, Ubuntu 26.04 LTS. Numbers vary by hardware.
-
-```
-stock numpy.fft : 722.7 ms
-mkl_fft         : 43.0 ms
-speedup         : 16.8x
 ```
 
 To keep `mkl_fft` routing NumPy's FFT calls for the whole process rather than a single block, use the patch/restore pair (this affects the FFT functions only, not other NumPy operations):
@@ -187,14 +181,6 @@ mkl_ms = timeit.timeit(lambda: rng.standard_normal(N, method='BoxMuller'), numbe
 print(f"numpy Generator : {stock_ms:.1f} ms")
 print(f"mkl_random      : {mkl_ms:.1f} ms")
 print(f"speedup         : {stock_ms / mkl_ms:.1f}x")
-```
-
-Measured on AWS, Intel® Xeon® 6975P-C, 16 cores / 32 threads (HT on), 1 socket, Ubuntu 26.04 LTS. Numbers vary by hardware.
-
-```
-numpy Generator : 982.0 ms
-mkl_random      : 254.0 ms
-speedup         : 3.9x
 ```
 
 > **Reproducibility note:** `mkl_random` and `numpy.random` produce different sequences from the same seed. If your tests or simulations depend on specific random values, do not swap them.
@@ -254,14 +240,6 @@ with mkl_umath.mkl_umath():
 print(f"stock numpy ufuncs : {stock_ms:.1f} ms")
 print(f"mkl_umath          : {mkl_ms:.1f} ms")
 print(f"speedup            : {stock_ms / mkl_ms:.1f}x")
-```
-
-Measured on AWS, Intel® Xeon® 6975P-C, 16 cores / 32 threads (HT on), 1 socket, Ubuntu 26.04 LTS. Numbers vary by hardware.
-
-```
-stock numpy ufuncs : 135.3 ms
-mkl_umath          : 12.9 ms
-speedup            : 10.5x
 ```
 
 To keep the patch active for the whole process, use the patch/restore pair:
