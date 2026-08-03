@@ -101,7 +101,7 @@ mkl_umath.patch_numpy_umath()
 def analyze(signal):
     spectrum = np.fft.fft(signal)    # -> numpy.fft, then mkl_fft after activation
     power = np.abs(spectrum) ** 2    # -> oneMKL Vector Math (VM) after activation (large arrays)
-    return np.log(power + 1.0)       # -> oneMKL Vector Math Library (VML) after activation (large arrays)
+    return np.log(power + 1.0)       # -> oneMKL Vector Math (VM) after activation (large arrays)
 
 result = analyze(np.random.randn(1_000_000))  # same call, now backed by oneMKL
 ```
@@ -221,9 +221,9 @@ for worker_id, stream in enumerate(streams):
 
 ### Vectorized Math: mkl_umath
 
-`mkl_umath` swaps oneMKL's Vector Math Library (VML) loops in as the C-level inner loops of NumPy's ufuncs, so existing call sites get VML acceleration with no source change. It covers a broad set of element-wise functions, including the trigonometric and hyperbolic families, `exp`/`exp2`/`expm1`, `log`/`log2`/`log10`/`log1p`, `cbrt`, `sqrt`, and the basic arithmetic ufuncs. It is the lever for transcendental-heavy element-wise math.
+`mkl_umath` swaps oneMKL's Vector Math (VM) loops in as the C-level inner loops of NumPy's ufuncs, so existing call sites get VM acceleration with no source change. It covers a broad set of element-wise functions, including the trigonometric and hyperbolic families, `exp`/`exp2`/`expm1`, `log`/`log2`/`log10`/`log1p`, `cbrt`, `sqrt`, and the basic arithmetic ufuncs. It is the lever for transcendental-heavy element-wise math.
 
-VML takes over only above a per-operation minimum array size: roughly 8,192 elements for transcendentals (`sin`, `cos`, `exp`, `log`), 8,000 for `divide`, and 100,000 for `add`/`subtract`/`multiply` in `mkl_umath` 0.4.x. Below those sizes NumPy's native loops continue to run. These cutoffs are `mkl_umath` implementation details and can change between versions; the takeaway for tuning is that the extension helps most on large arrays.
+VM takes over only above a per-operation minimum array size: roughly 8,192 elements for transcendentals (`sin`, `cos`, `exp`, `log`), 8,000 for `divide`, and 100,000 for `add`/`subtract`/`multiply` in `mkl_umath` 0.4.x. Below those sizes NumPy's native loops continue to run. These cutoffs are `mkl_umath` implementation details and can change between versions; the takeaway for tuning is that the extension helps most on large arrays.
 
 ```python
 import timeit
