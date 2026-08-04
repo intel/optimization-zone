@@ -287,7 +287,7 @@ print(mkl.get_version_string())               # confirm MKL version at runtime
 print(mkl.get_max_threads())                  # current thread count
 
 mkl.set_num_threads(8)                        # cap all MKL operations
-mkl.domain_set_num_threads(1, domain="fft")  # cap FFT specifically
+mkl.domain_set_num_threads(1, domain="fft")   # cap FFT specifically
 mkl.free_buffers()                            # return MKL scratch memory to OS
 ```
 
