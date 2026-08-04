@@ -2,6 +2,7 @@ theme: jekyll-theme-cayman
 title: Optimization Zone
 description: A growing library of software, workload, and hardware optimization recipes for Intel Xeon
 show_downloads: true
+url: https://intel.github.io
 baseurl: /optimization-zone
 plugins:
   - jekyll-seo-tag
