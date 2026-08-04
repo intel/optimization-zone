@@ -322,7 +322,7 @@ Key observations:
 
 daal4py's vectorized tree traversal is [backend-bound](https://www.intel.com/content/www/us/en/docs/vtune-profiler/cookbook/2023-0/top-down-microarchitecture-analysis-method.html) — whether the bottleneck is core execution units or memory bandwidth, adding hyperthreads increases resource contention on the shared physical core, harming performance.
 
-> **Cloud instance note:** Depending on CSP deployment choices, smaller instance sizes may not expose how many physical cores vs. hyperthreads are provided. The guidance below applies most directly to bare-metal or dedicated-host instances where the physical topology is known. On shared instances, benchmark with your specific instance size to determine whether pinning provides a benefit.
+> **Cloud instance note:** The physical topology is retrievable at runtime via `lscpu` (or Python-level tools like `joblib`). On AWS, each vCPU maps to a hyperthread, so an instance with N vCPUs has N/2 physical cores — `lscpu` confirms this by reporting 2 threads per core. Other CSPs may differ in how they provision and expose cores. Use `lscpu` to verify your instance's topology before applying the pinning recommendations below.
 
 | Configuration (1 NUMA node) | Throughput (rows/s) | p50 Latency (us) |
 |:-----------------------------|--------------------:|------------------:|

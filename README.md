@@ -41,7 +41,6 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
   - [R (Rlang / Rstats)](software/R/README.md)
   - [scikit-learn](software/scikit-learn/README.md)
-  - [XGBoost](software/xgboost/README.ms)
   - [Similarity Search](software/similarity-search/README.md)
     - [Redis](software/similarity-search/redis/README.md)
   - [Spark](software/spark/README.md)
@@ -50,6 +49,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
     - [ResNet50 – Computer Vision](software/tensorflow/computer-vision-resnet50/README.md)
     - [RGAT – Graph Neural Networks](software/tensorflow/graph-neural-networks-rgat/README.md)
   - [vLLM](software/vllm/README.md)
+  - [XGBoost](software/xgboost/README.md)
   - [zlib-accel](software/zlib-accel/README.md)
 - Workloads
   - [Cassandra Stress](workloads/cassandra-stress/README.md)
