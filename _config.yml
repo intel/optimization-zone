@@ -1,4 +1,8 @@
 theme: jekyll-theme-cayman
 title: Optimization Zone
-description: Data Center workload and software optimizations for Intel hardware.
+description: A growing library of software, workload, and hardware optimization recipes for Intel Xeon
 show_downloads: true
+baseurl: /optimization-zone
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
