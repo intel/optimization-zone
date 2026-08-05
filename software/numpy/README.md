@@ -43,7 +43,7 @@ There are two practical ways to get a oneMKL-backed NumPy. conda is recommended 
 **conda.** A single command installs NumPy, SciPy, the three extension packages (mkl_fft, mkl_random, mkl_umath), and the runtime libraries. The BLAS/LAPACK backend routes to oneMKL automatically; the extensions are installed but still need explicit activation (the activation process is shown in the [Optimization Levers](#optimization-levers) section).
 
 ```bash
-conda create -n idp_env -y python intelpython3_full \
+conda create -n idp_env python intelpython3_full \
   -c https://software.repos.intel.com/python/conda \
   -c conda-forge --override-channels && \
   conda activate idp_env
@@ -51,10 +51,12 @@ conda create -n idp_env -y python intelpython3_full \
 
 > **Threading layer for this environment.** `intelpython3_full` is a metapackage that also brings in `scikit-learn`, which is built against GNU OpenMP. In this mixed environment set `MKL_THREADING_LAYER=GNU` so oneMKL and those packages share one OpenMP runtime (see [Threads and NUMA](#threads-and-numa)). If you only need oneMKL-backed NumPy, prefer the targeted install below, which stays on Intel OpenMP (`MKL_THREADING_LAYER=INTEL`) with no such tradeoff.
 
-Pin python version to match your project if you need a specific interpreter. NumPy comes from conda-forge; the Intel channel supplies Intel's latest oneMKL builds. The `mkl_fft`/`mkl_random`/`mkl_umath` extensions are available from both conda-forge and the Intel channel, so either channel works for them; the command below keeps both channels enabled. To add oneMKL to an *existing* environment that already has conda-forge NumPy installed, swap its BLAS to the MKL variant and add the extensions in place (this re-links the NumPy you already have, it does not reinstall NumPy). Intel-channel packages are built to be compatible with conda-forge but not with the Anaconda defaults channel:
+Pin python version to match your project if you need a specific interpreter. NumPy comes from conda-forge; the Intel channel supplies Intel's latest oneMKL builds. The `mkl_fft`/`mkl_random`/`mkl_umath` extensions are available from both conda-forge and the Intel channel, so either channel works for them; the command below keeps both channels enabled. To add oneMKL to an *existing* environment that already has conda-forge NumPy installed, swap its BLAS to the MKL variant and add the extensions in place (this re-links the NumPy you already have, it does not reinstall NumPy).
+
+_Note: Intel-channel packages are built to be compatible with conda-forge but not with the Anaconda defaults channel._
 
 ```bash
-conda install -y \
+conda install \
   -c https://software.repos.intel.com/python/conda \
   -c conda-forge --override-channels \
   "blas=*=*_intelmkl" \
@@ -162,6 +164,8 @@ Covered transforms: `fft`, `ifft`, `fft2`, `ifft2`, `fftn`, `ifftn`, `rfft`, `ir
 `mkl_random` is a Python interface to oneMKL's Vector Statistics Library (VSL). It samples from the same distributions as `numpy.random` but is not a fixed-seed drop-in: the same seed produces a different sequence. It also uses lower-precision random values (32-bit) than NumPy (which uses 64-bit), so for work that needs high-precision randomness, stick with NumPy's `Generator`. Use it when generating large volumes of random data is a bottleneck and you do not depend on reproducing specific values.
 
 It can be used two ways. The **context manager** is the zero-code-change path, like the other extensions: existing `np.random.*` call sites keep working and route through VSL (shown below). The **explicit `RandomState` API** is a small code change that lets you pick the generator and the sampling method for the fastest path. The benchmark below uses it with `method='BoxMuller'`, oneMKL's fast normal sampler.
+
+_Note: the Box-Muller method, while faster, has different accuracy and granularity than the [ziggurat](https://en.wikipedia.org/wiki/Ziggurat_algorithm) method used by default by upstream NumPy, which might manifest when drawing very large quantities of random numbers. Be aware that it won't output absolute values larger than 6.6._
 
 The example below compares wall time for 100 million normal samples against `np.random.default_rng`, NumPy's modern `Generator` API:
 
