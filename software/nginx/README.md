@@ -236,7 +236,7 @@ The client count, duration, port, and cipher are set in the USER INPUT block at 
 
 ### Core Allocation and `worker_processes`
 
-Both configuration files set `worker_processes 48`, which is deliberately a fraction of the cores available on the test system rather than all of them.
+Both configuration files set `worker_processes 48`, which is deliberately fewer than the cores available on the test system rather than all of them.
 
 This reflects the scenario the guide is intended to demonstrate.  In a real deployment, a web tier rarely has an entire high-core-count server to itself — it shares the machine with application, caching, or database workloads.  The question that matters is therefore not "what peak CPS can this server reach with every core dedicated to NGINX," but "how much TLS throughput can be delivered from a modest slice of the machine, leaving the rest for other work."
 
@@ -244,15 +244,15 @@ Offloading handshake cryptography to the QAT devices is what makes that slice go
 
 ## Results
 
-![NGINX TLS handshake CPS, C3 SPR vs C4D Turin vs C4 GNR with and without QAT](image.png)
+![NGINX TLS handshake CPS, C4D Turin vs C4 GNR with and without QAT](image.png)
 
-Intel® QAT is only exposed on bare-metal cloud instances, so this comparison is run there rather than on virtualized shapes.  The two C4 GNR bars are the same bare-metal Intel Xeon 6980P system described under [Details](#details), both running `worker_processes 48`, with the QAT modules and QAT engine as the only variable between them — the "without QAT" bar corresponds to `nginx_without_qat.conf` and the "with QAT" bar to `nginx_with_qat.conf`.  The C4D Turin instance is likewise bare metal, so the cross-platform comparison holds the provisioning model constant as well.
+Intel® QAT is only exposed on bare-metal cloud instances, so this comparison is run there rather than on virtualized shapes.  The two C4 GNR bars are the same bare-metal Intel Xeon 6985P system (`c4-highmem-288-metal`) described under [Details](#details), both running `worker_processes 48`, with the QAT modules and QAT engine as the only variable between them — the "without QAT" bar corresponds to `nginx_without_qat.conf` and the "with QAT" bar to `nginx_with_qat.conf`.  The C4D Turin instance is likewise bare metal, so the cross-platform comparison holds the provisioning model constant as well.
 
 ## Details
 
 NGINX on GNR (c4-highmem-288-metal), bare metal: Intel(R) Xeon(R) 6985P, 144 cores, 500W TDP, HT On, Turbo On, NUMA 6, Total Memory 2232GB, microcode 0x1000380, 4 QAT engines, Ubuntu 24.04 LTS, 6.14.0-gcp. Test by Intel as of Oct 6, 2025, async_mode_nginx version 1.0.0, nginx 1.26.2, OpenSSL 3.0.13, QATEngine 2.0.0
 
-NGINX on GNR (c4d-highmem-384-metal), bare metal: AMD(R) EPYC(R) 9B45, 192 cores, HT On, Turbo On, NUMA 2, Total Memory 3072GB, microcode 0xb002150, Ubuntu 24.04 LTS, 6.14.0-gcp. Test by Intel as of Oct 6, 2025, async_mode_nginx version 1.0.0, nginx 1.26.2, OpenSSL 3.0.13, QATEngine 2.0.0
+NGINX on Turin (c4d-highmem-384-metal), bare metal: AMD(R) EPYC(R) 9B45, 192 cores, HT On, Turbo On, NUMA 2, Total Memory 3072GB, microcode 0xb002150, Ubuntu 24.04 LTS, 6.14.0-gcp. Test by Intel as of Oct 6, 2025, async_mode_nginx version 1.0.0, nginx 1.26.2, OpenSSL 3.0.13
 
 Results may vary.
 
