@@ -250,7 +250,9 @@ Intel® QAT is only exposed on bare-metal cloud instances, so this comparison is
 
 ## Details
 
-NGINX on GNR 128c (Intel Xeon 6980P), bare metal: 1-node, 2x Intel(R) Xeon(R) 6980P, 128 cores, 500W TDP, HT On, Turbo On, NUMA 6, Total Memory 1536GB (24x64GB DDR5 6400 MT/s [6400 MT/s]), BIOS F23, microcode 0x10003f3, 2x I350 Gigabit Network Connection, 4 QAT engines, 1x14.3G SanDisk 3.2Gen1, 8x3.5T Samsung MZQL23T8HCL5-00A07, 1x7T Micron_7450_MTFDK8G1T9TFR, Ubuntu 24.04.3 LTS, 6.8.0-86-generic. Test by Intel as of Nov 18, 2025, async_mode_nginx version 1.0.0, nginx 1.26.2, OpenSSL 3.0.13, QATEngine 2.0.0
+NGINX on GNR (c4-highmem-288-metal), bare metal: Intel(R) Xeon(R) 6985P, 144 cores, 500W TDP, HT On, Turbo On, NUMA 6, Total Memory 2232GB, microcode 0x1000380, 4 QAT engines, Ubuntu 24.04 LTS, 6.14.0-gcp. Test by Intel as of Oct 6, 2025, async_mode_nginx version 1.0.0, nginx 1.26.2, OpenSSL 3.0.13, QATEngine 2.0.0
+
+NGINX on GNR (c4d-highmem-384-metal), bare metal: AMD(R) EPYC(R) 9B45, 192 cores, HT On, Turbo On, NUMA 2, Total Memory 3072GB, microcode 0xb002150, Ubuntu 24.04 LTS, 6.14.0-gcp. Test by Intel as of Oct 6, 2025, async_mode_nginx version 1.0.0, nginx 1.26.2, OpenSSL 3.0.13, QATEngine 2.0.0
 
 Results may vary.
 
