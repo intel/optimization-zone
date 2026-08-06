@@ -39,6 +39,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [Java](software/java/README.md)
   - [Kafka](software/kafka/README.md)
   - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
+  - [NumPy](software/numpy/README.md)
   - [R (Rlang / Rstats)](software/R/README.md)
   - [scikit-learn](software/scikit-learn/README.md)
   - [Similarity Search](software/similarity-search/README.md)
