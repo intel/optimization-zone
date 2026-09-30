@@ -13,3 +13,4 @@ Actual improvements will vary depending on a given workload's characteristics. I
 - Best Practices: General, workload-agnostic guidance for configuring and tuning applications to align with NUMA topology.
 - Performance Opportunities: Common NUMA-related bottlenecks and the optimization patterns that address them.
 - [Case Studies](case_studies/README.md): Real-world, data-driven examples demonstrating the performance impact of NUMA-aware configuration.
+- [Cloud Instances](cloud_instances/README.md): NUMA topology of cloud instance families per provider — how instance sizes map onto sockets, NUMA nodes, and compute dies on AWS and Google Cloud.

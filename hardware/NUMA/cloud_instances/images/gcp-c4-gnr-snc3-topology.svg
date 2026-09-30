@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="560" viewBox="0 0 780 560" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <title id="t">GCP C4-GNR socket with SNC3 enabled: three compute dies presented as three NUMA nodes</title>
+  <desc id="d">One C4-GNR socket. Three compute dies are stacked vertically, each with 24 cores and 48 threads, and each presented to the operating system as its own NUMA node: compute die 0 is NUMA node 0, compute die 1 is NUMA node 1, compute die 2 is NUMA node 2. Two DDR memory channels attach to each side of every compute die, 4 per die and 12 per socket. One IO die sits above the compute die stack and a second below it, with a die-to-die crossing at each interface. A full two-socket system is 6 compute dies and 6 NUMA nodes.</desc>
+  <rect x="0" y="0" width="780" height="560" fill="#fcfcfb"/>
+  <text x="40" y="28" font-size="17" font-weight="600" fill="#0b0b0b">C4-GNR socket &#8212; 72 cores / 144 threads</text>
+  <text x="40" y="48" font-size="13" fill="#52514e">3 compute dies &#183; 2 IO dies &#183; 12 memory channels &#183; SNC3 enabled</text>
+  <rect x="250" y="68" width="280" height="34" rx="8" fill="#f0efec" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="390" y="90" text-anchor="middle" font-size="13" font-weight="600" fill="#52514e">IO Die</text>
+  <rect x="250" y="494" width="280" height="34" rx="8" fill="#f0efec" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="390" y="516" text-anchor="middle" font-size="13" font-weight="600" fill="#52514e">IO Die</text>
+  <path d="M290 106 V118" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M315 106 V118" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M465 106 V118" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M490 106 V118" stroke="#c3c2b7" stroke-width="2.5"/>
+  <text x="390" y="116" text-anchor="middle" font-size="10" font-weight="600" fill="#52514e">Die-to-Die Crossing</text>
+  <path d="M290 230 V242" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M315 230 V242" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M465 230 V242" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M490 230 V242" stroke="#c3c2b7" stroke-width="2.5"/>
+  <text x="390" y="240" text-anchor="middle" font-size="10" font-weight="600" fill="#52514e">Die-to-Die Crossing</text>
+  <path d="M290 354 V366" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M315 354 V366" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M465 354 V366" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M490 354 V366" stroke="#c3c2b7" stroke-width="2.5"/>
+  <text x="390" y="364" text-anchor="middle" font-size="10" font-weight="600" fill="#52514e">Die-to-Die Crossing</text>
+  <path d="M290 478 V490" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M315 478 V490" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M465 478 V490" stroke="#c3c2b7" stroke-width="2.5"/>
+  <path d="M490 478 V490" stroke="#c3c2b7" stroke-width="2.5"/>
+  <text x="390" y="488" text-anchor="middle" font-size="10" font-weight="600" fill="#52514e">Die-to-Die Crossing</text>
+  <rect x="250" y="122" width="280" height="104" rx="8" fill="#2a78d6" fill-opacity="0.10"/>
+  <rect x="250" y="122" width="280" height="104" rx="8" fill="none" stroke="#2a78d6" stroke-width="2.5"/>
+  <text x="390" y="148" text-anchor="middle" font-size="15" font-weight="600" fill="#0b0b0b">Compute die 0</text>
+  <text x="390" y="168" text-anchor="middle" font-size="12" fill="#52514e">24 cores / 48 threads</text>
+  <rect x="315" y="180" width="150" height="28" rx="14" fill="#2a78d6" fill-opacity="0.18"/>
+  <rect x="315" y="180" width="150" height="28" rx="14" fill="none" stroke="#2a78d6" stroke-width="1.5"/>
+  <text x="390" y="199" text-anchor="middle" font-size="13" font-weight="600" fill="#0b0b0b">NUMA node 0</text>
+  <rect x="40" y="138" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="105" y="158" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <rect x="610" y="138" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="675" y="158" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <path d="M170 153 H250" stroke="#898781" stroke-width="1.5"/>
+  <path d="M530 153 H610" stroke="#898781" stroke-width="1.5"/>
+  <rect x="40" y="180" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="105" y="200" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <rect x="610" y="180" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="675" y="200" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <path d="M170 195 H250" stroke="#898781" stroke-width="1.5"/>
+  <path d="M530 195 H610" stroke="#898781" stroke-width="1.5"/>
+  <rect x="250" y="246" width="280" height="104" rx="8" fill="#eb6834" fill-opacity="0.10"/>
+  <rect x="250" y="246" width="280" height="104" rx="8" fill="none" stroke="#eb6834" stroke-width="2.5"/>
+  <text x="390" y="272" text-anchor="middle" font-size="15" font-weight="600" fill="#0b0b0b">Compute die 1</text>
+  <text x="390" y="292" text-anchor="middle" font-size="12" fill="#52514e">24 cores / 48 threads</text>
+  <rect x="315" y="304" width="150" height="28" rx="14" fill="#eb6834" fill-opacity="0.18"/>
+  <rect x="315" y="304" width="150" height="28" rx="14" fill="none" stroke="#eb6834" stroke-width="1.5"/>
+  <text x="390" y="323" text-anchor="middle" font-size="13" font-weight="600" fill="#0b0b0b">NUMA node 1</text>
+  <rect x="40" y="262" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="105" y="282" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <rect x="610" y="262" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="675" y="282" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <path d="M170 277 H250" stroke="#898781" stroke-width="1.5"/>
+  <path d="M530 277 H610" stroke="#898781" stroke-width="1.5"/>
+  <rect x="40" y="304" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="105" y="324" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <rect x="610" y="304" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="675" y="324" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <path d="M170 319 H250" stroke="#898781" stroke-width="1.5"/>
+  <path d="M530 319 H610" stroke="#898781" stroke-width="1.5"/>
+  <rect x="250" y="370" width="280" height="104" rx="8" fill="#1baf7a" fill-opacity="0.10"/>
+  <rect x="250" y="370" width="280" height="104" rx="8" fill="none" stroke="#1baf7a" stroke-width="2.5"/>
+  <text x="390" y="396" text-anchor="middle" font-size="15" font-weight="600" fill="#0b0b0b">Compute die 2</text>
+  <text x="390" y="416" text-anchor="middle" font-size="12" fill="#52514e">24 cores / 48 threads</text>
+  <rect x="315" y="428" width="150" height="28" rx="14" fill="#1baf7a" fill-opacity="0.18"/>
+  <rect x="315" y="428" width="150" height="28" rx="14" fill="none" stroke="#1baf7a" stroke-width="1.5"/>
+  <text x="390" y="447" text-anchor="middle" font-size="13" font-weight="600" fill="#0b0b0b">NUMA node 2</text>
+  <rect x="40" y="386" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="105" y="406" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <rect x="610" y="386" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="675" y="406" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <path d="M170 401 H250" stroke="#898781" stroke-width="1.5"/>
+  <path d="M530 401 H610" stroke="#898781" stroke-width="1.5"/>
+  <rect x="40" y="428" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="105" y="448" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <rect x="610" y="428" width="130" height="30" rx="5" fill="#ffffff" stroke="#c3c2b7" stroke-width="1.5"/>
+  <text x="675" y="448" text-anchor="middle" font-size="11" fill="#52514e">DDR</text>
+  <path d="M170 443 H250" stroke="#898781" stroke-width="1.5"/>
+  <path d="M530 443 H610" stroke="#898781" stroke-width="1.5"/>
+</svg>
