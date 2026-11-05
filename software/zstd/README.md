@@ -30,7 +30,7 @@ preserving compatibility and compression results.
 
 ## Performance
 
-Intel® QAT delivers up to **3.2× higher throughput** than zstd compression
+Intel® QAT-ZSTD delivers up to **3.2× higher throughput** than zstd compression
 level 5 and up to **2.5× higher throughput** than zstd compression level 4.[^1](#test-configuration)
 
 The following compression ratios are reported for the Silesia Corpus:
