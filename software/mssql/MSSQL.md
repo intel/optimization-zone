@@ -1,8 +1,8 @@
-# Intel HammerDB TPROC-C Benchmark Configuration and Reproducibility Reference for Microsoft SQL Server on Amazon RDS
+# Intel HammerDB TPROC-C Benchmark Configuration and Reproducibility Reference for Microsoft SQL Server on AWS RDS
 
 This guide documents the complete, reproducible configuration of the RDS for SQL Server benchmark harness: the AWS RDS instance and engine settings, the Microsoft SQL Server database configuration, the HammerDB TPROC-C workload, and every metric and artifact collected for analysis. Example used in this guide references:
 
-- Microsoft SQL Server on AWS RDS db.r6i.2xlarge (8 vCPU / 64 GiB), db.r8i.4xlarge (8 vCPU / 128 GiB) and db.r8i.8xlarge (8 vCPU / 256 GiB - using Optimize CPU).
+- Microsoft SQL Server on AWS RDS db.r6i.2xlarge (8 vCPU / 64 GiB), db.r8i.4xlarge (8 vCPU / 128 GiB) and db.r8i.8xlarge (8 vCPU / 256 GiB - using "Optimize CPU" option).
 
 **Revision Record**
 | Date | Rev. | Description |
@@ -35,51 +35,25 @@ This guide documents the complete, reproducible configuration of the RDS for SQL
   - [6. Analysis Outputs](#6-analysis-outputs)
   - [7. Fairness Controls](#7-fairness-controls)
 
-## 1. Overview & Test Design
-
-| Item | Description |
-| --- | --- |
-| Objective | **\<insert here\>** Example: Equal-license cross-generation throughput / latency / cost A/B |
-| Baseline (control) | **\<insert here\>** Example: db.r6i.2xlarge — 8 vCPU / 64 GiB, default CPU |
-| Newer Generation + Memory | **\<insert here\>** Example: db.r8i.4xlarge (8 vCPU by default due to SMT off, 128 GiB RAM). This isolates the impact of instance generation and increased memory. |
-| Optimize CPU (test) | **\<insert here\>** Example: db.r8i.8xlarge with Optimize CPU (native 16 vCPU/256 GiB RAM, manually configured to 8 vCPU). This quantifies "the value of renting a large instance but licensing only 8 vCPUs." |
-| Workload tool | **\<insert here\>** Example: HammerDB 5.0, TPROC-C (TPC-C derived; results reported as NOPM/TPM) |
-| Load driver | **\<insert here\>** Example: Amazon EC2 c7i.4xlarge (16 vCPU) — never the bottleneck |
-| Schema parity | Built once on baseline, cloned via snapshot/restore (identical data/stats) |
-| Iterations | 3 runs per data point; median NOPM/TPM reported |
 
 ## 2. Amazon RDS Instance & Engine Configuration
 
-Common to all instances to be benchmarked unless noted. Storage is identical on all instances, so EBS is never the differentiator.
+Common to all instances to be benchmarked unless noted.
 
 | RDS / engine setting | Value |
 | --- | --- |
-| AWS Region | us-east-1 |
 | Engine | sqlserver-ee (SQL Server Enterprise Edition) |
-| Engine version | Latest 16.00 (SQL Server 2022), resolved at runtime |
+| Engine version | 16.00 (SQL Server 2022) |
 | License model | license-included |
-| Baseline instance class | **\<insert here\>** Example: db.r6i.2xlarge (8 vCPU / 64 GiB, default CPU) |
-| Baseline identifier | **\<insert here\>** Example: r6i2xl-baseline |
-| Optimize-CPU instance class | **\<insert here\>** Example: db.r8i.4xlarge (8 vCPU / 128 GiB on RDS SQL Server, SMT off) |
-| Optimize-CPU identifier | **\<insert here\>** Example: r8i4xl-ocpu |
-| Optimize CPU: coreCount | **\<insert here\>** Example: 8 (RDS SQL Server default for this class; no vCPU reduction) |
-| Optimize CPU: threadsPerCore | **\<insert here\>** Example: 1 (SMT disabled on RDS SQL Server) |
-| Effective OCPU vCPUs | **\<insert here\>** Example: 8 (8 physical cores × 1 thread = class default) |
-| Real-OCPU instance class | **\<insert here\>** Example: db.r8i.8xlarge (16 vCPU / 256 GiB default on RDS SQL Server, SMT off) |
-| Real-OCPU identifier | **\<insert here\>** Example: r8i8xl-ocpu |
-| Real-OCPU: coreCount | **\<insert here\>** Example: 8 (genuine 16 -> 8 reduction; ~halves the SQL EE license) |
-| Real-OCPU effective vCPUs | **\<insert here\>** Example: 8 (of 16 native; keeps full 256 GiB RAM) |
 | Storage type | gp3 |
 | Allocated storage | 1000 GB |
 | Provisioned IOPS | 16000 |
 | Storage throughput | 600 MB/s |
-| Master username | **\<insert here\>** |
 | Multi-AZ | false (single-AZ) |
 | Publicly accessible | false |
 | Backup retention | 1 day |
 | Performance Insights | Enabled, 7-day retention |
 | Enhanced Monitoring interval | 1 second (OS metrics -> CloudWatch Logs RDSOSMetrics) |
-| Golden schema snapshot | **\<insert here\>** Example: r6i2xl-tprocc-golden (built on r6i, restored on r8i) |
 
 ## 3. SQL Server Database Configuration
 
@@ -93,6 +67,18 @@ RDS defaults `TARGET_RECOVERY_TIME` to 60 s. The harness raises it to 300 s on b
 | tempdb TARGET_RECOVERY_TIME | 300 seconds |
 | RDS default (overridden) | 60 seconds |
 
+Apply on every target after each build, drop or snapshot restore, and again before each run:
+
+```sql
+ALTER DATABASE [tpcc]   SET TARGET_RECOVERY_TIME = 300 SECONDS;
+ALTER DATABASE [tempdb] SET TARGET_RECOVERY_TIME = 300 SECONDS;
+
+-- Verify: both rows should return 300
+SELECT name, target_recovery_time_in_seconds
+FROM sys.databases
+WHERE name IN (N'tpcc', N'tempdb');
+```
+
 ### 3.2 tempdb file layout (allocation-page latch relief)
 
 Multiple equal-size `tempdb` data files reduce PFS/GAM/SGAM latch contention (Microsoft rule of thumb: 1 file per logical CPU up to 8). Applied on the baseline at build and re-applied on every run because snapshot/restore resets `tempdb` to the RDS default. `ADD FILE` and grow-only `MODIFY` take effect immediately on RDS (no restart).
@@ -104,6 +90,77 @@ Multiple equal-size `tempdb` data files reduce PFS/GAM/SGAM latch contention (Mi
 | Autogrowth per file | 512 MB |
 | Data directory | **\<insert here\>** Example: `D:\rdsdbdata\DATA\` |
 
+Inspect the current layout first:
+
+```sql
+SELECT name, physical_name,
+       size / 128 AS size_mb,
+       CASE WHEN is_percent_growth = 1 THEN CONCAT(growth, N'%')
+            ELSE CONCAT(growth / 128, N' MB') END AS autogrowth
+FROM tempdb.sys.database_files
+WHERE type_desc = N'ROWS';
+```
+
+Then run the script below. It is idempotent, so you can re-run it after every snapshot restore.
+It grows existing data files to the target size (grow-only), sets autogrowth, and adds files
+until there are 8:
+
+```sql
+DECLARE @target_files int           = 8,
+        @size_mb      int           = 8192,
+        @growth_mb    int           = 512,
+        @data_dir     nvarchar(260) = N'D:\rdsdbdata\DATA\',  -- <insert here>
+        @name         sysname,
+        @sql          nvarchar(max),
+        @i            int           = 2;
+
+-- 1. Resize existing data files and set autogrowth
+DECLARE files CURSOR LOCAL FAST_FORWARD FOR
+    SELECT name FROM tempdb.sys.database_files WHERE type_desc = N'ROWS';
+OPEN files;
+FETCH NEXT FROM files INTO @name;
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    IF (SELECT size / 128 FROM tempdb.sys.database_files WHERE name = @name) < @size_mb
+    BEGIN
+        SET @sql = CONCAT(N'ALTER DATABASE tempdb MODIFY FILE (NAME = N''', @name,
+                          N''', SIZE = ', @size_mb, N'MB);');
+        EXEC (@sql);
+    END;
+    SET @sql = CONCAT(N'ALTER DATABASE tempdb MODIFY FILE (NAME = N''', @name,
+                      N''', FILEGROWTH = ', @growth_mb, N'MB);');
+    EXEC (@sql);
+    FETCH NEXT FROM files INTO @name;
+END;
+CLOSE files;
+DEALLOCATE files;
+
+-- 2. Add data files until there are @target_files.
+--    Follows SQL Server naming (logical tempdev<n>, physical tempdb<n>.ndf) and skips
+--    any name whose logical or physical file already exists. Stops on the first error.
+WHILE (SELECT COUNT(*) FROM tempdb.sys.database_files WHERE type_desc = N'ROWS') < @target_files
+BEGIN
+    SET @name = CONCAT(N'tempdev', @i);
+    IF NOT EXISTS (SELECT 1 FROM tempdb.sys.database_files
+                   WHERE name = @name
+                      OR physical_name = CONCAT(@data_dir, N'tempdb', @i, N'.ndf'))
+    BEGIN
+        SET @sql = CONCAT(N'ALTER DATABASE tempdb ADD FILE (NAME = N''', @name,
+                          N''', FILENAME = N''', @data_dir, N'tempdb', @i, N'.ndf'', SIZE = ',
+                          @size_mb, N'MB, FILEGROWTH = ', @growth_mb, N'MB);');
+        BEGIN TRY
+            EXEC (@sql);
+        END TRY
+        BEGIN CATCH
+            THROW;
+        END CATCH;
+    END;
+    SET @i += 1;
+END;
+```
+
+Re-run the inspection query to confirm 8 data files of 8192 MB with 512 MB autogrowth.
+
 ### 3.3 tpcc user-database file layout (optional, measure-first)
 
 Extra PRIMARY-filegroup data files can relieve allocation contention for heavy concurrent INSERTs. On RDS all files share one EBS volume, so the only benefit is latch relief (no I/O parallelism). Applied to BOTH instances only if PAGELATCH contention is observed; PRIMARY uses `AUTOGROW_ALL_FILES` so proportional fill stays even.
@@ -113,10 +170,46 @@ Extra PRIMARY-filegroup data files can relieve allocation contention for heavy c
 | tpcc PRIMARY data files | 4 |
 | Size per file | 51200 MB (≈ 200 GiB total, pre-sized for 1000 warehouses) |
 | Autogrowth per file | 4096 MB |
-| Filegroup option | AUTOGROW_ALL_FILES |
-| Applied when | Only if `50_collect_metrics.sh` flags PAGELATCH on tpcc |
+| Filegroup option | AUTOGROW_ALL_FILES|
 
-3.4 SQL server trace flags and sp_configure settings done for all 3 instances
+Check for allocation-page latch contention on `tpcc` while the workload is running. The
+`resource_description` of a PAGELATCH wait is `database_id:file_id:page_id`:
+
+```sql
+SELECT wait_type, resource_description, COUNT(*) AS waiting_tasks
+FROM sys.dm_os_waiting_tasks
+WHERE wait_type LIKE N'PAGELATCH[_]%'
+  AND resource_description LIKE CONCAT(DB_ID(N'tpcc'), N':%')
+GROUP BY wait_type, resource_description
+ORDER BY waiting_tasks DESC;
+```
+
+If contention is confirmed, inspect the current files, then add data files to `PRIMARY`. Run this
+when no workload is connected:
+
+```sql
+-- Inspect the current tpcc files and their logical names
+SELECT f.name, f.type_desc, fg.name AS filegroup_name, f.physical_name, f.size / 128 AS size_mb
+FROM tpcc.sys.database_files AS f
+LEFT JOIN tpcc.sys.filegroups AS fg ON f.data_space_id = fg.data_space_id;
+
+-- Grow-only: skip this statement if the existing file is already larger than 51200 MB
+ALTER DATABASE [tpcc] MODIFY FILE (NAME = N'tpcc', SIZE = 51200MB, FILEGROWTH = 4096MB);
+
+-- Add three more files for 4 PRIMARY data files in total
+ALTER DATABASE [tpcc] ADD FILE (NAME = N'tpcc2', FILENAME = N'D:\rdsdbdata\DATA\tpcc2.ndf',
+    SIZE = 51200MB, FILEGROWTH = 4096MB) TO FILEGROUP [PRIMARY];
+ALTER DATABASE [tpcc] ADD FILE (NAME = N'tpcc3', FILENAME = N'D:\rdsdbdata\DATA\tpcc3.ndf',
+    SIZE = 51200MB, FILEGROWTH = 4096MB) TO FILEGROUP [PRIMARY];
+ALTER DATABASE [tpcc] ADD FILE (NAME = N'tpcc4', FILENAME = N'D:\rdsdbdata\DATA\tpcc4.ndf',
+    SIZE = 51200MB, FILEGROWTH = 4096MB) TO FILEGROUP [PRIMARY];
+
+-- Grow all PRIMARY files together so proportional fill stays even
+ALTER DATABASE [tpcc] MODIFY FILEGROUP [PRIMARY] AUTOGROW_ALL_FILES;
+```
+
+Replace the logical name `tpcc` and the `D:\rdsdbdata\DATA\` path with the values that the
+inspection query returns.
 
 ### 3.4 Server-configuration capture (per target, at run time)
 
@@ -130,11 +223,97 @@ Extra PRIMARY-filegroup data files can relieve allocation contention for heavy c
 - SQL Server version banner and capture timestamp (UTC).
 - SQL Server error log (via `rdsadmin.dbo.rds_read_error_log`).
 
+Save the following as `config_capture.sql`:
+
+```sql
+SET NOCOUNT ON;
+
+PRINT '== SQL Server version and capture time (UTC) ==';
+SELECT @@VERSION AS sql_version, SYSUTCDATETIME() AS captured_at_utc;
+
+PRINT '== sp_configure (all options, including advanced) ==';
+SELECT name, value, value_in_use, is_advanced
+FROM sys.configurations
+ORDER BY name;
+
+PRINT '== Active global trace flags ==';
+DBCC TRACESTATUS(-1);
+
+PRINT '== Recovery settings ==';
+SELECT name, recovery_model_desc, target_recovery_time_in_seconds
+FROM sys.databases
+WHERE name IN (N'tpcc', N'tempdb', N'model', N'master', N'msdb');
+
+PRINT '== tempdb file layout ==';
+SELECT name, type_desc, physical_name, size / 128 AS size_mb,
+       CASE WHEN is_percent_growth = 1 THEN CONCAT(growth, N'%')
+            ELSE CONCAT(growth / 128, N' MB') END AS autogrowth
+FROM tempdb.sys.database_files;
+
+PRINT '== tpcc file layout ==';
+SELECT f.name, f.type_desc, fg.name AS filegroup_name, f.physical_name, f.size / 128 AS size_mb,
+       CASE WHEN f.is_percent_growth = 1 THEN CONCAT(f.growth, N'%')
+            ELSE CONCAT(f.growth / 128, N' MB') END AS autogrowth
+FROM tpcc.sys.database_files AS f
+LEFT JOIN tpcc.sys.filegroups AS fg ON f.data_space_id = fg.data_space_id;
+
+PRINT '== SQL Server error log (current) ==';
+EXEC rdsadmin.dbo.rds_read_error_log @index = 0, @type = 1;
+```
+
+Run it from the load generator with `sqlcmd` (`-N` encrypts the connection and `-C` trusts the
+server certificate, matching section 4.3):
+
+```bash
+export TARGET='r6i2xl-baseline'               # <insert here> target identifier
+export RDS_ENDPOINT='<insert here>'           # RDS endpoint of the target
+export DB_USER='<insert here>'                # master username
+export SQLCMDPASSWORD='<insert here>'         # avoids putting the password on the command line
+mkdir -p "results/${TARGET}"
+
+sqlcmd -S "tcp:${RDS_ENDPOINT},1433" -U "${DB_USER}" -N -C \
+  -i config_capture.sql \
+  -o "results/${TARGET}/${TARGET}_config_capture.txt"
+```
+
 Note: statistics are refreshed post-build on a best-effort basis (`ALTER AUTHORIZATION` + `sp_updatestats`); because the OCPU instance is a snapshot/restore clone, statistics are identical on both sides regardless.
+
+```sql
+ALTER AUTHORIZATION ON DATABASE::[tpcc] TO [<master-username>];  -- <insert here>
+USE [tpcc];
+EXEC sp_updatestats;
+```
 
 ## 4. HammerDB TPROC-C Workload Configuration
 
-### 4.1 Schema build
+### 4.1 AWS EC2 Load Generator VM
+
+| Setting | Value |
+| --- | --- |
+| Instance type | m8i.8xlarge |
+| Open-file limit | Raised to 65535 at run time (async FD demand) |
+| Role | Runs HammerDB CLI; kept otherwise idle for fairness |
+
+Raise the open-file limit in the shell that runs HammerDB, and persist it for the benchmark user:
+
+```bash
+# Current shell
+ulimit -n 65535
+ulimit -n            # verify: 65535
+
+# Persist across logins (replace <user> with the account that runs HammerDB)
+echo '<user> soft nofile 65535
+<user> hard nofile 65535' | sudo tee /etc/security/limits.d/90-hammerdb.conf
+```
+
+HammerDB connects through the Microsoft ODBC driver on Linux. Confirm that the driver is
+installed:
+
+```bash
+odbcinst -q -d       # expect: [ODBC Driver 18 for SQL Server]
+```
+
+### 4.2 Schema build
 
 | Setting | Value |
 | --- | --- |
@@ -147,7 +326,26 @@ Note: statistics are refreshed post-build on a best-effort basis (`ALTER AUTHORI
 | Target database | tpcc |
 | Build verification | `checkschema` after build |
 
-### 4.2 Connection settings (both build & run)
+Save as `build.tcl` and run it from the HammerDB install directory with
+`./hammerdbcli auto build.tcl`. It uses the connection settings in `connection.tcl`
+(section 4.3):
+
+```tcl
+dbset db mssqls
+dbset bm TPC-C
+source connection.tcl
+
+diset tpcc mssqls_dbase tpcc
+diset tpcc mssqls_count_ware 1000
+diset tpcc mssqls_num_vu 16
+diset tpcc mssqls_use_bcp true
+
+buildschema
+vudestroy
+checkschema
+```
+
+### 4.3 Connection settings (both build & run)
 
 | Setting | Value |
 | --- | --- |
@@ -157,7 +355,24 @@ Note: statistics are refreshed post-build on a best-effort basis (`ALTER AUTHORI
 | Encrypt connection | true |
 | Trust server certificate | true |
 
-### 4.3 Timed-run settings (per data point)
+Save as `connection.tcl`. Both the build and run scripts source it. The password is read from
+the `MSSQL_PASSWORD` environment variable so that it is not stored in the script:
+
+```tcl
+diset connection mssqls_server {<insert here: RDS endpoint>}
+diset connection mssqls_linux_server {<insert here: RDS endpoint>}
+diset connection mssqls_tcp true
+diset connection mssqls_port 1433
+diset connection mssqls_authentication sql
+diset connection mssqls_linux_authent sql
+diset connection mssqls_linux_odbc {ODBC Driver 18 for SQL Server}
+diset connection mssqls_uid {<insert here: master username>}
+diset connection mssqls_pass $::env(MSSQL_PASSWORD)
+diset connection mssqls_encrypt_connection true
+diset connection mssqls_trust_server_cert true
+```
+
+### 4.4 Timed-run settings (per data point)
 
 | Setting | Value |
 | --- | --- |
@@ -171,7 +386,46 @@ Note: statistics are refreshed post-build on a best-effort basis (`ALTER AUTHORI
 | Warehouse count (`mssqls_count_ware`) | 1000 |
 | Active VUs (`mssqls_num_vu`) | Set per data point from the VU sweep |
 
-### 4.4 Workload profiles
+Save as `run.tcl`. It runs one timed data point. The VU count and the workload profile
+(section 4.5) come from the `VU` and `PROFILE` environment variables:
+
+```tcl
+dbset db mssqls
+dbset bm TPC-C
+source connection.tcl
+
+set vu      $::env(VU)
+set profile $::env(PROFILE)   ;# peak or fixed
+
+diset tpcc mssqls_dbase tpcc
+diset tpcc mssqls_count_ware 1000
+diset tpcc mssqls_driver timed
+diset tpcc mssqls_rampup 15
+diset tpcc mssqls_duration 30
+diset tpcc mssqls_allwarehouse false
+diset tpcc mssqls_checkpoint true
+diset tpcc mssqls_timeprofile true
+giset timeprofile profiler xtprof
+diset tpcc mssqls_keyandthink false
+
+if {$profile eq "fixed"} {
+    diset tpcc mssqls_async_scale true
+    diset tpcc mssqls_async_client 250
+    diset tpcc mssqls_async_delay 0
+    giset commandline keepalive_margin 300
+} else {
+    diset tpcc mssqls_async_scale false
+}
+
+loadscript
+vuset vu $vu
+vuset logtotemp 1
+vucreate
+vurun
+vudestroy
+```
+
+### 4.5 Workload profiles
 
 Two profiles are run against each target; both now use zero think/keying time.
 
@@ -190,92 +444,42 @@ Two profiles are run against each target; both now use zero think/keying time.
 | Fixed — VU levels | 8, 16, 32, 64 |
 | Fixed — emulated terminals (max) | 64 VU × 250 = 16,000 |
 
-### 4.5 Load driver (EC2)
+Run the VU sweep for both profiles against one target. Each data point runs 3 times
+(`RUNS_PER_POINT`) and the median NOPM/TPM is reported:
 
-| Setting | Value |
-| --- | --- |
-| Instance type | **\<insert here\>** |
-| Open-file limit | Raised to 65535 at run time (async FD demand) |
-| Role | Runs HammerDB CLI; kept otherwise idle for fairness |
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-## 5. Metrics & Data Collected
+TARGET=r6i2xl-baseline                 # <insert here> target identifier
+RUNS_PER_POINT=3
+: "${MSSQL_PASSWORD:?Set MSSQL_PASSWORD before running}"
+export MSSQL_PASSWORD
 
-### 5.1 HammerDB result metrics
+declare -A VU_LEVELS=(
+  [peak]="2 4 8 16 24 32 48 64"
+  [fixed]="8 16 32 64"
+)
 
-- NOPM — New Orders Per Minute (primary throughput metric).
-- TPM — SQL Server Transactions Per Minute.
-- xtprof percentile latency (P95 / P99) per transaction type: NEW-ORDER, PAYMENT, DELIVERY, STOCK-LEVEL, ORDER-STATUS.
-- Median NOPM/TPM across the 3 iterations per (target, profile, VU) data point.
+ulimit -n 65535
+mkdir -p "results/${TARGET}"
 
-### 5.2 Amazon CloudWatch metrics (AWS/RDS, 60 s period, Average)
+for profile in peak fixed; do
+  for vu in ${VU_LEVELS[$profile]}; do
+    for run in $(seq 1 "${RUNS_PER_POINT}"); do
+      log="results/${TARGET}/${profile}_vu${vu}_run${run}.log"
+      echo "$(date -u +%FT%TZ) ${TARGET} profile=${profile} vu=${vu} run=${run}"
+      PROFILE="${profile}" VU="${vu}" ./hammerdbcli auto run.tcl | tee "${log}"
+      sleep 120   # settle time between data points
+    done
+  done
+done
+```
 
-- CPUUtilization
-- DatabaseConnections
-- ReadIOPS
-- WriteIOPS
-- ReadThroughput
-- WriteThroughput
-- ReadLatency
-- WriteLatency
-- DiskQueueDepth
-- FreeableMemory
-- EBSIOBalance%
-- EBSByteBalance%
+Record the start and end time of each run. You need them to pull CloudWatch, Performance
+Insights and Enhanced Monitoring data for the same time window.
 
-### 5.3 Performance Insights
+### 
 
-- `db.load.avg` (average active sessions) grouped by `db.wait_event` (top 10 waits).
-- 7-day retention; pulled per run time-window by DbiResourceId.
-- PAGELATCH share is flagged automatically as an allocation-contention hint.
 
-### 5.4 Enhanced Monitoring (OS-level, 1 s) — perfmon analogue
 
-Delivered to CloudWatch Logs group `RDSOSMetrics`, one stream per DbiResourceId. Each event is a JSON blob sampled at 1-second granularity:
-
-- cpuUtilization (per-core and aggregate)
-- memory (free, used, cached, etc.)
-- diskIO / fileSys utilization
-- network throughput
-- loadAverage
-
-### 5.5 SQL Server DMV snapshots (before & after every run; analysis diffs them)
-
-`dmv_snapshot.sql` captures these colon-marked sections; `analyze_results.py` computes per-run deltas:
-
-- CPU_CONFIG — cpu_count, scheduler_count, socket_count, cores_per_socket, memory_gb, sqlserver_start_time.
-- PERF_COUNTERS — Batch Requests/sec, SQL Compilations/sec, SQL Re-Compilations/sec, Transactions/sec, Log Flushes/sec, Log Bytes Flushed/sec, Page life expectancy, Buffer cache hit ratio, Page reads/sec, Page writes/sec, Checkpoint pages/sec, Lock Waits/sec, Average Wait Time (ms), User Connections.
-- WAIT_STATS — top 25 wait types by wait_time_ms (benign/idle waits filtered), with waiting_tasks_count and signal_wait_time_ms.
-- FILE_IO — per-database-file reads/writes, bytes, and I/O stall (ms) for tpcc + tempdb.
-- SCHEDULER_PRESSURE — avg runnable tasks, total work-queue, visible schedulers.
-
-### 5.6 Pricing / economics inputs
-
-- License-included price (USD/hr) per instance class (baseline & OCPU).
-- Derived: cost per 1,000 NOPM-hr and cost per 1,000,000 New Orders.
-- Per-core-count rates supported for the Optimize-CPU knee sweep.
-
-## 6. Analysis Outputs
-
-`analyze_results.py` merges the HammerDB manifest, CloudWatch, Performance Insights and DMV deltas, then writes to `results/report/`:
-
-| Artifact | Contents |
-| --- | --- |
-| `benchmark_summary.csv` | One row per data point PER iteration, all KPIs |
-| `benchmark_medians.csv` | Median NOPM/TPM and metrics per (target, profile, VU) |
-| `wait_stats_delta.csv` | Top wait types per run (before/after DMV delta) |
-| `charts/nopm_<profile>.png` | NOPM-vs-VU throughput curve |
-| `charts/p95_<profile>.png` / `p99_<profile>.png` | NEW-ORDER latency percentiles |
-| `charts/cpu_<profile>.png` | Steady-state RDS CPU utilization |
-| `charts/cost_<profile>.png` | Cost per 1M New Orders (license-included) |
-| `charts/knee_nopm_cost_vs_cores.png` | Optimize-CPU throughput & cost vs coreCount |
-| `core_sweep_summary.csv` | Per-core-count peak NOPM + NOPM/vCPU (sweep mode) |
-| `BENCHMARK_REPORT.md` | Filled comparison report (headline NOPM/TPM medians) |
-
-## 7. Fairness Controls
-
-- Identical engine version, parameter group, storage config and warehouse count on both instances.
-- Bit-identical data, indexes and statistics via snapshot/restore clone.
-- Equal vCPU license basis example — r8i.4xlarge on RDS SQL Server is 8 vCPU by default (SMT off); coreCount=8 is set explicitly and equals that default.
-- Runs alternate only by target; the load driver is kept otherwise idle.
-- 2-minute settle time between data points; checkpoint after each run.
-- 3 iterations per point with median reporting to suppress single-run anomalies.

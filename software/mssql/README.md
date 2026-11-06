@@ -1,4 +1,18 @@
 # Microsoft SQL Server
 
-## What's in this Microsoft SQL Server Section
-- [Intel AWS RDS Benchmark Config Reference MSSQL](Intel%20AWS%20RDS%20Benchmark%20Config%20Reference%20MSSQL.md): The Intel HammerDB TPROC-C Benchmark Configuration and Reproducibility Reference for Microsoft SQL Server on Amazon RDS. That guide documents the complete, reproducible configuration of the RDS for SQL Server benchmark harness: the RDS instance and engine settings, the SQL Server database configuration, the HammerDB TPROC-C workload, and every metric and artifact collected for analysis.
+Tuning guides and benchmark references for running Microsoft SQL Server on Intel® Xeon®
+processors. 
+
+## Guides in this section
+
+| Guide | Platform | Workload | Description |
+| --- | --- | --- | --- |
+| [HammerDB TPROC-C Benchmark Configuration and Reproducibility Reference](MSSQL.md) | Amazon RDS for SQL Server | HammerDB TPROC-C | Complete, reproducible configuration of the RDS for SQL Server benchmark harness, from instance setup to analysis outputs |
+
+
+## Related resources
+
+- [Common recommendations](../common/README.md)
+- [MySQL and PostgreSQL tuning guide](../mysql-postgresql/README.md)
+- [PerfSpect](../../tools/perfspect/README.md)
+- [Intel Optimization Zone home](../../README.md)
