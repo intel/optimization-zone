@@ -56,6 +56,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [vLLM](software/vllm/README.md)
   - [XGBoost](software/xgboost/README.md)
   - [zlib-accel](software/zlib-accel/README.md)
+  - [zstd](software/zstd/README.md)
 - Workloads
   - [Cassandra Stress](workloads/cassandra-stress/README.md)
   - [HPC](workloads/hpc/README.md)
