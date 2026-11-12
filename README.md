@@ -40,6 +40,7 @@ We aim to provide a dynamic resource where users can find the latest optimizatio
   - [Kafka](software/kafka/README.md)
   - [Kubernetes](software/kubernetes/README.md)
     - [NRI Resource-Policy Plugins](software/kubernetes/nri-resource-policies/README.md)
+  - [Microsoft SQL Server (MSSQL)](software/mssql/README.md)
   - [MySQL & PostgreSQL](software/mysql-postgresql/README.md)
   - [NGINX](software/nginx/README.md)
       - [NGINX QAT](software/nginx/QAT/README.md)
