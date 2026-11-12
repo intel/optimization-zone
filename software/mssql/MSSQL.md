@@ -1,4 +1,4 @@
-# Intel HammerDB TPROC-C Benchmark Configuration and Reproducibility Reference for Microsoft SQL Server on AWS RDS
+ Intel HammerDB TPROC-C Benchmark Configuration and Reproducibility Reference for Microsoft SQL Server on AWS RDS
 
 This guide documents the complete, reproducible configuration of the RDS for SQL Server benchmark harness: the AWS RDS instance and engine settings, the Microsoft SQL Server database configuration, the HammerDB TPROC-C workload, and every metric and artifact collected for analysis. Example used in this guide references:
 
@@ -11,34 +11,22 @@ This guide documents the complete, reproducible configuration of the RDS for SQL
 
 **Table of Contents**
 
-- [Intel HammerDB TPROC-C Benchmark Configuration and Reproducibility Reference for Microsoft SQL Server on Amazon RDS](#intel-hammerdb-tproc-c-benchmark-configuration-and-reproducibility-reference-for-microsoft-sql-server-on-amazon-rds)
-  - [1. Overview \& Test Design](#1-overview--test-design)
-  - [2. Amazon RDS Instance \& Engine Configuration](#2-amazon-rds-instance--engine-configuration)
-  - [3. SQL Server Database Configuration](#3-sql-server-database-configuration)
-    - [3.1 Indirect checkpoint (TARGET\_RECOVERY\_TIME)](#31-indirect-checkpoint-target_recovery_time)
-    - [3.2 tempdb file layout (allocation-page latch relief)](#32-tempdb-file-layout-allocation-page-latch-relief)
-    - [3.3 tpcc user-database file layout (optional, measure-first)](#33-tpcc-user-database-file-layout-optional-measure-first)
-    - [3.4 Server-configuration capture (per target, at run time)](#34-server-configuration-capture-per-target-at-run-time)
-  - [4. HammerDB TPROC-C Workload Configuration](#4-hammerdb-tproc-c-workload-configuration)
-    - [4.1 Schema build](#41-schema-build)
-    - [4.2 Connection settings (both build \& run)](#42-connection-settings-both-build--run)
-    - [4.3 Timed-run settings (per data point)](#43-timed-run-settings-per-data-point)
-    - [4.4 Workload profiles](#44-workload-profiles)
-    - [4.5 Load driver (EC2)](#45-load-driver-ec2)
-  - [5. Metrics \& Data Collected](#5-metrics--data-collected)
-    - [5.1 HammerDB result metrics](#51-hammerdb-result-metrics)
-    - [5.2 Amazon CloudWatch metrics (AWS/RDS, 60 s period, Average)](#52-amazon-cloudwatch-metrics-awsrds-60-s-period-average)
-    - [5.3 Performance Insights](#53-performance-insights)
-    - [5.4 Enhanced Monitoring (OS-level, 1 s) — perfmon analogue](#54-enhanced-monitoring-os-level-1-s--perfmon-analogue)
-    - [5.5 SQL Server DMV snapshots (before \& after every run; analysis diffs them)](#55-sql-server-dmv-snapshots-before--after-every-run-analysis-diffs-them)
-    - [5.6 Pricing / economics inputs](#56-pricing--economics-inputs)
-  - [6. Analysis Outputs](#6-analysis-outputs)
-  - [7. Fairness Controls](#7-fairness-controls)
+- [1. Amazon RDS Instance \& Engine Configuration](#1-amazon-rds-instance--engine-configuration)
+- [2. SQL Server Database Configuration](#2-sql-server-database-configuration)
+  - [2.1 Indirect checkpoint (TARGET\_RECOVERY\_TIME)](#21-indirect-checkpoint-target_recovery_time)
+  - [2.2 tempdb file layout (allocation-page latch relief)](#22-tempdb-file-layout-allocation-page-latch-relief)
+  - [2.3 tpcc user-database file layout (optional, measure-first)](#23-tpcc-user-database-file-layout-optional-measure-first)
+- [3. HammerDB TPROC-C Workload Configuration](#3-hammerdb-tproc-c-workload-configuration)
+  - [3.1 Schema build](#31-schema-build)
+  - [3.2 Connection settings (both build \& run)](#32-connection-settings-both-build--run)
+  - [3.3 Timed-run settings (per data point)](#33-timed-run-settings-per-data-point)
+  - [3.4 Workload profiles](#34-workload-profiles)
+  - [3.5 AWS EC2 Load Generator VM](#35-aws-ec2-load-generator-vm)
 
 
-## 2. Amazon RDS Instance & Engine Configuration
+## 1. Amazon RDS Instance & Engine Configuration
 
-Common to all instances to be benchmarked unless noted.
+Common to all instances to be benchmarked unless noted. Storage should be identical on all instances, so EBS should never be the differentiator.
 
 | RDS / engine setting | Value |
 | --- | --- |
@@ -55,9 +43,9 @@ Common to all instances to be benchmarked unless noted.
 | Performance Insights | Enabled, 7-day retention |
 | Enhanced Monitoring interval | 1 second (OS metrics -> CloudWatch Logs RDSOSMetrics) |
 
-## 3. SQL Server Database Configuration
+## 2. SQL Server Database Configuration
 
-### 3.1 Indirect checkpoint (TARGET_RECOVERY_TIME)
+### 2.1 Indirect checkpoint (TARGET_RECOVERY_TIME)
 
 RDS defaults `TARGET_RECOVERY_TIME` to 60 s. The harness raises it to 300 s on both the `tpcc` user database and `tempdb` so checkpoint behavior is identical and matches the intended configuration. It is re-applied on every drop/restore and again at run time (a snapshot/restore resets `tempdb` to the RDS default).
 
@@ -67,11 +55,11 @@ RDS defaults `TARGET_RECOVERY_TIME` to 60 s. The harness raises it to 300 s on b
 | tempdb TARGET_RECOVERY_TIME | 300 seconds |
 | RDS default (overridden) | 60 seconds |
 
-Apply on every target after each build, drop or snapshot restore, and again before each run:
+Apply on every target after restart/restore so it is re-applied at run time too:
 
 ```sql
-ALTER DATABASE [tpcc]   SET TARGET_RECOVERY_TIME = 300 SECONDS;
-ALTER DATABASE [tempdb] SET TARGET_RECOVERY_TIME = 300 SECONDS;
+ALTER DATABASE [tpcc]   SET TARGET_RECOVERY_TIME = 300 SECONDS WITH NO_WAIT;
+ALTER DATABASE [tempdb] SET TARGET_RECOVERY_TIME = 300 SECONDS WITH NO_WAIT;
 
 -- Verify: both rows should return 300
 SELECT name, target_recovery_time_in_seconds
@@ -79,7 +67,7 @@ FROM sys.databases
 WHERE name IN (N'tpcc', N'tempdb');
 ```
 
-### 3.2 tempdb file layout (allocation-page latch relief)
+### 2.2 tempdb file layout (allocation-page latch relief)
 
 Multiple equal-size `tempdb` data files reduce PFS/GAM/SGAM latch contention (Microsoft rule of thumb: 1 file per logical CPU up to 8). Applied on the baseline at build and re-applied on every run because snapshot/restore resets `tempdb` to the RDS default. `ADD FILE` and grow-only `MODIFY` take effect immediately on RDS (no restart).
 
@@ -161,7 +149,7 @@ END;
 
 Re-run the inspection query to confirm 8 data files of 8192 MB with 512 MB autogrowth.
 
-### 3.3 tpcc user-database file layout (optional, measure-first)
+### 2.3 tpcc user-database file layout (optional, measure-first)
 
 Extra PRIMARY-filegroup data files can relieve allocation contention for heavy concurrent INSERTs. On RDS all files share one EBS volume, so the only benefit is latch relief (no I/O parallelism). Applied to BOTH instances only if PAGELATCH contention is observed; PRIMARY uses `AUTOGROW_ALL_FILES` so proportional fill stays even.
 
@@ -211,109 +199,9 @@ ALTER DATABASE [tpcc] MODIFY FILEGROUP [PRIMARY] AUTOGROW_ALL_FILES;
 Replace the logical name `tpcc` and the `D:\rdsdbdata\DATA\` path with the values that the
 inspection query returns.
 
-### 3.4 Server-configuration capture (per target, at run time)
+## 3. HammerDB TPROC-C Workload Configuration
 
-`config_capture.sql` records the following once per target to `results/<target>/<target>_config_capture.txt`, proving both instances matched:
-
-- Full `sp_configure` (all options incl. advanced) — MAXDOP, cost threshold for parallelism, max server memory, etc.
-- Active global/session trace flags (`DBCC TRACESTATUS(-1)`).
-- `TARGET_RECOVERY_TIME` + recovery model per database (tpcc, tempdb, model, master, msdb).
-- tempdb file layout: file count, size, autogrowth, physical path.
-- tpcc file layout: PRIMARY filegroup data/log file count, size, autogrowth.
-- SQL Server version banner and capture timestamp (UTC).
-- SQL Server error log (via `rdsadmin.dbo.rds_read_error_log`).
-
-Save the following as `config_capture.sql`:
-
-```sql
-SET NOCOUNT ON;
-
-PRINT '== SQL Server version and capture time (UTC) ==';
-SELECT @@VERSION AS sql_version, SYSUTCDATETIME() AS captured_at_utc;
-
-PRINT '== sp_configure (all options, including advanced) ==';
-SELECT name, value, value_in_use, is_advanced
-FROM sys.configurations
-ORDER BY name;
-
-PRINT '== Active global trace flags ==';
-DBCC TRACESTATUS(-1);
-
-PRINT '== Recovery settings ==';
-SELECT name, recovery_model_desc, target_recovery_time_in_seconds
-FROM sys.databases
-WHERE name IN (N'tpcc', N'tempdb', N'model', N'master', N'msdb');
-
-PRINT '== tempdb file layout ==';
-SELECT name, type_desc, physical_name, size / 128 AS size_mb,
-       CASE WHEN is_percent_growth = 1 THEN CONCAT(growth, N'%')
-            ELSE CONCAT(growth / 128, N' MB') END AS autogrowth
-FROM tempdb.sys.database_files;
-
-PRINT '== tpcc file layout ==';
-SELECT f.name, f.type_desc, fg.name AS filegroup_name, f.physical_name, f.size / 128 AS size_mb,
-       CASE WHEN f.is_percent_growth = 1 THEN CONCAT(f.growth, N'%')
-            ELSE CONCAT(f.growth / 128, N' MB') END AS autogrowth
-FROM tpcc.sys.database_files AS f
-LEFT JOIN tpcc.sys.filegroups AS fg ON f.data_space_id = fg.data_space_id;
-
-PRINT '== SQL Server error log (current) ==';
-EXEC rdsadmin.dbo.rds_read_error_log @index = 0, @type = 1;
-```
-
-Run it from the load generator with `sqlcmd` (`-N` encrypts the connection and `-C` trusts the
-server certificate, matching section 4.3):
-
-```bash
-export TARGET='r6i2xl-baseline'               # <insert here> target identifier
-export RDS_ENDPOINT='<insert here>'           # RDS endpoint of the target
-export DB_USER='<insert here>'                # master username
-export SQLCMDPASSWORD='<insert here>'         # avoids putting the password on the command line
-mkdir -p "results/${TARGET}"
-
-sqlcmd -S "tcp:${RDS_ENDPOINT},1433" -U "${DB_USER}" -N -C \
-  -i config_capture.sql \
-  -o "results/${TARGET}/${TARGET}_config_capture.txt"
-```
-
-Note: statistics are refreshed post-build on a best-effort basis (`ALTER AUTHORIZATION` + `sp_updatestats`); because the OCPU instance is a snapshot/restore clone, statistics are identical on both sides regardless.
-
-```sql
-ALTER AUTHORIZATION ON DATABASE::[tpcc] TO [<master-username>];  -- <insert here>
-USE [tpcc];
-EXEC sp_updatestats;
-```
-
-## 4. HammerDB TPROC-C Workload Configuration
-
-### 4.1 AWS EC2 Load Generator VM
-
-| Setting | Value |
-| --- | --- |
-| Instance type | m8i.8xlarge |
-| Open-file limit | Raised to 65535 at run time (async FD demand) |
-| Role | Runs HammerDB CLI; kept otherwise idle for fairness |
-
-Raise the open-file limit in the shell that runs HammerDB, and persist it for the benchmark user:
-
-```bash
-# Current shell
-ulimit -n 65535
-ulimit -n            # verify: 65535
-
-# Persist across logins (replace <user> with the account that runs HammerDB)
-echo '<user> soft nofile 65535
-<user> hard nofile 65535' | sudo tee /etc/security/limits.d/90-hammerdb.conf
-```
-
-HammerDB connects through the Microsoft ODBC driver on Linux. Confirm that the driver is
-installed:
-
-```bash
-odbcinst -q -d       # expect: [ODBC Driver 18 for SQL Server]
-```
-
-### 4.2 Schema build
+### 3.1 Schema build
 
 | Setting | Value |
 | --- | --- |
@@ -345,7 +233,7 @@ vudestroy
 checkschema
 ```
 
-### 4.3 Connection settings (both build & run)
+### 3.2 Connection settings (both build & run)
 
 | Setting | Value |
 | --- | --- |
@@ -372,7 +260,7 @@ diset connection mssqls_encrypt_connection true
 diset connection mssqls_trust_server_cert true
 ```
 
-### 4.4 Timed-run settings (per data point)
+### 3.3 Timed-run settings (per data point)
 
 | Setting | Value |
 | --- | --- |
@@ -425,7 +313,7 @@ vurun
 vudestroy
 ```
 
-### 4.5 Workload profiles
+### 3.4 Workload profiles
 
 Two profiles are run against each target; both now use zero think/keying time.
 
@@ -479,7 +367,31 @@ done
 Record the start and end time of each run. You need them to pull CloudWatch, Performance
 Insights and Enhanced Monitoring data for the same time window.
 
-### 
+### 3.5 AWS EC2 Load Generator VM
 
+| Setting | Value |
+| --- | --- |
+| Instance type | m8i.8xlarge |
+| Open-file limit | Raised to 65535 at run time (async FD demand) |
+| Role | Runs HammerDB CLI; kept otherwise idle for fairness |
+
+Raise the open-file limit in the shell that runs HammerDB, and persist it for the benchmark user:
+
+```bash
+# Current shell
+ulimit -n 65535
+ulimit -n            # verify: 65535
+
+# Persist across logins (replace <user> with the account that runs HammerDB)
+echo '<user> soft nofile 65535
+<user> hard nofile 65535' | sudo tee /etc/security/limits.d/90-hammerdb.conf
+```
+
+HammerDB connects through the Microsoft ODBC driver on Linux. Confirm that the driver is
+installed:
+
+```bash
+odbcinst -q -d       # expect: [ODBC Driver 18 for SQL Server]
+```
 
 
