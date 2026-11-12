@@ -1,4 +1,4 @@
- Intel HammerDB TPROC-C Benchmark Configuration and Reproducibility Reference for Microsoft SQL Server on AWS RDS
+ # Intel HammerDB TPROC-C Benchmark Configuration and Reproducibility Reference for Microsoft SQL Server on AWS RDS
 
 This guide documents the complete, reproducible configuration of the RDS for SQL Server benchmark harness: the AWS RDS instance and engine settings, the Microsoft SQL Server database configuration, the HammerDB TPROC-C workload, and every metric and artifact collected for analysis. Example used in this guide references:
 
@@ -11,17 +11,18 @@ This guide documents the complete, reproducible configuration of the RDS for SQL
 
 **Table of Contents**
 
-- [1. Amazon RDS Instance \& Engine Configuration](#1-amazon-rds-instance--engine-configuration)
-- [2. SQL Server Database Configuration](#2-sql-server-database-configuration)
-  - [2.1 Indirect checkpoint (TARGET\_RECOVERY\_TIME)](#21-indirect-checkpoint-target_recovery_time)
-  - [2.2 tempdb file layout (allocation-page latch relief)](#22-tempdb-file-layout-allocation-page-latch-relief)
-  - [2.3 tpcc user-database file layout (optional, measure-first)](#23-tpcc-user-database-file-layout-optional-measure-first)
-- [3. HammerDB TPROC-C Workload Configuration](#3-hammerdb-tproc-c-workload-configuration)
-  - [3.1 Schema build](#31-schema-build)
-  - [3.2 Connection settings (both build \& run)](#32-connection-settings-both-build--run)
-  - [3.3 Timed-run settings (per data point)](#33-timed-run-settings-per-data-point)
-  - [3.4 Workload profiles](#34-workload-profiles)
-  - [3.5 AWS EC2 Load Generator VM](#35-aws-ec2-load-generator-vm)
+- [Intel HammerDB TPROC-C Benchmark Configuration and Reproducibility Reference for Microsoft SQL Server on AWS RDS](#intel-hammerdb-tproc-c-benchmark-configuration-and-reproducibility-reference-for-microsoft-sql-server-on-aws-rds)
+  - [1. Amazon RDS Instance \& Engine Configuration](#1-amazon-rds-instance--engine-configuration)
+  - [2. SQL Server Database Configuration](#2-sql-server-database-configuration)
+    - [2.1 Indirect checkpoint (TARGET\_RECOVERY\_TIME)](#21-indirect-checkpoint-target_recovery_time)
+    - [2.2 tempdb file layout (allocation-page latch relief)](#22-tempdb-file-layout-allocation-page-latch-relief)
+    - [2.3 tpcc user-database file layout (optional, measure-first)](#23-tpcc-user-database-file-layout-optional-measure-first)
+  - [3. HammerDB TPROC-C Workload Configuration](#3-hammerdb-tproc-c-workload-configuration)
+    - [3.1 Schema build](#31-schema-build)
+    - [3.2 Connection settings (both build \& run)](#32-connection-settings-both-build--run)
+    - [3.3 Timed-run settings (per data point)](#33-timed-run-settings-per-data-point)
+    - [3.4 Workload profiles](#34-workload-profiles)
+    - [3.5 AWS EC2 Load Generator VM](#35-aws-ec2-load-generator-vm)
 
 
 ## 1. Amazon RDS Instance & Engine Configuration
