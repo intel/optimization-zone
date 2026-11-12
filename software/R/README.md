@@ -181,9 +181,9 @@ PKG_FCFLAGS += -march=native
 
 If it is known a priori that the target machine will support a given instruction set such as AVX512, one may use the following:
 ```
-PKG_CPPFLAGS += -mavx512
-PKG_CXXFLAGS += -mavx512
-PKG_FFLAGS += -mavx512
+PKG_CPPFLAGS += -mavx512f
+PKG_CXXFLAGS += -mavx512f
+PKG_FFLAGS += -mavx512f
 ```
 
 Or for machines that only support AVX2:
