@@ -244,7 +244,7 @@ checkschema
 | Encrypt connection | true |
 | Trust server certificate | true |
 
-Save as `connection.tcl`. Both the build and run scripts source it. The password is read from
+Save the following code block as `connection.tcl`. Both the build and run scripts source it. The password is read from
 the `MSSQL_PASSWORD` environment variable so that it is not stored in the script:
 
 ```tcl
