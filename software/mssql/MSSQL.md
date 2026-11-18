@@ -215,7 +215,7 @@ inspection query returns.
 | Target database | tpcc |
 | Build verification | `checkschema` after build |
 
-Save as `build.tcl` and run it from the HammerDB install directory with
+Save the following code block as `build.tcl` and run it from the HammerDB install directory with
 `./hammerdbcli auto build.tcl`. It uses the connection settings in `connection.tcl`
 (section 4.3):
 
