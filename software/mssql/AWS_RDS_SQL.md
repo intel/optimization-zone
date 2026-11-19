@@ -7,7 +7,7 @@ This guide documents the complete, reproducible configuration of the RDS for SQL
 **Revision Record**
 | Date | Rev. | Description |
 |------|------|-------------|
-| 10/15/2026 | 1.0 | Initial Release |
+| 11/20/2026 | 1.0 | Initial Release |
 
 **Table of Contents**
 
