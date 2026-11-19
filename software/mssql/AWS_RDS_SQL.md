@@ -216,7 +216,7 @@ inspection query returns.
 | Target database | tpcc |
 | Build verification | `checkschema` after build |
 
-Save the following code black as `build.tcl` and run it from the HammerDB install directory:
+Save the following code block as `build.tcl` and run it from the HammerDB install directory:
 
 ```tcl
 dbset db mssqls
