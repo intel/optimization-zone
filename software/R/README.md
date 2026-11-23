@@ -179,18 +179,18 @@ PKG_FCFLAGS += -march=native
 
 **Importantly:** adding `-march=native` will make the compiler consider all the possible CPU instructions available in the machine where this is being compiled, which is recommended in scenarios such as baremetal systems. If one wishes to create a Docker image or virtual machine, where the hardware that executes the result might not be the same hardware that created the images/containers, usage of `-march=native` might be suboptimal and/or might lead to creating binaries that use instructions that others machines will not support, so one might want to set flags for a specific instruction set instead.
 
-If it is known a priori that the target machine will support a given instruction set such as AVX512, one may use the following:
+If it is known a priori that the target machine will support a given instruction set such as AVX512 as present in modern server CPUs (x86-64 v4), one may use the following:
 ```
-PKG_CPPFLAGS += -mavx512f
-PKG_CXXFLAGS += -mavx512f
-PKG_FFLAGS += -mavx512f
+PKG_CPPFLAGS += -march=x86-64-v4
+PKG_CXXFLAGS += -march=x86-64-v4
+PKG_FFLAGS += -march=x86-64-v4
 ```
 
-Or for machines that only support AVX2:
+Or for machines that only support AVX2 and related extensions (x86-64 v3):
 ```
-PKG_CPPFLAGS += -mavx2
-PKG_CXXFLAGS += -mavx2
-PKG_FFLAGS += -mavx2
+PKG_CPPFLAGS += -march=x86-64-v3
+PKG_CXXFLAGS += -march=x86-64-v3
+PKG_FFLAGS += -march=x86-64-v3
 ```
 
 **Additionally**, one might also want to enable [link-time optimization](https://gcc.gnu.org/wiki/LinkTimeOptimization) by adding a line like the following and adding argument `-flto` to all sections with flags:
