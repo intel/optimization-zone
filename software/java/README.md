@@ -1,7 +1,7 @@
 # Introduction
 Intel's performance engineering team has identified runtime-level optimizations which can significantly improve application and infrastructure performance. Some optimizations can be applied via configuration tuning, while others via code changes. 
 
-Actual improvements will vary depending on a given workload's characteristics. It is recommended to use a profiling solution such as [VTune Profiler](tools/vtune/README.md) to more accurately gauge where an application's hotpaths are and which optimizations would have the greatest affect. 
+Actual improvements will vary depending on a given workload's characteristics. It is recommended to use a profiling solution such as [VTune Profiler](/tools/vtune/README.md) to more accurately gauge where an application's hotpaths are and which optimizations would have the greatest affect. 
 
 ## What's Inside
 - [Suggested Configuration Optimizations](configuration-optimizations.md): Changes that can be made to Java's configuration and/or parameters to improve application performance. These optimizations are largely unaffected by specific code patterns and as such can be applied in a more generalist manner.  
