@@ -39,7 +39,5 @@ topology, instance sizes, and specifications.
 - **Node width is uniform on GCP C4-GNR** (48 vCPUs / 24 cores at every multi-node shape) but
   **varies on AWS 8i** — 24xl is built from two *partial* dies of 24 cores each, so it does not
   match the 32 cores/node of the larger sizes.
-- **Watch for asymmetric topologies.** `c4-standard-192` reports 2 sockets and 4 NUMA nodes covering
-  three dies on one socket and a single die on the other; the nodes are not evenly distributed.
 - **The largest cross-socket-free size differs**: 48xl on AWS (192 vCPU), `c4-standard-144` on GCP
   (144 vCPU). A workload sized to stay within one socket needs a different shape on each cloud.
