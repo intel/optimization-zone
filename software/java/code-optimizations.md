@@ -1,4 +1,4 @@
-Changes that can be made to Java application code to improve application performance. The benefits will vary widely depending on how common specific libraries are used and how much compute time they consume. Use of profiling solution such as [VTune Profiler](tools/vtune/README.md) is highly recommended to assess potential improvements. 
+Changes that can be made to Java application code to improve application performance. The benefits will vary widely depending on how common specific libraries are used and how much compute time they consume. Use of profiling solution such as [VTune Profiler](/tools/vtune/README.md) is highly recommended to assess potential improvements. 
 
 ## Using String.replace instead of String.replaceAll
 

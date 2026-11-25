@@ -7,7 +7,7 @@ helps provide a set of recommended settings for getting the best performance thr
 - [Document Nomenclature](#Document-Nomenclature)
 - [Hardware Configuration Recommendations](#Hardware-Configuration-Recommendations)  
 - [BIOS Setting Recommendations](#BIOS-Configuration-Recommendations)
-- [DataStax’s Kernel/Storage/Network Settings](DataStax’s-Kernel/Storage/Network-Settings)
+- [DataStax’s Kernel/Storage/Network Settings](#datastaxs-kernelstoragenetwork-settings)
 - [Cassandra Settings](#Cassandra-settings)  
 - [Cassandra-Stress Testing](#Cassandra-Stress-Testing)
 - [Cassandra-Stress Performance Comparisons](#Cassandra-Stress-Performance-Comparisons)

@@ -51,7 +51,7 @@ Intel Xeon 6 offer both great per core performance and twice as many cores per s
 
 Some key Xeon 6 P-cores processor features:
 
-- [Up to 128 cores and 504 MB last level cache per socket]((https://www.intel.com/content/www/us/en/content-details/845771/intel-xeon-6-processor-family-product-brief.html))
+- [Up to 128 cores and 504 MB last level cache per socket](https://www.intel.com/content/www/us/en/content-details/845771/intel-xeon-6-processor-family-product-brief.html)
 - [Improved memory performance, up to 12 memory channels, supporting DDR5(6400MHz)/MRDIMM(8800MHz)](https://newsroom.intel.com/data-center/new-ultrafast-memory-boosts-intel-data-center-chips)
 - [Enhance AI acceleration with Intel® Advanced Matrix Extensions (Intel® AMX)](https://www.intel.com/content/www/us/en/products/docs/accelerator-engines/advanced-matrix-extensions/overview.html)
 - [Enhance privacy and control over your data with increased confidentiality at the virtual machine (VM) level with Intel® Trust Domain Extensions (Intel® TDX) technology.](https://www.intel.com/content/www/us/en/developer/tools/trust-domain-extensions/overview.html)
