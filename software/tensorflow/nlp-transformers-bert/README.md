@@ -6,10 +6,10 @@
 - [Prerequisites](#prerequisites)
 - [Install Required Packages](#install-required-packages)
 - [Quick Start: Keras Mixed Precision](#quick-start-keras-mixed-precision)
-- [Deploying with TensorFlow Serving (bfloat16 Auto Mixed Precision)](#deploying-with-tensorflow-serving-bfloat16-auto-mixed-precision)
-  - [Export the Model (SavedModel, float32 weights)](#export-the-model-savedmodel-float32-weights)
+- [Deploying with TensorFlow Serving (BF16 Auto Mixed Precision)](#deploying-with-tensorflow-serving-bf16-auto-mixed-precision)
+  - [Export the Model (SavedModel, FP32 weights)](#export-the-model-savedmodel-fp32-weights)
   - [Pull TensorFlow Serving](#pull-tensorflow-serving)
-  - [Start the Server (Enable bfloat16)](#start-the-server-enable-bfloat16)
+  - [Start the Server (Enable BF16)](#start-the-server-enable-bf16)
 - [Client Inference (REST)](#client-inference-rest)
 - [Optional: Graph Freezing for Additional Performance](#optional-graph-freezing-for-additional-performance)
 - [Key Validation Steps](#key-validation-steps)
@@ -73,7 +73,7 @@ Notes:
 
 ### Export the Model (SavedModel, FP32 weights)
 
-> **Note:** We don't need to explicitly enable `bfloat16` mixed precision with Keras while exporting the model, because the `--mixed_precision=bfloat16` flag passed when starting the inference server handles that automatically (see [Start the Server (Enable bfloat16)](#start-the-server-enable-bfloat16) below).
+> **Note:** We don't need to explicitly enable `bfloat16` mixed precision with Keras while exporting the model, because the `--mixed_precision=bfloat16` flag passed when starting the inference server handles that automatically (see [Start the Server (Enable BF16)](#start-the-server-enable-bf16) below).
 
 Create `export_bert_large.py`:
 

@@ -98,7 +98,7 @@ The L2 prefetch block is shared for all cores in the module and contains several
 
 Prefetches can be scrubbed by throttlers prior to being accepted. These throttlers are designed to reduce a combined high prefetch level within the module as well as reducing the prefetch requests when the Uncore memory subsystem is at a high load.
 
-<figure>
+<figure id="figure-1">
 	<img src="images/computemodule.png" alt="image" width="500" height="auto">
 	<figcaption>Figure 1: Intel® E-Core Module and Interface to Uncore</figcaption>
 </figure>
